@@ -1,3 +1,4 @@
+import { nationalProfile } from "./defaults.js"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname } from "node:path"
 import type { Document, Element } from "@xmldom/xmldom"
@@ -19,7 +20,7 @@ function addPart(document: Document, ns: string, name: string, attrs: Record<str
   document.documentElement!.appendChild(e)
 }
 
-function paragraph(d: Document, role: string, text: string, s: StyleSpec) {
+export function formattedParagraph(d: Document, role: string, text: string, s: StyleSpec) {
   const p = wordElement(d, "p")
   const props = p.appendChild(wordElement(d, "pPr"))
   props.appendChild(wordElement(d, "pStyle", { val: "gw_" + role }))
@@ -118,18 +119,21 @@ export async function render(content: DocContentAST, profile: FormatProfile, out
   ref.setAttributeNS(relationship, "r:id", "docforgefooterV2")
   insertInSchemaOrder(section, ref, SECTPR_ORDER)
   const footer = parseXml(empty("ftr"))
-  const centered: StyleSpec = { ...profile.styles.body, alignment: "center", first_line_indent_chars: 0 }
+  const centered: StyleSpec = {
+    ...nationalProfile().styles.body, alignment: "center", first_line_indent_chars: 0,
+  }
   if (profile.page.show_page_number) {
-    const p = paragraph(footer, "page_number", "— ", { ...centered, font_cn: "宋体", font_size_pt: 14 })
+    const pageStyle = { ...centered, font_cn: "宋体", font_size_pt: 14 }
+    const p = formattedParagraph(footer, "page_number", "— ", pageStyle)
     const field = p.appendChild(wordElement(footer, "fldSimple", { instr: "PAGE" }))
-    field.appendChild(wordElement(footer, "r")).appendChild(wordElement(footer, "t")).textContent = "1"
-    p.appendChild(paragraph(footer, "page_number", " —", centered).lastChild!)
+    field.appendChild(formattedParagraph(footer, "page_number", "1", pageStyle).lastChild!)
+    p.appendChild(formattedParagraph(footer, "page_number", " —", pageStyle).lastChild!)
     footer.documentElement!.appendChild(p)
   } else footer.documentElement!.appendChild(wordElement(footer, "p"))
-  if (h.enabled) body.appendChild(paragraph(d, "red_header", org!, {
+  if (h.enabled) body.appendChild(formattedParagraph(d, "red_header", org!, {
     ...centered, font_cn: h.font_cn, font_size_pt: h.font_size_pt, color_hex: h.color_hex,
   }))
-  if (content.doc_number) body.appendChild(paragraph(d, "doc_number", content.doc_number, {
+  if (content.doc_number) body.appendChild(formattedParagraph(d, "doc_number", content.doc_number, {
     ...centered, font_cn: h.doc_number_font_cn, font_size_pt: h.doc_number_size_pt,
   }))
   if (h.enabled && h.has_red_line) {
@@ -137,13 +141,13 @@ export async function render(content: DocContentAST, profile: FormatProfile, out
     const border = p.appendChild(wordElement(d, "pPr")).appendChild(wordElement(d, "pBdr"))
     border.appendChild(wordElement(d, "bottom", { val: "single", sz: 12, color: h.color_hex }))
   }
-  body.appendChild(paragraph(d, "title", content.title, profile.styles.title))
+  body.appendChild(formattedParagraph(d, "title", content.title, profile.styles.title))
   if (content.recipient) {
-    body.appendChild(paragraph(d, "recipient", content.recipient, profile.styles.recipient))
+    body.appendChild(formattedParagraph(d, "recipient", content.recipient, profile.styles.recipient))
   }
   for (const block of content.blocks ?? []) {
     if (block.type !== "table") {
-      body.appendChild(paragraph(d, block.type, block.text, profile.styles[block.type]))
+      body.appendChild(formattedParagraph(d, block.type, block.text, profile.styles[block.type]))
       continue
     }
     const table = body.appendChild(wordElement(d, "tbl"))
@@ -159,15 +163,16 @@ export async function render(content: DocContentAST, profile: FormatProfile, out
     for (const values of block.rows) {
       const row = table.appendChild(wordElement(d, "tr"))
       for (const text of values) {
-        row.appendChild(wordElement(d, "tc")).appendChild(paragraph(d, "body", text, profile.styles.body))
+        const cell = row.appendChild(wordElement(d, "tc"))
+        cell.appendChild(formattedParagraph(d, "body", text, profile.styles.body))
       }
     }
   }
   for (const item of content.attachments ?? []) {
-    body.appendChild(paragraph(d, "body", "附件：" + item, profile.styles.body))
+    body.appendChild(formattedParagraph(d, "body", "附件：" + item, profile.styles.body))
   }
   for (const role of ["signature", "date"] as const) {
-    if (content[role]) body.appendChild(paragraph(d, role, content[role], profile.styles[role]))
+    if (content[role]) body.appendChild(formattedParagraph(d, role, content[role], profile.styles[role]))
   }
   body.appendChild(section)
   files["word/document.xml"] = xmlBytes(d)

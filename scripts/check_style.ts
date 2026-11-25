@@ -1,20 +1,39 @@
 import { globSync, readFileSync } from "node:fs"
 
+import ts from "typescript"
+
+function checkStatements(path: string, source: string) {
+  const syntax = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true)
+  function visit(node: ts.Node) {
+    if (ts.isStatement(node) && node.parent && (ts.isBlock(node.parent) || ts.isSourceFile(node.parent))) {
+      const statements = node.parent.statements
+      const next = statements[statements.indexOf(node) + 1]
+      const line = syntax.getLineAndCharacterOfPosition(node.end).line
+      if (next && syntax.getLineAndCharacterOfPosition(next.getStart()).line === line) {
+        errors.push(path + ":" + (line + 1) + " packs statements")
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(syntax)
+}
+
 const errors: string[] = []
 const sources = globSync(["packages/*/src/**/*.{ts,vue}", "scripts/*.ts", "eval/*.ts"])
 for (const path of sources) {
   const lines = readFileSync(path, "utf8").split("\n")
-  let script = path.endsWith(".ts")
+  const source = lines.join("\n")
+  if (path.endsWith(".ts")) checkStatements(path, source)
+  else {
+    for (const match of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) {
+      checkStatements(path, match[1])
+    }
+  }
   for (const [index, line] of lines.entries()) {
-    if (line.includes("<script")) script = true
-    if (line.includes("</script>")) script = false
     if (Array.from(line).length > 110 && !/class=["']/.test(line)) {
       errors.push(path + ":" + (index + 1) + " exceeds 110 characters")
     }
-    const code = line.replace(/(["'`])(?:\\.|(?!\1).)*\1/g, "")
-    if (script && /;\s*\S/.test(code) && !/\bfor\s*\(/.test(code)) {
-      errors.push(path + ":" + (index + 1) + " packs statements")
-    }
+
   }
 }
 for (const name of ["notice", "request", "minutes", "letter"]) {
