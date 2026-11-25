@@ -12,6 +12,7 @@ export const Skeleton = Type.Object({
 })
 export type Skeleton = Static<typeof Skeleton>
 export const Blueprint = Type.Object({
+  grid: Type.Optional(Type.Object({ lines: Type.Literal(22), characters: Type.Literal(28) })),
   slots: Type.Array(Type.Object({ name: Type.String(), start: anchor, end: anchor })),
   prototypes: Type.Record(Type.String(), anchor),
   preserved: Type.Array(Type.String()),
@@ -22,3 +23,15 @@ export const TemplateAsset = Type.Object({
   parent_id: Type.Union([Type.String(), Type.Null()]), capability_card: Type.String(),
 })
 export type TemplateAsset = Static<typeof TemplateAsset>
+
+export const DraftIndex = Type.Object({
+  draft_id: Type.String(), count: integer, characters: integer,
+  samples: Type.Array(Type.Object({ id: Type.String(), excerpt: Type.String() })),
+})
+export type DraftIndex = Static<typeof DraftIndex>
+export const ComposePlan = Type.Array(Type.Object({
+  range: Type.Optional(Type.String()), prototype: Type.String(), slot: Type.Optional(Type.String()),
+  text: Type.Optional(Type.String()), rows: Type.Optional(Type.Array(Type.Array(Type.String()))),
+  emphasis: Type.Optional(Type.Enum(["first_sentence", "underline_first_sentence"])),
+}, { additionalProperties: false }))
+export type ComposePlan = Static<typeof ComposePlan>
