@@ -85,15 +85,17 @@ export class Workspace {
   }
   async plan(template: TemplateAsset, draftId: string) {
     const paragraphs = await readDraft(this.docs.directory, draftId)
-    const samples = paragraphs.slice(0, 12).map((p, i) => ["P" + i, p.slice(0, 20)])
+    // 全量紧凑目录：每段一行「编号|字数|前 24 字」，约 30 字/段，80 段草稿约 2.4k 字符。
+    const outline = paragraphs.map((p, i) => "P" + i + "|" + p.length + "|" + p.slice(0, 24))
     const plan = await jsonCompletion(
       [
         "只输出 JSON 数组，按顺序无遗漏覆盖 P0 到 P" +
           (paragraphs.length - 1) +
           "。相邻正文合并为一个区间。",
         '每项只含 prototype 和 range，如 {"prototype":"body","range":"P0-P9"}。禁止输出 slot。',
+        "下方草稿目录每行为「段落编号|总字数|前 24 字」，据此识别各级标题、正文、落款与日期。",
         template.capability_card,
-        JSON.stringify(samples),
+        outline.join("\n"),
       ].join("\n"),
       this.docs.bill,
     )

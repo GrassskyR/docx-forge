@@ -2,6 +2,16 @@ import type { AgentMessage } from "@mariozechner/pi-agent-core"
 import type { TemplateStore } from "@docs-agent/engine"
 import type { Documents } from "./documents.js"
 
+export function countImages(messages: AgentMessage[]) {
+  return messages.reduce(
+    (n, m) =>
+      (m.role === "user" || m.role === "toolResult") && typeof m.content !== "string"
+        ? n + m.content.filter((c) => c.type === "image").length
+        : n,
+    0,
+  )
+}
+
 export function clearReviewedImages(messages: AgentMessage[]): AgentMessage[] {
   const reviewed = messages.findLastIndex((m) => m.role === "assistant")
   return messages.map((m, i) => {

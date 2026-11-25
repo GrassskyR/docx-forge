@@ -18,6 +18,16 @@ const types: Record<string, string> = {
   ".js": "text/javascript",
   ".css": "text/css",
   ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".json": "application/json; charset=utf-8",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ".pdf": "application/pdf",
 }
@@ -150,6 +160,8 @@ export function createApp(
         }
         if (path === "/api/v3/documents/compose" && method === "POST") {
           if (payload.body_plan) Assert(toolSchemas.compose_document, payload)
+          else if (payload.mode !== "exact_copy" || typeof payload.draft_id !== "string")
+            throw new HttpError(422, "未提供 body_plan 时需使用 exact_copy 模式并提供 draft_id")
           return send(200, await work.compose(payload))
         }
         if (path === "/api/v3/documents/" + id + "/adjust-layout" && method === "POST") {

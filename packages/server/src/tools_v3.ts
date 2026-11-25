@@ -2,7 +2,8 @@ import type { AgentTool } from "@mariozechner/pi-agent-core"
 import { toolSchemas } from "@docs-agent/shared"
 import type { Workspace } from "./workspace.js"
 
-export function createV3Tools(work: Workspace): AgentTool[] {
+// vision 由 /chat 每轮按顶栏双轨开关写入；关闭时视觉终审一律降级为纯文本。
+export function createV3Tools(work: Workspace, settings: { vision: boolean }): AgentTool[] {
   const specs: [keyof typeof toolSchemas, string, (p: any) => unknown][] = [
     [
       "inspect_reference_doc",
@@ -37,7 +38,11 @@ export function createV3Tools(work: Workspace): AgentTool[] {
     ["ingest_draft", "将草稿留存本地，返回编号索引", (p) => work.ingest(p)],
     ["compose_document", "按原型组装文档，保真模式只传连续编号区间", (p) => work.compose(p)],
     ["adjust_layout", "根据真实遥测调整版面", (p) => work.adjust(p.doc_id, p.operations)],
-    ["audit_and_inspect", "获取审计结果及可选视觉终审", (p) => work.audit(p.doc_id, p.run_vision)],
+    [
+      "audit_and_inspect",
+      "获取审计结果及可选视觉终审",
+      (p) => work.audit(p.doc_id, settings.vision && p.run_vision !== false),
+    ],
   ]
   return specs.map(([name, description, perform]) => ({
     name,

@@ -1,14 +1,16 @@
-import { clearReviewedImages } from "./context_hook.js"
+import { clearReviewedImages, countImages } from "./context_hook.js"
 import type { Workspace } from "./workspace.js"
 import type { IncomingMessage, ServerResponse } from "node:http"
 import { join } from "node:path"
+import { visionMode } from "@docs-agent/engine"
 import { Documents } from "./documents.js"
 import { SessionTree, type SessionNode } from "./session_tree.js"
 import { makeAgent } from "./agent.js"
 
 export function chatHandler(client: Documents, work: Workspace) {
   const tree = new SessionTree(join(client.directory, "sessions.json"))
-  const agent = makeAgent(client, work)
+  const settings = { vision: true }
+  const agent = makeAgent(client, work, settings)
   let busy = false
   async function branchState(node: SessionNode) {
     const profile = node.profile_id ? client.get(node.profile_id) : client.active()
@@ -87,6 +89,13 @@ export function chatHandler(client: Documents, work: Workspace) {
       send(422, { error: "请输入对话内容" })
       return
     }
+    if (body.vision_enabled !== undefined && typeof body.vision_enabled !== "boolean") {
+      send(422, { error: "vision_enabled 必须为布尔值" })
+      return
+    }
+    settings.vision = body.vision_enabled !== false
+    const vision_mode = settings.vision ? visionMode() : "text_only"
+    let vision_pages_isolated = 0
     busy = true
     res.writeHead(200, {
       "content-type": "text/event-stream; charset=utf-8",
@@ -111,7 +120,10 @@ export function chatHandler(client: Documents, work: Workspace) {
         event({ type: "tool", name: e.toolName, isError: e.isError })
         const result = e.result.details
         if (result?.layout) event({ type: "layout", layout: result.layout })
-        if (result?.vision) event({ type: "vision", vision: result.vision })
+        if (result?.vision) {
+          vision_pages_isolated += result.vision.pages.length
+          event({ type: "vision", vision: result.vision, vision_enabled: settings.vision })
+        }
         if (result?.docx_url) event({ type: "document", result })
       }
     })
@@ -120,8 +132,16 @@ export function chatHandler(client: Documents, work: Workspace) {
       await agent.prompt(body.prompt)
       if (agent.state.errorMessage) event({ type: "error", error: agent.state.errorMessage })
       tree.node.template_id = work.templates.activeId
-      tree.checkpoint(clearReviewedImages(agent.state.messages), (await client.active()).id)
-      event({ type: "done" })
+      const history = clearReviewedImages(agent.state.messages)
+      tree.checkpoint(history, (await client.active()).id)
+      // 视觉终审图片走独立请求、从不进入主对话（isolated）；主对话里残留的图片在此清除（purged）。
+      event({
+        type: "done",
+        vision_enabled: settings.vision,
+        vision_mode,
+        vision_pages_isolated,
+        vision_images_purged: countImages(agent.state.messages) - countImages(history),
+      })
     } catch (e) {
       event({ type: "error", error: String(e) })
     } finally {

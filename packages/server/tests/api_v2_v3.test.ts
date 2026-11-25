@@ -71,6 +71,10 @@ test("单端口 V2 HTTP 契约、文件、修复与会话树", async () => {
     await request("/api/profiles/active", { profile_id: id }, "PUT")
     expect((await request("/api/profiles/" + child.id, {}, "DELETE")).deleted).toBe(child.id)
     expect((await fetch(origin + "/api/profiles/" + child.id)).status).toBe(404)
+    const unplanned = await fetch(origin + "/api/v3/documents/compose", { method: "POST",
+      body: JSON.stringify({ mode: "authored" }) })
+    expect(unplanned.status).toBe(422)
+    expect((await unplanned.json()).detail).toContain("body_plan")
     expect((await fetch(origin + "/chat", { method: "POST", body: "{}" })).status).toBe(
       process.env.LLM_API_KEY ? 422 : 503)
   } finally {

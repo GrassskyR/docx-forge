@@ -25,6 +25,16 @@ export type ComposeInput = {
   slot_values?: Record<string, string>
   normalize_punctuation?: boolean
 }
+// 正文 Run 的 rPr；pPr/rPr 只是段落结束符格式，仅在原型没有文字 Run 时兜底。
+function textRunProps(prototype: Element): Element | undefined {
+  const run = Array.from(prototype.getElementsByTagNameNS(W, "r")).find((r) =>
+    Array.from(r.getElementsByTagNameNS(W, "t")).some((t) => t.textContent),
+  )
+  if (run) return children(run, "rPr")[0]
+  const pPr = children(prototype, "pPr")[0]
+  return pPr && children(pPr, "rPr")[0]
+}
+
 function cloneParagraph(d: Document, prototype: Element, text: string, emphasis?: string) {
   const p = wordElement(d, "p")
   const pPr = children(prototype, "pPr")[0]
@@ -33,7 +43,7 @@ function cloneParagraph(d: Document, prototype: Element, text: string, emphasis?
     for (const section of children(props, "sectPr")) props.removeChild(section)
     p.appendChild(props)
   }
-  const rPr = prototype.getElementsByTagNameNS(W, "rPr")[0]
+  const rPr = textRunProps(prototype)
   const end = emphasis ? (/^[^。！？!?]*[。！？!?]/.exec(text)?.[0].length ?? text.length) : 0
   function add(value: string, first: boolean) {
     const r = wordElement(d, "r")
@@ -157,6 +167,11 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     }
   }
   if (asset.blueprint.grid) {
+    // 网格字距以模板正文原型字号为基准，原型未显式设字号时按公文三号字 16pt。
+    const bodyId = asset.blueprint.prototypes.body
+    const bodySize = bodyId ? textRunProps(anchor(bodyId)) : undefined
+    const sz = bodySize && children(bodySize, "sz")[0]?.getAttributeNS(W, "val")
+    const fontPt = sz ? Number(sz) / 2 : 16
     for (const section of Array.from(d.getElementsByTagNameNS(W, "sectPr"))) {
       const paper = children(section, "pgSz")[0]
       const margins = children(section, "pgMar")[0]
@@ -166,10 +181,6 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
         - dimension(margins, "bottom", 1440)
       const width = dimension(paper, "w", 11906) - dimension(margins, "left", 1440)
         - dimension(margins, "right", 1440)
-      const defaults = files["word/styles.xml"] && parseXml(files["word/styles.xml"])
-      const baseSize = defaults && defaults.getElementsByTagNameNS(W, "rPrDefault")[0]
-        ?.getElementsByTagNameNS(W, "sz")[0]
-      const fontPt = Number(baseSize?.getAttributeNS(W, "val") ?? 20) / 2
       const current = children(section, "docGrid")[0]
       const grid = current ?? wordElement(d, "docGrid")
       grid.setAttributeNS(W, "w:type", "linesAndChars")

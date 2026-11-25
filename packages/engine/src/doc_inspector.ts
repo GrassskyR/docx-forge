@@ -13,6 +13,21 @@ export function bodyBlocks(root: Element) {
   return children(body).filter((e) => e.localName === "p" || e.localName === "tbl")
 }
 
+function textOf(element: Element) {
+  return Array.from(element.getElementsByTagNameNS(W, "t"))
+    .map((t) => t.textContent)
+    .join("")
+    .trim()
+}
+
+// 表格示例：行列数 + 前 3 个非空单元格，便于区分封面表、三线表与签章表。
+function tableSummary(table: Element) {
+  const rows = children(table, "tr")
+  const columns = Math.max(0, ...rows.map((r) => children(r, "tc").length))
+  const cells = Array.from(table.getElementsByTagNameNS(W, "tc")).map(textOf).filter(Boolean)
+  return (rows.length + "行" + columns + "列 " + cells.slice(0, 3).join("|")).slice(0, 48)
+}
+
 export async function inspectReference(source: string, data: string) {
   const inspect_id = randomUUID()
   const directory = join(data, "inspections", inspect_id)
@@ -42,12 +57,9 @@ export async function inspectReference(source: string, data: string) {
     const groups = new Map<string, Skeleton["clusters"][number]>()
     for (const [index, block] of blocks.entries()) {
       const table = block.localName === "tbl"
-      const p = table ? block.getElementsByTagNameNS(W, "p")[0] : block
-      const text = Array.from(p.getElementsByTagNameNS(W, "t"))
-        .map((t) => t.textContent)
-        .join("")
-        .trim()
-      if (!text && !table) continue
+      const p: Element | undefined = table ? block.getElementsByTagNameNS(W, "p")[0] : block
+      const text = table ? tableSummary(block) : textOf(block)
+      if (!text) continue
       const pPr = child(p, "pPr")
       const rPr = child(child(p, "r"), "rPr")
       const style = attr(child(pPr, "pStyle")) ?? ""
@@ -71,7 +83,7 @@ export async function inspectReference(source: string, data: string) {
           anchor: "B" + index,
           kind: table ? "table" : "paragraph",
           count: 1,
-          example: text.slice(0, 26),
+          example: table ? text : text.slice(0, 26),
           style: style.slice(0, 32),
           font: font.slice(0, 32),
           size: size.slice(0, 6),
