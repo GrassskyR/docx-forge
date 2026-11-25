@@ -1,0 +1,17 @@
+{
+  "name": "@docs-agent/web",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@docs-agent/shared": "*",
+    "vue": "^3",
+    "vite": "^7",
+    "@vitejs/plugin-vue": "^6",
+    "tailwindcss": "^4",
+    "@tailwindcss/vite": "^4"
+  }
+}

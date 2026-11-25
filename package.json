@@ -1,0 +1,24 @@
+{
+  "name": "docforge",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.base.json",
+    "test": "vitest run",
+    "stylecheck": "tsx scripts/check_style.ts",
+    "build": "npm run typecheck && npm run build -w @docs-agent/web",
+    "start": "tsx packages/server/src/main.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22",
+    "tsx": "^4",
+    "vitest": "^3"
+  },
+  "overrides": {
+    "basic-ftp": "6.2.6"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@docs-agent/engine",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@docs-agent/shared": "*",
+    "fflate": "^0.8",
+    "@xmldom/xmldom": "^0.9",
+    "xpath": "^0.0.34"
+  }
+}

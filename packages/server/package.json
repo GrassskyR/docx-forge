@@ -1,0 +1,13 @@
+{
+  "name": "@docs-agent/server",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@docs-agent/shared": "*",
+    "@docs-agent/engine": "*",
+    "@mariozechner/pi-ai": "^0.73.1",
+    "@mariozechner/pi-agent-core": "^0.73.1"
+  }
+}
