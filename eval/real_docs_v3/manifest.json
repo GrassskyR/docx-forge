@@ -1,0 +1,282 @@
+[
+  {
+    "file": "v3_01_pku_master_thesis.docx",
+    "domain": "academic",
+    "source_org": "北京大学力工学院",
+    "source_url": "https://mech.pku.edu.cn/docs/2026-05/31233e2ce09f4099842f0b6b0aceb150.docx",
+    "description": "硕士学位论文正式模板（含封面、摘要、目录、章节多级编号、页眉页脚、图表与参考文献）",
+    "size_bytes": 304443,
+    "sha256": "c4823b512002a3fb46fec0dc4e9572b88d77ab114d68245376d4a418dd2dc3fd",
+    "actual_format": "ooxml_docx",
+    "magic_hex": "504B030414000600",
+    "observed_structure": {
+      "sections": 14,
+      "tables": 3,
+      "non_empty_paragraphs": 350,
+      "media_assets": 3,
+      "header_parts": 15,
+      "footer_parts": 6,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_02_szu_master_thesis.docx",
+    "domain": "academic",
+    "source_org": "深圳大学研究生院",
+    "source_url": "https://gra.szu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1941225227&wbfileid=C462852F4338424F75233AD93CD1DA26",
+    "description": "学术学位硕士论文官方模板（含图片校徽封面、分节页码、三线表与参考文献规范）",
+    "size_bytes": 1130655,
+    "sha256": "622a2a5caed745f3009b6a4ec143eafb73aef8a26dc8d464039e25c9b8a2cbf2",
+    "actual_format": "ooxml_docx",
+    "magic_hex": "504B03040A000000",
+    "observed_structure": {
+      "sections": 17,
+      "tables": 15,
+      "non_empty_paragraphs": 361,
+      "media_assets": 8,
+      "header_parts": 24,
+      "footer_parts": 25,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_03_szu_phd_thesis.docx",
+    "domain": "academic",
+    "source_org": "深圳大学研究生院",
+    "source_url": "https://gra.szu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1941225227&wbfileid=D13EA972A82B39E4111028F869E70AC2",
+    "description": "学术学位博士论文官方模板（多节长文档、奇偶页眉、复杂图表与样式体系）",
+    "size_bytes": 1148503,
+    "sha256": "c783c3213b1dbdf2cc423aae3d2e7f6a1231f6552246a22fa6fd9e0dfb6d3c55",
+    "actual_format": "ooxml_docx",
+    "magic_hex": "504B03040A000000",
+    "observed_structure": {
+      "sections": 17,
+      "tables": 15,
+      "non_empty_paragraphs": 361,
+      "media_assets": 8,
+      "header_parts": 24,
+      "footer_parts": 25,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_04_seu_national_rd_form.docx",
+    "domain": "form",
+    "source_org": "东南大学",
+    "source_url": "https://xxgk.seu.edu.cn/_upload/article/files/1b/51/e95e8af14e57a2bb67dd216dbe76/8a4cb9c4-70d5-4e0b-94ff-53dd1fea01bd.docx",
+    "description": "国家重点研发计划项目申报书模板（封面、经费/业绩多表格、长报告正文结构）",
+    "size_bytes": 97407,
+    "sha256": "89cccae8e2d657159443bd3a5724acaa78e46c406f7d3a25f8a338a94a9bc8e7",
+    "actual_format": "ooxml_docx",
+    "magic_hex": "504B030414000600",
+    "observed_structure": {
+      "sections": 22,
+      "tables": 22,
+      "non_empty_paragraphs": 787,
+      "media_assets": 0,
+      "header_parts": 5,
+      "footer_parts": 11,
+      "has_numbering": false
+    }
+  },
+  {
+    "file": "v3_05_zjgsu_soft_sci_form.docx",
+    "domain": "form",
+    "source_org": "浙江工商大学",
+    "source_url": "https://gsgl.zjgsu.edu.cn/_upload/article/files/ff/3d/e2bf290547579c6ccdb94512c260/ddf6bffd-d0ea-48f2-88b1-679edf570f3c.doc",
+    "description": "浙江省软科学研究计划项目申请表模板（填报表格与考核指标结构）",
+    "size_bytes": 31787,
+    "sha256": "b9d293858dca7d8fea772fa9c50ae61c989dc5e89521373368015b2d5587dc54",
+    "actual_format": "ooxml_docx",
+    "magic_hex": "504B030414000600",
+    "observed_structure": {
+      "sections": 3,
+      "tables": 8,
+      "non_empty_paragraphs": 113,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 1,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_06_njnu_major_grant_form.doc",
+    "domain": "form",
+    "source_org": "南京师范大学",
+    "source_url": "https://www.njnu.edu.cn/__local/6/A1/61/3BAC5E0E55A4A171BFCA79F578E_C8B20CD3_24400.doc?e=.doc",
+    "description": "重大专项课题申报书真实二进制.doc（含22个复杂嵌套填报表格与页码）",
+    "size_bytes": 148480,
+    "sha256": "ee4626209a5412e78934248bd53cd0dde1cef3d2fea2a50b4ca557d51d425019",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 25,
+      "tables": 22,
+      "non_empty_paragraphs": 183,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 49,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_07_fudan_gbt9704_spec.doc",
+    "domain": "academic",
+    "source_org": "复旦大学教务处",
+    "source_url": "https://jwc.fudan.edu.cn/_upload/article/files/9a/b7/a59071b54e96b27ce206eae0d83e/d51e5ec3-6ec7-4df0-9152-d909121d22d4.doc",
+    "description": "GB/T 9704-2012 国家标准规范全文.doc（226段长技术标准报告+多级条款+图表）",
+    "size_bytes": 680448,
+    "sha256": "a0303cee6a19296d979cb37b35caf38dec88216522ebdf182ea20efb0bf4a985",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 1,
+      "tables": 2,
+      "non_empty_paragraphs": 230,
+      "media_assets": 12,
+      "header_parts": 0,
+      "footer_parts": 1,
+      "has_numbering": false
+    }
+  },
+  {
+    "file": "v3_08_shgov_coop_dev_contract.doc",
+    "domain": "contract",
+    "source_org": "上海市科委",
+    "source_url": "https://stcsm.sh.gov.cn/cmsres/6d/6d5cb1860fa4440287751d278faa508c/80b282895333ca9ef3cf634234f2c545.doc",
+    "description": "政府官方示范文本《技术开发（合作）合同》.doc（封面槽位、条款编号、签章表）",
+    "size_bytes": 97392,
+    "sha256": "6e2535c4d0e44ec09783adf889f3ba3475d6077f6da898e5be8708362e4c0ffd",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 2,
+      "tables": 0,
+      "non_empty_paragraphs": 272,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 1,
+      "has_numbering": false
+    }
+  },
+  {
+    "file": "v3_09_shgov_entrust_dev_contract.doc",
+    "domain": "contract",
+    "source_org": "上海市科委",
+    "source_url": "https://stcsm.sh.gov.cn/cmsres/cc/cc921beccb8f401aac30d0719fffa9cc/0556d1535bb52676863d2def4dc5b16b.doc",
+    "description": "政府官方示范文本《技术开发（委托）合同》.doc（甲乙方信息、违约与验收条款）",
+    "size_bytes": 96873,
+    "sha256": "1d5bd132890171130bb673d171050f03f7f17417af181baef21ecd0d1f7dcd87",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 2,
+      "tables": 0,
+      "non_empty_paragraphs": 201,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 1,
+      "has_numbering": false
+    }
+  },
+  {
+    "file": "v3_10_sjtu_tech_dev_contract.doc",
+    "domain": "contract",
+    "source_org": "上海交通大学科研院",
+    "source_url": "https://keyan.sjtu.edu.cn/ky-zhongxin/20220624/1742/65d0df18f19d416eaa0421a25209eb54.doc",
+    "description": "高校横向科研技术开发合同模板.doc",
+    "size_bytes": 87552,
+    "sha256": "ea6e2d1026dfc89e8178b8ee87bae00f4869de0e56eb5442cc220fca89a15621",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 1,
+      "tables": 7,
+      "non_empty_paragraphs": 155,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 2,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_11_scut_entrust_contract.doc",
+    "domain": "contract",
+    "source_org": "华南理工大学",
+    "source_url": "https://www2.scut.edu.cn/_upload/article/files/1e/b6/b483d5e04102b341ced891b5be77/5bc76ccb-5c7b-4a1c-a149-2c1dc5d8795e.doc",
+    "description": "技术开发（委托）合同模板（2024版）.doc",
+    "size_bytes": 99997,
+    "sha256": "c906cd43771b57380fc78f1a9aa2aa811a5bd029d3eab62e0a138e8574660ae6",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 1,
+      "tables": 1,
+      "non_empty_paragraphs": 207,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 0,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_12_cumt_tech_service_contract.doc",
+    "domain": "contract",
+    "source_org": "中国矿业大学",
+    "source_url": "https://dsi.cumt.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1561030755&wbfileid=18138911",
+    "description": "技术服务合同官方参考模板.doc",
+    "size_bytes": 72704,
+    "sha256": "5c6904301b71f93eb212721ca68ec5b2060251693ee320f7fbfbb24f0bcbf6a4",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 2,
+      "tables": 0,
+      "non_empty_paragraphs": 154,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 3,
+      "has_numbering": false
+    }
+  },
+  {
+    "file": "v3_13_ustc_joint_apply_agreement.doc",
+    "domain": "contract",
+    "source_org": "中国科学技术大学先研院",
+    "source_url": "https://iat.ustc.edu.cn/u/cms/xjjs/202203/29085203v27z.doc",
+    "description": "科研项目联合申报协议模板.doc（甲乙多方签章与任务分工）",
+    "size_bytes": 38912,
+    "sha256": "edd412b1af01df190c539d5d1a4684887302e83151ec0950e724d2a6324dec96",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 1,
+      "tables": 1,
+      "non_empty_paragraphs": 25,
+      "media_assets": 0,
+      "header_parts": 0,
+      "footer_parts": 0,
+      "has_numbering": true
+    }
+  },
+  {
+    "file": "v3_14_ustc_coop_agreement.doc",
+    "domain": "contract",
+    "source_org": "中国科学技术大学先研院",
+    "source_url": "https://iat.ustc.edu.cn/u/cms/xjjs/202203/29085203wb3f.doc",
+    "description": "科技计划合作协议书模板.doc（项目立项阶段正式协议）",
+    "size_bytes": 50688,
+    "sha256": "96cc586aa1b3edb965e8bb182316cacd0168ef47016d8881c68fa29292db59b0",
+    "actual_format": "ole_doc",
+    "magic_hex": "D0CF11E0A1B11AE1",
+    "observed_structure": {
+      "sections": 1,
+      "tables": 2,
+      "non_empty_paragraphs": 78,
+      "media_assets": 0,
+      "header_parts": 1,
+      "footer_parts": 0,
+      "has_numbering": true
+    }
+  }
+]

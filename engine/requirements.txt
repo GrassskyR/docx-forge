@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pydantic>=2
+python-docx
+lxml
+httpx
+openai
+pytest

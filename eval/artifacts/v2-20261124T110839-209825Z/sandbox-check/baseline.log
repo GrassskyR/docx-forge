@@ -1,0 +1,3 @@
+
+mount: /tmp/gongwen-baseline-root-773hfhr0/usr: wrong fs type, bad option, bad superblock on /usr, missing codepage or helper program, or other error.
+       dmesg(1) may have more information after failed mount system call.

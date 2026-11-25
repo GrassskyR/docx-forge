@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DocForge V3 · 极简瑞士风（普通模式 + 调试模式）</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --sidebar: #F4F6F9;
+      --canvas: #EEF2F6;
+      --border: #E2E8F0;
+      --ink: #0F172A;
+      --ink-2: #334155;
+      --muted: #64748B;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --accent-soft: #EFF6FF;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .dot-grid {
+      background-color: var(--canvas);
+      background-image: radial-gradient(#CBD5E1 0.8px, transparent 0.8px);
+      background-size: 20px 20px;
+    }
+
+    .paper-a4 {
+      background: #FFFFFF;
+      color: #18181B;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.09), 0 1px 3px rgba(15, 23, 42, 0.05);
+      font-family: "Songti SC", "STSong", "FangSong", "Noto Serif SC", Georgia, serif;
+      transition: transform 0.2s ease;
+      transform-origin: top center;
+    }
+
+    .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
+    .scroll-thin::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    .tabular { font-variant-numeric: tabular-nums; }
+
+    /* Clean toggle switch */
+    .switch-track {
+      width: 32px;
+      height: 18px;
+      border-radius: 999px;
+      background: #CBD5E1;
+      position: relative;
+      transition: background-color 0.2s ease;
+    }
+    .switch-track.on { background: #2563EB; }
+    .switch-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: #FFFFFF;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+      transition: transform 0.2s ease;
+    }
+    .switch-track.on .switch-thumb { transform: translateX(14px); }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col select-none">
+
+  <!-- TOP BAR (54px) -->
+  <header class="h-[54px] shrink-0 bg-white border-b border-[#E2E8F0] px-5 flex items-center justify-between gap-4 z-30">
+    <!-- Left: Quiet Brand + Format Picker Trigger -->
+    <div class="flex items-center gap-3.5 min-w-0">
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="w-7 h-7 rounded-lg bg-[#2563EB] text-white flex items-center justify-center">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="13" y2="17"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-[14.5px] tracking-tight text-[#0F172A]">DocForge</span>
+      </div>
+
+      <div class="h-4 w-px bg-[#E2E8F0]"></div>
+
+      <!-- Format Picker Pill (Always visible, primary way normal users pick/import formats) -->
+      <div class="relative">
+        <button id="formatPickerBtn" class="h-8 pl-3 pr-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] flex items-center gap-2 text-[12.5px] transition cursor-pointer">
+          <span class="text-[#64748B]">格式</span>
+          <span id="topFormatName" class="font-medium text-[#0F172A] max-w-[200px] truncate">学校红头下行文模板</span>
+          <span id="topFormatCat" class="text-[10.5px] px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[#2563EB] font-medium">公文</span>
+          <svg class="w-3.5 h-3.5 text-[#64748B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        <!-- Format Picker Popover (For Normal Mode — clean, closes after picking) -->
+        <div id="formatPopover" class="hidden absolute left-0 top-10 w-[340px] bg-white border border-[#E2E8F0] rounded-xl shadow-xl overflow-hidden z-50">
+          <div class="p-3 border-b border-[#F1F5F9] flex items-center justify-between">
+            <span class="text-[12.5px] font-semibold text-[#0F172A]">选择文档格式</span>
+            <button id="popoverImportBtn" class="text-[12px] font-medium text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1 cursor-pointer">
+              <span>+ 导入新范例</span>
+            </button>
+          </div>
+          <div id="popoverCatTabs" class="px-3 pt-2.5 pb-1.5 flex items-center gap-1 text-[11.5px]"></div>
+          <div id="popoverList" class="p-2 max-h-[300px] overflow-y-auto scroll-thin space-y-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Debug-only telemetry + Quiet Debug Mode Toggle -->
+    <div class="flex items-center gap-2.5 shrink-0 text-[12px]">
+      <!-- Debug-Only Controls -->
+      <div id="debugHeaderTools" class="hidden items-center gap-2">
+        <div class="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-0.5">
+          <select id="branchSelect" class="bg-transparent text-[11.5px] font-medium text-[#0F172A] py-1 pl-2 pr-1 outline-none cursor-pointer"></select>
+          <button id="forkBranchBtn" class="px-2 py-1 rounded-md text-[11px] font-medium text-[#475569] hover:bg-white transition cursor-pointer">+ 分叉</button>
+        </div>
+
+        <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#ECFDF5] border border-[#A7F3D0] text-[#047857] font-mono text-[11px] tabular">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+          <span id="tokenText">1,240 tok · ¥0.002</span>
+        </div>
+
+        <button id="visionModeToggle" class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#334155] text-[11px] font-medium cursor-pointer">
+          <span id="visionDot" class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+          <span id="visionLabel">文本 + 视觉双轨</span>
+        </button>
+
+        <div class="h-4 w-px bg-[#E2E8F0]"></div>
+      </div>
+
+      <!-- Always-visible quiet Debug Mode Switch -->
+      <button id="debugToggleBtn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#F8FAFC] transition cursor-pointer" title="开启后显示模板能力卡、段落映射、Token 账单与 OOXML/Poppler/视觉诊断">
+        <span class="text-[12px] text-[#64748B] font-medium">调试模式</span>
+        <span id="debugSwitchTrack" class="switch-track"><span class="switch-thumb"></span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKBENCH -->
+  <div class="flex-1 min-h-0 flex overflow-hidden">
+
+    <!-- DEBUG-ONLY LEFT SIDEBAR (Hidden in Normal Mode!) -->
+    <aside id="debugSidebar" class="hidden w-[268px] shrink-0 bg-[#F4F6F9] border-r border-[#E2E8F0] flex-col min-h-0">
+      <div class="p-3 border-b border-[#E2E8F0] flex items-center justify-between">
+        <span class="text-[12px] font-semibold text-[#0F172A]">模板资产库（调试视图）</span>
+        <button id="sidebarImportBtn" class="text-[11.5px] font-medium text-[#2563EB] hover:underline cursor-pointer">+ 导入</button>
+      </div>
+      <div id="debugTplCards" class="flex-1 overflow-y-auto scroll-thin p-3 space-y-2"></div>
+      <div class="p-3 border-t border-[#E2E8F0] bg-white">
+        <div class="flex items-center justify-between text-[11px] font-semibold text-[#0F172A] mb-1.5">
+          <span>上下文能力卡</span>
+          <span id="capTokenBadge" class="font-mono font-normal text-[#64748B] tabular">~280 tok</span>
+        </div>
+        <div id="capCardBody" class="text-[11px] text-[#475569] space-y-1.5 leading-relaxed"></div>
+      </div>
+    </aside>
+
+    <!-- CONTENT COLUMN (Calm, Spacious) -->
+    <section id="contentCol" class="w-[44%] min-w-[360px] max-w-[540px] shrink-0 bg-white border-r border-[#E2E8F0] flex flex-col min-h-0">
+      <!-- Clean Mode Tabs -->
+      <div class="px-5 pt-4 pb-3 border-b border-[#F1F5F9] flex items-center justify-between gap-2">
+        <div class="inline-flex p-1 rounded-[10px] bg-[#F1F5F9] text-[12.5px]">
+          <button id="tabCopy" class="px-3.5 py-1.5 rounded-[7px] font-medium transition cursor-pointer">原文字套格式</button>
+          <button id="tabChat" class="px-3.5 py-1.5 rounded-[7px] font-medium transition cursor-pointer">让 AI 写 / 改</button>
+        </div>
+        <span id="contentHint" class="text-[11.5px] text-[#64748B]">不改动原文一字</span>
+      </div>
+
+      <!-- Mode Body -->
+      <div id="centerContent" class="flex-1 min-h-0 overflow-y-auto scroll-thin p-5 flex flex-col gap-4 select-text"></div>
+
+      <!-- Debug-Only Quick Layout Surgery Bar (Hidden in Normal Mode!) -->
+      <div id="debugSurgeryBar" class="hidden px-5 py-2.5 border-t border-[#E2E8F0] bg-[#F8FAFC]">
+        <div class="text-[10.5px] font-medium text-[#64748B] mb-1.5">调试手术工具（强制触发）</div>
+        <div class="flex flex-wrap gap-1.5 text-[11px]">
+          <button data-act="compact" class="surgery-pill px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer">切换溢出/压页</button>
+          <button data-act="punct" class="surgery-pill px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer">规范标点〔〕</button>
+          <button data-act="vision" class="surgery-pill px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer">强制视觉终审</button>
+        </div>
+      </div>
+
+      <!-- Bottom Action Area -->
+      <div id="centerFooter" class="px-5 py-3.5 border-t border-[#E2E8F0] bg-white"></div>
+    </section>
+
+    <!-- PREVIEW COLUMN (Primary Visual Focus) -->
+    <main class="flex-1 min-w-0 flex flex-col min-h-0 bg-[#EEF2F6]">
+      <!-- Minimal Preview Header -->
+      <div class="h-[52px] shrink-0 bg-white/90 backdrop-blur border-b border-[#E2E8F0] px-5 flex items-center justify-between gap-3">
+        <!-- Left: Human-friendly status (Normal) or Tech badges (Debug) -->
+        <div id="previewStatusArea" class="flex items-center gap-2 text-[12.5px] min-w-0"></div>
+
+        <!-- Right: Quiet Page Switcher + Single Primary Download CTA -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <!-- Debug-Only Zoom -->
+          <div id="debugZoomWrap" class="hidden items-center bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg p-0.5 text-[11px] tabular text-[#475569]">
+            <button data-zoom="0.88" class="zoom-btn px-2 py-0.5 rounded-md cursor-pointer">88%</button>
+            <button data-zoom="1" class="zoom-btn px-2 py-0.5 rounded-md bg-white text-[#0F172A] font-medium cursor-pointer">100%</button>
+            <button data-zoom="1.12" class="zoom-btn px-2 py-0.5 rounded-md cursor-pointer">112%</button>
+          </div>
+
+          <div class="flex items-center bg-[#F1F5F9] rounded-lg p-0.5 text-[12px] text-[#475569] tabular">
+            <button id="prevPage" class="w-7 h-7 flex items-center justify-center hover:bg-white rounded-md transition cursor-pointer">‹</button>
+            <span id="pageIndicator" class="px-2 text-[11.5px] font-medium text-[#0F172A]">1 / 2</span>
+            <button id="nextPage" class="w-7 h-7 flex items-center justify-center hover:bg-white rounded-md transition cursor-pointer">›</button>
+          </div>
+
+          <button id="downloadBtn" class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-medium flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>下载 Word</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contextual Human Suggestion Banner (ONLY appears when there is an actual layout issue!) -->
+      <div id="suggestionBanner" class="hidden shrink-0 bg-[#FFFBEB] border-b border-[#FDE68A] px-5 py-2.5 flex items-center justify-between gap-3 text-[12.5px]">
+        <div class="flex items-center gap-2 text-[#92400E]">
+          <span class="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0"></span>
+          <span>第 3 页仅多出 2 行落款，可能影响打印美观</span>
+        </div>
+        <button id="oneClickFitBtn" class="h-7 px-3 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-[12px] font-medium shrink-0 transition cursor-pointer">
+          一键压进 2 页
+        </button>
+      </div>
+
+      <!-- Generous A4 Paper Canvas -->
+      <div class="flex-1 min-h-0 overflow-y-auto scroll-thin dot-grid p-7 flex justify-center items-start">
+        <div id="paperMount" class="paper-a4 w-[540px] min-h-[740px] rounded-[2px] px-12 py-11 flex flex-col justify-between relative"></div>
+      </div>
+
+      <!-- DEBUG-ONLY Bottom Diagnostics Drawer (Hidden in Normal Mode!) -->
+      <div id="debugDrawer" class="hidden shrink-0 bg-white border-t border-[#E2E8F0]">
+        <div class="px-4 h-9 flex items-center justify-between border-b border-[#F1F5F9]">
+          <div class="flex items-center gap-1 text-[11.5px]">
+            <button data-drawer="telemetry" class="drawer-tab px-2.5 py-1 rounded-md font-medium cursor-pointer">版面遥测 (Poppler)</button>
+            <button data-drawer="ooxml" class="drawer-tab px-2.5 py-1 rounded-md font-medium cursor-pointer">OOXML 审计</button>
+            <button data-drawer="vision" class="drawer-tab px-2.5 py-1 rounded-md font-medium cursor-pointer">视觉终审</button>
+          </div>
+          <span id="drawerSummary" class="text-[11px] text-[#64748B] font-mono tabular"></span>
+        </div>
+        <div id="drawerBody" class="px-4 py-3 text-[12px] max-h-[144px] overflow-y-auto scroll-thin"></div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- SIMPLE IMPORT FORMAT MODAL -->
+  <div id="importModal" class="fixed inset-0 bg-[#0F172A]/30 backdrop-blur-[2px] hidden items-center justify-center p-4 z-50">
+    <div class="bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl w-full max-w-[440px] overflow-hidden">
+      <div class="px-5 py-4 border-b border-[#F1F5F9] flex items-center justify-between">
+        <div>
+          <h3 class="text-[14.5px] font-semibold text-[#0F172A]">导入范例文档</h3>
+          <p class="text-[12px] text-[#64748B] mt-0.5">上传一份标准 .doc / .docx，系统自动记住它的全部排版与红头</p>
+        </div>
+        <button id="closeImportModal" class="w-7 h-7 rounded-lg hover:bg-[#F1F5F9] text-[#64748B] flex items-center justify-center cursor-pointer">✕</button>
+      </div>
+      <div class="p-5 space-y-4 text-[12.5px]">
+        <div class="border-2 border-dashed border-[#CBD5E1] hover:border-[#2563EB] bg-[#F8FAFC] rounded-xl p-6 text-center transition cursor-pointer">
+          <div class="font-medium text-[#0F172A]">拖拽 .doc / .docx 文件到此处，或点击选择</div>
+          <div class="text-[11.5px] text-[#64748B] mt-1">自动保留图片红头、封面、页眉页脚与表格样式</div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-[12px] font-medium text-[#334155] mb-1">格式名称</label>
+            <input id="newTplName" type="text" value="单位红头通知格式" class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] outline-none" />
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-[#334155] mb-1">分类</label>
+            <select id="newTplCat" class="w-full h-9 px-2.5 rounded-lg border border-[#CBD5E1] bg-white outline-none">
+              <option value="gongwen">公文</option>
+              <option value="thesis">论文</option>
+              <option value="contract">合同/表</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[12px] font-medium text-[#334155] mb-1">额外要求（可选）</label>
+          <input type="text" class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] outline-none" placeholder="例如：正文改成四号宋体，不要页码" />
+        </div>
+      </div>
+      <div class="px-5 py-3.5 bg-[#F8FAFC] border-t border-[#F1F5F9] flex justify-end gap-2">
+        <button id="cancelImportBtn" class="h-8 px-3.5 rounded-lg border border-[#CBD5E1] bg-white text-[12px] font-medium text-[#334155] hover:bg-[#F1F5F9] cursor-pointer">取消</button>
+        <button id="confirmImportBtn" class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12px] font-medium cursor-pointer">保存为格式</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiet Toast -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-[#0F172A] text-white text-[12px] font-medium shadow-lg opacity-0 pointer-events-none transition-opacity z-50"></div>
+
+  <script>
+    const STATE = {
+      debug: false,          // Default: Normal User Mode!
+      popoverOpen: false,
+      popoverCat: 'all',
+      activeTemplateId: 'tpl_gongwen',
+      mode: 'copy',          // 'copy' | 'chat'
+      drawerTab: 'telemetry',
+      visionEnabled: true,
+      overflowSim: true,     // Shows contextual gentle suggestion banner on gongwen
+      zoom: 1,
+      page: 1,
+      tokensUsed: 1240,
+      branches: [
+        { id: 'v2', name: 'v2 · 精简版', tplId: 'tpl_gongwen', msgCount: 4 },
+        { id: 'root', name: 'root · 初始', tplId: 'tpl_gongwen', msgCount: 2 },
+        { id: 'v3', name: 'v3 · 论文版', tplId: 'tpl_thesis', msgCount: 6 }
+      ],
+      activeBranchId: 'v2',
+      chatMessages: [
+        {
+          role: 'user',
+          text: '帮我起草一份实验室安全专项检查的通知，分两点写，保留原件红头和版记。'
+        },
+        {
+          role: 'assistant',
+          steps: [
+            { status: 'ok', text: '加载能力卡「学校红头下行文模板」(280 tok)，无损保留 word/media 与版记' },
+            { status: 'warn', text: 'Poppler 文本遥测：第 3 页溢出 2 行（孤立落款）' },
+            { status: 'ok', text: '视觉终审（首页/末页 880px）：无遮挡错位（图片已阅后即焚）' }
+          ],
+          text: '已经按「学校红头下行文模板」排好了，完整保留了原件红头、五角星红线和文末版记。右侧可以直接预览，如果觉得第 3 页落款太孤单，点一下右上方的「一键压进 2 页」即可。'
+        }
+      ]
+    };
+
+    const TEMPLATES = [
+      {
+        id: 'tpl_gongwen',
+        cat: 'gongwen',
+        catLabel: '公文',
+        name: '学校红头下行文模板',
+        desc: '保留原件红头、五角星红线与文末版记',
+        keepShell: 'word/media 红头 · VML 五角星 · 末页版记框',
+        slots: ['发文字号', '主送机关', '抄送单位', '印发日期'],
+        prototypes: ['二号小标宋标题', '黑体一级标题', '三级首句加粗', '三号仿宋正文'],
+        capTokens: 280,
+        draftDefault: `关于开展2026年度实验室安全专项检查的通知\n\n各二级学院、重点实验室：\n为切实加强校园实验室安全管理，防范化解重大风险隐患，经学校研究决定，于近期组织开展2026年度实验室安全专项检查。现将有关事项通知如下：\n\n一、检查范围与重点内容\n1.危化品全流程台账。各单位须逐瓶核对易制毒、易制爆及剧毒化学品出入库记录，严格落实双人双锁要求。\n2.特种设备与用电安全。重点排查高压灭菌锅、气瓶室及大功率加热设备运行状态。\n\n二、时间安排与报送要求\n请各单位于2026年12月5日前完成全面自查，通过校内OA系统报送自查汇总表。\n\n××大学党政办公室\n2026年11月24日`,
+        mappings: [
+          { id: 'P0', target: 'slot:title', text: '关于开展2026年度实验室安全专项检查的通知' },
+          { id: 'P1', target: 'slot:recipient', text: '各二级学院、重点实验室：' },
+          { id: 'P3', target: 'proto:heading_1', text: '一、检查范围与重点内容' },
+          { id: 'P4', target: 'proto:h3_lead_bold', text: '1.危化品全流程台账。各单位须逐瓶核对…' },
+          { id: 'P5–P8', target: 'proto:body', text: '（其余 4 段正文 · 零拷贝 100% 保真）' }
+        ],
+        pages: (overflow) => {
+          const p1 = `
+            <div class="space-y-4">
+              <div class="text-center pt-1">
+                <div class="text-[#C81E1E] font-bold text-[24px] tracking-[0.22em]">××大学党政办公室文件</div>
+                <div class="text-[12px] text-[#334155] mt-2">校办发〔2026〕18 号</div>
+                <div class="mt-3 flex items-center gap-1.5">
+                  <div class="h-[2.5px] bg-[#DC2626] flex-1"></div>
+                  <span class="text-[#DC2626] text-[12px] leading-none">★</span>
+                  <div class="h-[2.5px] bg-[#DC2626] flex-1"></div>
+                </div>
+              </div>
+              <div class="text-center font-bold text-[17.5px] leading-relaxed pt-2 px-4 text-[#0F172A]">
+                关于开展2026年度实验室安全专项检查的通知
+              </div>
+              <div class="text-[13px] leading-[1.95] space-y-2.5 text-justify text-[#1E293B]">
+                <div>各二级学院、重点实验室：</div>
+                <div class="indent-[2em]">为切实加强校园实验室安全管理，防范化解重大风险隐患，经学校研究决定，于近期组织开展2026年度实验室安全专项检查。现将有关事项通知如下：</div>
+                <div class="indent-[2em] font-bold text-[#0F172A]">一、检查范围与重点内容</div>
+                <div class="indent-[2em]"><span class="font-bold text-[#0F172A]">1.危化品全流程台账。</span>各单位须逐瓶核对易制毒、易制爆及剧毒化学品出入库记录，严格落实双人双锁与实时监控要求。</div>
+                <div class="indent-[2em]"><span class="font-bold text-[#0F172A]">2.特种设备与用电安全。</span>重点排查高压灭菌锅、气瓶室及大功率加热设备运行状态，杜绝私拉乱接与无人值守通电现象。</div>
+                <div class="indent-[2em] font-bold text-[#0F172A]">二、时间安排与报送要求</div>
+                <div class="indent-[2em]">请各单位于 2026 年 12 月 5 日前完成全面自查，并将签字盖章后的《实验室安全自查汇总表》通过校内 OA 系统报送至资产与实验室管理处。</div>
+              </div>
+            </div>
+            <div class="text-center text-[11px] text-[#64748B] pt-4 tabular">— 1 —</div>
+          `;
+          const p2 = `
+            <div class="space-y-4">
+              <div class="text-[13px] leading-[1.95] space-y-2.5 text-justify text-[#1E293B]">
+                <div class="indent-[2em]">学校实验室安全工作领导小组将于 12 月中旬组织专家开展现场抽查，对排查不力、整改滞后的单位予以通报批评并暂停相关实验项目准入资格。</div>
+                <div class="indent-[2em] pt-1">附件：2026年度实验室安全自查汇总表</div>
+              </div>
+              <div class="text-right text-[13px] leading-loose pt-8 pr-6 text-[#0F172A]">
+                <div>××大学党政办公室</div>
+                <div>2026年11月24日</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-8">
+              <div class="border-t-2 border-b border-[#0F172A] py-1.5 text-[10.5px] text-[#334155] space-y-1">
+                <div class="border-b border-[#CBD5E1] pb-1">抄送：校领导，保卫处，资产与实验室管理处，各教学科研单位。</div>
+                <div class="flex justify-between">
+                  <span>××大学党政办公室</span>
+                  <span>2026年11月24日印发</span>
+                </div>
+              </div>
+              <div class="text-center text-[11px] text-[#64748B] pt-1 tabular">— 2 —</div>
+            </div>
+          `;
+          const p3 = `
+            <div class="space-y-4">
+              <div class="text-right text-[13px] leading-loose pt-6 pr-6 text-[#0F172A]">
+                <div>××大学党政办公室</div>
+                <div>2026年11月24日</div>
+              </div>
+            </div>
+            <div class="text-center text-[11px] text-[#64748B] pt-4 tabular">— 3 —</div>
+          `;
+          return overflow ? [p1, p2, p3] : [p1, p2];
+        }
+      },
+      {
+        id: 'tpl_thesis',
+        cat: 'thesis',
+        catLabel: '论文',
+        name: '工学硕士学位论文模板',
+        desc: '保留封面校徽、奇偶页眉、三线表与参考文献悬挂',
+        keepShell: 'word/media 8图 · 24页眉 · 25页脚',
+        slots: ['论文题目', '作者姓名', '指导教师'],
+        prototypes: ['章标题', '节标题 1.1', '小四宋体正文', '三线表', '参考文献悬挂'],
+        capTokens: 310,
+        draftDefault: `第3章 原生 XML 原型克隆与零拷贝套版引擎\n\n3.1 样式指纹聚类与语义骨架压缩机制\n针对长篇学术论文直接输入大语言模型导致上下文膨胀与格式失真的问题，本文设计基于 OOXML 样式指纹的确定性骨架压缩器。\n\n参考文献\n[1] 全国信息与文献标准化技术委员会. 党政机关公文格式: GB/T 9704—2012[S]. 北京: 中国标准出版社, 2012.`,
+        mappings: [
+          { id: 'P0', target: 'proto:chapter_h1', text: '第3章 原生 XML 原型克隆与零拷贝套版引擎' },
+          { id: 'P1', target: 'proto:section_h2', text: '3.1 样式指纹聚类与语义骨架压缩机制' },
+          { id: 'P2', target: 'proto:body', text: '针对长篇学术论文直接输入大语言模型导致…' },
+          { id: 'P4', target: 'proto:ref_hang', text: '[1] 全国信息与文献标准化技术委员会…' }
+        ],
+        pages: () => [
+          `
+            <div class="space-y-4">
+              <div class="border-b border-[#94A3B8] pb-1.5 flex justify-between text-[10px] text-[#64748B]">
+                <span>第 3 章 原生 XML 原型克隆与零拷贝套版引擎</span>
+                <span class="tabular">18</span>
+              </div>
+              <div class="text-center font-bold text-[16.5px] pt-2 text-[#0F172A]">第 3 章 原生 XML 原型克隆与零拷贝套版引擎</div>
+              <div class="font-bold text-[13.5px] text-[#0F172A] pt-1">3.1 样式指纹聚类与语义骨架压缩机制</div>
+              <div class="text-[12.5px] leading-[1.9] indent-[2em] text-justify text-[#1E293B]">
+                针对长篇学术论文直接输入大语言模型导致上下文膨胀与格式失真的问题，本文设计基于 OOXML 样式指纹的确定性骨架压缩器。系统在保留原件母版壳、多节奇偶页眉及图片资产的前提下，直接深拷贝示范段落与示范表格的底层属性节点。
+              </div>
+              <div class="pt-2">
+                <div class="text-center text-[11px] font-bold text-[#0F172A] mb-1.5">表 3-1 不同方案在真实文档上的指标对比</div>
+                <table class="w-full text-[11px] border-t-2 border-b-2 border-[#0F172A] tabular">
+                  <thead>
+                    <tr class="border-b border-[#475569] text-[#0F172A]">
+                      <th class="py-1.5 text-left font-bold">方案</th>
+                      <th class="py-1.5 text-right font-bold">平均 Token</th>
+                      <th class="py-1.5 text-right font-bold">合规率</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-[#334155]">
+                    <tr><td class="py-1">纯 LLM 直出代码</td><td class="text-right">28,400</td><td class="text-right">27.3%</td></tr>
+                    <tr class="font-semibold text-[#0F172A]"><td class="py-1">V3 原型克隆 Agent</td><td class="text-right">1,420</td><td class="text-right">100.0%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pt-3 space-y-1 text-[11px] text-[#334155]">
+                <div class="font-bold text-[12.5px] text-[#0F172A] pb-0.5">参考文献</div>
+                <div class="pl-6 -indent-6 leading-relaxed">[1] 全国信息与文献标准化技术委员会. 党政机关公文格式: GB/T 9704—2012[S]. 北京: 中国标准出版社, 2012.</div>
+              </div>
+            </div>
+            <div class="text-center text-[10.5px] text-[#64748B] pt-4 tabular">18</div>
+          `
+        ]
+      },
+      {
+        id: 'tpl_contract',
+        cat: 'contract',
+        catLabel: '合同/表',
+        name: '技术开发（委托）合同模板',
+        desc: '保留甲乙方信息框、编号条款与末页签章表',
+        keepShell: '封面编号槽 · 法律声明栏 · 签章双栏表',
+        slots: ['合同编号', '甲方名称', '乙方名称', '项目名称'],
+        prototypes: ['条款标题', '条款正文', '加粗下划线重点句', '签章表'],
+        capTokens: 255,
+        draftDefault: `合同编号：HT-2026-TECH-0092\n委托方（甲方）：××科技有限公司\n受托方（乙方）：××智能研究院\n\n第三条 交付成果、验收标准及知识产权归属\n3.1 乙方应于本合同生效后30个工作日内完成全部模块交付并配合验收。\n3.2 乙方承诺交付成果不侵犯任何第三方合法权益，否则承担全部法律及赔偿责任。`,
+        mappings: [
+          { id: 'P0', target: 'slot:contract_no', text: '合同编号：HT-2026-TECH-0092' },
+          { id: 'P1–P2', target: 'slot:parties', text: '甲方/乙方信息框槽位' },
+          { id: 'P4', target: 'proto:clause_h', text: '第三条 交付成果、验收标准及知识产权归属' },
+          { id: 'P6', target: 'proto:clause_key', text: '3.2 乙方承诺交付成果不侵犯任何第三方…' }
+        ],
+        pages: () => [
+          `
+            <div class="space-y-4">
+              <div class="flex justify-between text-[10px] text-[#64748B] border-b border-[#E2E8F0] pb-1.5">
+                <span>示范合同文本</span>
+                <span class="font-mono">合同编号：HT-2026-TECH-0092</span>
+              </div>
+              <div class="text-center font-bold text-[19px] tracking-[0.18em] py-1 text-[#0F172A]">技术开发（委托）合同</div>
+              <div class="border border-[#94A3B8] bg-[#F8FAFC] p-3 text-[12px] grid grid-cols-2 gap-y-1.5 gap-x-3">
+                <div><span class="font-bold">委托方（甲方）：</span>××科技有限公司</div>
+                <div><span class="font-bold">受托方（乙方）：</span>××智能研究院</div>
+              </div>
+              <div class="text-[12.5px] leading-[1.9] space-y-2 text-justify text-[#1E293B]">
+                <div class="font-bold text-[#0F172A]">第三条 交付成果、验收标准及知识产权归属</div>
+                <div class="indent-[2em]">3.1 乙方应于本合同生效后 30 个工作日内完成全部模块交付并配合验收。</div>
+                <div class="indent-[2em]"><span class="font-bold underline underline-offset-4 text-[#0F172A]">3.2 乙方承诺交付成果不侵犯任何第三方合法权益，否则承担全部法律及赔偿责任。</span></div>
+              </div>
+              <div class="grid grid-cols-2 gap-4 pt-10 mt-6 border-t border-dashed border-[#CBD5E1] text-[12px]">
+                <div class="space-y-3"><div class="font-bold">甲方（盖章）：</div><div class="text-[#64748B]">签字：____________</div></div>
+                <div class="space-y-3"><div class="font-bold">乙方（盖章）：</div><div class="text-[#64748B]">签字：____________</div></div>
+              </div>
+            </div>
+            <div class="text-center text-[10.5px] text-[#64748B] pt-4 tabular">第 1 页 共 1 页</div>
+          `
+        ]
+      }
+    ];
+
+    function activeTpl() {
+      return TEMPLATES.find(t => t.id === STATE.activeTemplateId) || TEMPLATES[0];
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.opacity = '1';
+      clearTimeout(el._t);
+      el._t = setTimeout(() => { el.style.opacity = '0'; }, 2400);
+    }
+
+    function renderHeader() {
+      const tpl = activeTpl();
+      document.getElementById('topFormatName').textContent = tpl.name;
+      document.getElementById('topFormatCat').textContent = tpl.catLabel;
+
+      const track = document.getElementById('debugSwitchTrack');
+      track.classList.toggle('on', STATE.debug);
+
+      const dbgHeader = document.getElementById('debugHeaderTools');
+      dbgHeader.classList.toggle('hidden', !STATE.debug);
+      dbgHeader.classList.toggle('flex', STATE.debug);
+
+      if (STATE.debug) {
+        const sel = document.getElementById('branchSelect');
+        sel.innerHTML = STATE.branches
+          .map(b => `<option value="${b.id}" ${b.id === STATE.activeBranchId ? 'selected' : ''}>${b.name} (${b.msgCount}条)</option>`)
+          .join('');
+        const cost = (STATE.tokensUsed * 0.0000016).toFixed(4);
+        document.getElementById('tokenText').textContent = `${STATE.tokensUsed.toLocaleString()} tok · ¥${cost}`;
+        document.getElementById('visionDot').className = `w-2 h-2 rounded-full ${STATE.visionEnabled ? 'bg-[#2563EB]' : 'bg-[#94A3B8]'}`;
+        document.getElementById('visionLabel').textContent = STATE.visionEnabled ? '文本 + 视觉双轨' : '纯文本模式';
+      }
+
+      // Popover contents
+      const pop = document.getElementById('formatPopover');
+      pop.classList.toggle('hidden', !STATE.popoverOpen);
+      if (STATE.popoverOpen) {
+        const cats = [
+          { id: 'all', label: '全部' },
+          { id: 'gongwen', label: '公文' },
+          { id: 'thesis', label: '论文' },
+          { id: 'contract', label: '合同/表' }
+        ];
+        document.getElementById('popoverCatTabs').innerHTML = cats.map(c => `
+          <button data-pcat="${c.id}" class="pcat-btn px-2.5 py-1 rounded-md font-medium cursor-pointer ${
+            STATE.popoverCat === c.id ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#64748B] hover:text-[#0F172A]'
+          }">${c.label}</button>
+        `).join('');
+        document.querySelectorAll('.pcat-btn').forEach(b => {
+          b.onclick = (e) => { e.stopPropagation(); STATE.popoverCat = b.dataset.pcat; renderHeader(); };
+        });
+        const items = STATE.popoverCat === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.cat === STATE.popoverCat);
+        document.getElementById('popoverList').innerHTML = items.map(t => {
+          const isCur = t.id === STATE.activeTemplateId;
+          return `
+            <button data-ptpl="${t.id}" class="ptpl-btn w-full text-left px-3 py-2.5 rounded-lg transition cursor-pointer ${
+              isCur ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'hover:bg-[#F8FAFC]'
+            }">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[12.5px] font-medium ${isCur ? 'text-[#1D4ED8]' : 'text-[#0F172A]'}">${t.name}</span>
+                <span class="text-[10.5px] text-[#64748B]">${isCur ? '✓ 使用中' : t.catLabel}</span>
+              </div>
+              <div class="text-[11px] text-[#64748B] mt-0.5">${t.desc}</div>
+            </button>
+          `;
+        }).join('');
+        document.querySelectorAll('.ptpl-btn').forEach(b => {
+          b.onclick = () => {
+            STATE.activeTemplateId = b.dataset.ptpl;
+            STATE.popoverOpen = false;
+            STATE.page = 1;
+            renderAll();
+          };
+        });
+      }
+    }
+
+    function renderDebugSidebar() {
+      const sb = document.getElementById('debugSidebar');
+      sb.classList.toggle('hidden', !STATE.debug);
+      sb.classList.toggle('flex', STATE.debug);
+      if (!STATE.debug) return;
+
+      document.getElementById('debugTplCards').innerHTML = TEMPLATES.map(t => {
+        const cur = t.id === STATE.activeTemplateId;
+        return `
+          <div data-dtpl="${t.id}" class="dtpl-card p-2.5 rounded-[10px] border cursor-pointer transition ${
+            cur ? 'bg-white border-[#2563EB] ring-2 ring-[#EFF6FF]' : 'bg-white/70 border-[#E2E8F0] hover:bg-white'
+          }">
+            <div class="flex items-center justify-between gap-1.5">
+              <span class="text-[12px] font-semibold text-[#0F172A] truncate">${t.name}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#475569] shrink-0">${t.catLabel}</span>
+            </div>
+            <div class="text-[10.5px] font-mono text-[#64748B] mt-1">${t.slots.length} 槽位 · ${t.prototypes.length} 原型</div>
+          </div>
+        `;
+      }).join('');
+      document.querySelectorAll('.dtpl-card').forEach(c => {
+        c.onclick = () => { STATE.activeTemplateId = c.dataset.dtpl; STATE.page = 1; renderAll(); };
+      });
+
+      const tpl = activeTpl();
+      document.getElementById('capTokenBadge').textContent = `~${tpl.capTokens} tok`;
+      document.getElementById('capCardBody').innerHTML = `
+        <div><strong class="text-[#0F172A]">保留壳：</strong>${tpl.keepShell}</div>
+        <div class="flex flex-wrap gap-1 pt-0.5">
+          ${tpl.slots.map(s => `<span class="px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[10px]">{{${s}}}</span>`).join('')}
+        </div>
+      `;
+    }
+
+    function renderContentColumn() {
+      const tpl = activeTpl();
+      const tabCopy = document.getElementById('tabCopy');
+      const tabChat = document.getElementById('tabChat');
+      const hint = document.getElementById('contentHint');
+      const body = document.getElementById('centerContent');
+      const footer = document.getElementById('centerFooter');
+      const surgery = document.getElementById('debugSurgeryBar');
+
+      surgery.classList.toggle('hidden', !STATE.debug);
+
+      if (STATE.mode === 'copy') {
+        tabCopy.className = 'px-3.5 py-1.5 rounded-[7px] font-medium bg-white text-[#0F172A] shadow-2xs transition cursor-pointer';
+        tabChat.className = 'px-3.5 py-1.5 rounded-[7px] font-medium text-[#64748B] hover:text-[#0F172A] transition cursor-pointer';
+        hint.textContent = '仅排格式，不改原文一字';
+
+        body.innerHTML = `
+          <div class="flex-1 flex flex-col gap-2 min-h-[260px]">
+            <div class="flex items-center justify-between text-[12px]">
+              <span class="font-medium text-[#334155]">文章正文</span>
+              <button id="uploadDraftBtn" class="text-[#2563EB] hover:underline font-medium cursor-pointer">导入草稿 .docx / .txt</button>
+            </div>
+            <textarea id="draftEditor" class="flex-1 w-full rounded-xl border border-[#E2E8F0] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] bg-[#F8FAFC]/50 focus:bg-white p-3.5 text-[13px] leading-[1.8] text-[#0F172A] outline-none resize-none transition">${tpl.draftDefault}</textarea>
+          </div>
+          ${STATE.debug ? `
+            <div class="space-y-1.5 pt-1 border-t border-[#F1F5F9]">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-semibold text-[#0F172A]">[调试] 零拷贝段落 ID 映射</span>
+                <span class="font-mono text-[#059669]">100% 逐字保真 · 380 tok</span>
+              </div>
+              ${tpl.mappings.map(m => `
+                <div class="px-2.5 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between gap-2 text-[11px]">
+                  <span class="font-mono text-[#334155] shrink-0">${m.id} → <span class="text-[#2563EB]">${m.target}</span></span>
+                  <span class="text-[#64748B] truncate">${m.text}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        `;
+
+        footer.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-[12px] text-[#475569] cursor-pointer">
+              <input type="checkbox" checked class="accent-[#2563EB] rounded" />
+              <span>顺手规范公文标点（〔〕/全角冒号）</span>
+            </label>
+            <button id="applyFormatBtn" class="h-9 px-5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[13px] font-medium shadow-xs transition cursor-pointer shrink-0">
+              套用格式
+            </button>
+          </div>
+        `;
+        document.getElementById('applyFormatBtn').onclick = () => {
+          STATE.tokensUsed += 380;
+          toast('已按「' + tpl.name + '」完成排版（原文未改动）');
+          renderAll();
+        };
+        document.getElementById('uploadDraftBtn').onclick = () => toast('示例模式：支持直接拖入任意乱格式 .docx 草稿');
+      } else {
+        tabChat.className = 'px-3.5 py-1.5 rounded-[7px] font-medium bg-white text-[#0F172A] shadow-2xs transition cursor-pointer';
+        tabCopy.className = 'px-3.5 py-1.5 rounded-[7px] font-medium text-[#64748B] hover:text-[#0F172A] transition cursor-pointer';
+        hint.textContent = '像跟助理说话一样起草或微调';
+
+        body.innerHTML = STATE.chatMessages.map(m => {
+          if (m.role === 'user') {
+            return `
+              <div class="flex justify-end">
+                <div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-[#F1F5F9] px-4 py-2.5 text-[13px] leading-relaxed text-[#0F172A]">${m.text}</div>
+              </div>
+            `;
+          }
+          return `
+            <div class="space-y-2">
+              ${STATE.debug && m.steps ? `
+                <details open class="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5 text-[11px]">
+                  <summary class="cursor-pointer font-medium text-[#475569]">[调试] Agent 工具轨迹 (${m.steps.length}步)</summary>
+                  <div class="mt-2 space-y-1">
+                    ${m.steps.map(s => `<div class="px-2 py-1 rounded bg-white border border-[#E2E8F0] text-[#334155]">${s.status === 'ok' ? '✓' : '⚠'} ${s.text}</div>`).join('')}
+                  </div>
+                </details>
+              ` : ''}
+              <div class="text-[13px] leading-[1.75] text-[#1E293B]">${m.text}</div>
+            </div>
+          `;
+        }).join('');
+
+        footer.innerHTML = `
+          <div class="rounded-xl border border-[#CBD5E1] focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#EFF6FF] bg-white px-3 py-2 flex items-end gap-2 transition">
+            <textarea id="chatInput" rows="2" class="w-full text-[13px] leading-relaxed text-[#0F172A] placeholder-[#94A3B8] outline-none resize-none bg-transparent" placeholder="说说想写什么，或者想怎么调格式…"></textarea>
+            <button id="sendChatBtn" class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-medium shrink-0 transition cursor-pointer">发送</button>
+          </div>
+        `;
+        document.getElementById('sendChatBtn').onclick = () => {
+          const inp = document.getElementById('chatInput');
+          const v = inp.value.trim();
+          if (!v) return;
+          STATE.chatMessages.push({ role: 'user', text: v });
+          STATE.chatMessages.push({
+            role: 'assistant',
+            steps: [{ status: 'ok', text: `确定性更新版式并复审「${v.slice(0, 18)}」` }],
+            text: '已经按你的要求改好了，右侧是最新的 Word 预览效果。'
+          });
+          STATE.tokensUsed += 420;
+          inp.value = '';
+          renderAll();
+        };
+      }
+    }
+
+    function renderPreviewColumn() {
+      const tpl = activeTpl();
+      const hasOverflow = STATE.activeTemplateId === 'tpl_gongwen' && STATE.overflowSim;
+      const pages = tpl.pages(hasOverflow);
+      if (STATE.page > pages.length) STATE.page = pages.length;
+
+      // Top status area: calm human sentence in Normal mode, tech badges in Debug mode
+      const statusArea = document.getElementById('previewStatusArea');
+      if (!STATE.debug) {
+        statusArea.innerHTML = hasOverflow
+          ? `<span class="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0"></span><span class="font-medium text-[#92400E] truncate">共 ${pages.length} 页 · 建议优化末页排版</span>`
+          : `<span class="w-2 h-2 rounded-full bg-[#10B981] shrink-0"></span><span class="font-medium text-[#0F172A] truncate">共 ${pages.length} 页 · 格式已排好，可直接打印</span>`;
+      } else {
+        statusArea.innerHTML = `
+          <span class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] text-[11px] font-medium">OOXML 100%</span>
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+            hasOverflow ? 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]' : 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]'
+          }">${hasOverflow ? '⚠ 末页溢出2行' : `✓ 版面 ${pages.length}页`}</span>
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+            STATE.visionEnabled ? 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]' : 'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]'
+          }">${STATE.visionEnabled ? '视觉 ✓' : '纯文本'}</span>
+        `;
+      }
+
+      // Contextual gentle suggestion banner (only when overflow exists!)
+      const banner = document.getElementById('suggestionBanner');
+      banner.classList.toggle('hidden', !hasOverflow);
+      banner.classList.toggle('flex', hasOverflow);
+
+      // Zoom visibility (Debug only)
+      const zoomWrap = document.getElementById('debugZoomWrap');
+      zoomWrap.classList.toggle('hidden', !STATE.debug);
+      zoomWrap.classList.toggle('flex', STATE.debug);
+
+      document.getElementById('pageIndicator').textContent = `${STATE.page} / ${pages.length}`;
+      const mount = document.getElementById('paperMount');
+      mount.innerHTML = pages[STATE.page - 1];
+      mount.style.transform = `scale(${STATE.debug ? STATE.zoom : 1})`;
+
+      // Debug-Only Bottom Diagnostics Drawer
+      const drawer = document.getElementById('debugDrawer');
+      drawer.classList.toggle('hidden', !STATE.debug);
+      if (STATE.debug) {
+        document.querySelectorAll('.drawer-tab').forEach(b => {
+          const on = b.dataset.drawer === STATE.drawerTab;
+          b.className = `drawer-tab px-2.5 py-1 rounded-md font-medium cursor-pointer ${
+            on ? 'bg-[#EFF6FF] text-[#1D4ED8]' : 'text-[#64748B] hover:text-[#0F172A]'
+          }`;
+        });
+        document.getElementById('drawerSummary').textContent = hasOverflow ? '1 项版面警报' : '0 违规 · 双轨通过';
+        const dBody = document.getElementById('drawerBody');
+        if (STATE.drawerTab === 'telemetry') {
+          const bars = hasOverflow
+            ? [{ p: '第 1 页', l: '22行 · 96%', pct: 96, w: false }, { p: '第 2 页', l: '22行 · 95%', pct: 95, w: false }, { p: '第 3 页', l: '2行 · 孤立落款', pct: 9, w: true }]
+            : [{ p: '第 1 页', l: '22行 · 95%', pct: 95, w: false }, { p: `第 ${pages.length} 页`, l: '19行 · 88%', pct: 88, w: false }];
+          dBody.innerHTML = `<div class="grid grid-cols-3 gap-2.5">${bars.map(b => `
+            <div class="p-2 rounded-lg border ${b.w ? 'bg-[#FFFBEB] border-[#FDE68A]' : 'bg-[#F8FAFC] border-[#E2E8F0]'}">
+              <div class="flex justify-between text-[11px] mb-1"><span class="font-semibold">${b.p}</span><span class="font-mono ${b.w ? 'text-[#B45309]' : 'text-[#64748B]'}">${b.l}</span></div>
+              <div class="h-1.5 rounded-full bg-[#E2E8F0] overflow-hidden"><div class="h-full ${b.w ? 'bg-[#F59E0B]' : 'bg-[#2563EB]'}" style="width:${b.pct}%"></div></div>
+            </div>
+          `).join('')}</div>`;
+        } else if (STATE.drawerTab === 'ooxml') {
+          dBody.innerHTML = `<div class="grid grid-cols-4 gap-2 text-[11px]">
+            <div class="p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">✓ rFonts 四属性分离</div>
+            <div class="p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">✓ jc="both" + 双缩进</div>
+            <div class="p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">✓ word/media 留壳存活</div>
+            <div class="p-2 rounded bg-[#F8FAFC] border border-[#E2E8F0]">✓ docGrid 22×28</div>
+          </div>`;
+        } else {
+          dBody.innerHTML = STATE.visionEnabled
+            ? `<div class="p-2.5 rounded-lg bg-[#EFF6FF]/60 border border-[#BFDBFE] text-[11.5px] flex justify-between items-center">
+                <span>关键页（首页/末页 880px）终审通过：无重叠遮挡、红头居中、版记沉底。</span>
+                <span class="font-mono text-[10.5px] text-[#1D4ED8] bg-white px-2 py-0.5 rounded border border-[#BFDBFE]">历史图片已阅后即焚 ✓</span>
+               </div>`
+            : `<div class="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] text-[11.5px]">未配置视觉模型，已优雅降级为纯文本遥测模式。</div>`;
+        }
+      }
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderDebugSidebar();
+      renderContentColumn();
+      renderPreviewColumn();
+    }
+
+    // Bindings
+    document.getElementById('debugToggleBtn').onclick = () => {
+      STATE.debug = !STATE.debug;
+      toast(STATE.debug ? '已开启调试模式：显示全部技术诊断信息' : '已切回普通模式：极简专注视图');
+      renderAll();
+    };
+    document.getElementById('formatPickerBtn').onclick = (e) => {
+      e.stopPropagation();
+      STATE.popoverOpen = !STATE.popoverOpen;
+      renderHeader();
+    };
+    document.addEventListener('click', () => {
+      if (STATE.popoverOpen) { STATE.popoverOpen = false; renderHeader(); }
+    });
+    document.getElementById('tabCopy').onclick = () => { STATE.mode = 'copy'; renderContentColumn(); };
+    document.getElementById('tabChat').onclick = () => { STATE.mode = 'chat'; renderContentColumn(); };
+    document.getElementById('visionModeToggle').onclick = () => { STATE.visionEnabled = !STATE.visionEnabled; renderAll(); };
+
+    document.getElementById('oneClickFitBtn').onclick = () => {
+      STATE.overflowSim = false;
+      STATE.page = 2;
+      STATE.tokensUsed += 140;
+      toast('已自动微调行距，落款已收进第 2 页');
+      renderAll();
+    };
+
+    document.getElementById('prevPage').onclick = () => { if (STATE.page > 1) { STATE.page--; renderPreviewColumn(); } };
+    document.getElementById('nextPage').onclick = () => {
+      const maxP = activeTpl().pages(STATE.activeTemplateId === 'tpl_gongwen' && STATE.overflowSim).length;
+      if (STATE.page < maxP) { STATE.page++; renderPreviewColumn(); }
+    };
+
+    document.querySelectorAll('.drawer-tab').forEach(b => {
+      b.onclick = () => { STATE.drawerTab = b.dataset.drawer; renderPreviewColumn(); };
+    });
+
+    document.querySelectorAll('.zoom-btn').forEach(b => {
+      b.onclick = () => {
+        STATE.zoom = parseFloat(b.dataset.zoom);
+        document.querySelectorAll('.zoom-btn').forEach(x => x.className = 'zoom-btn px-2 py-0.5 rounded-md cursor-pointer');
+        b.className = 'zoom-btn px-2 py-0.5 rounded-md bg-white text-[#0F172A] font-medium cursor-pointer';
+        renderPreviewColumn();
+      };
+    });
+
+    document.querySelectorAll('.surgery-pill').forEach(b => {
+      b.onclick = () => {
+        if (b.dataset.act === 'compact') {
+          STATE.overflowSim = !STATE.overflowSim;
+          STATE.page = STATE.overflowSim ? 3 : 2;
+          renderAll();
+        } else if (b.dataset.act === 'punct') {
+          toast('已规范 2 处公文六角括号〔〕');
+        } else {
+          STATE.visionEnabled = true;
+          STATE.drawerTab = 'vision';
+          renderAll();
+        }
+      };
+    });
+
+    document.getElementById('branchSelect').onchange = (e) => {
+      STATE.activeBranchId = e.target.value;
+      const br = STATE.branches.find(b => b.id === STATE.activeBranchId);
+      if (br) STATE.activeTemplateId = br.tplId;
+      STATE.page = 1;
+      renderAll();
+    };
+    document.getElementById('forkBranchBtn').onclick = () => {
+      const id = 'v' + (STATE.branches.length + 2);
+      STATE.branches.unshift({ id, name: `${id} · 新分支`, tplId: STATE.activeTemplateId, msgCount: STATE.chatMessages.length });
+      STATE.activeBranchId = id;
+      renderHeader();
+    };
+
+    // Modal
+    const modal = document.getElementById('importModal');
+    const openModal = (e) => { if (e) e.stopPropagation(); STATE.popoverOpen = false; modal.classList.remove('hidden'); modal.classList.add('flex'); renderHeader(); };
+    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+    document.getElementById('popoverImportBtn').onclick = openModal;
+    document.getElementById('sidebarImportBtn').onclick = openModal;
+    document.getElementById('closeImportModal').onclick = closeModal;
+    document.getElementById('cancelImportBtn').onclick = closeModal;
+    document.getElementById('confirmImportBtn').onclick = () => {
+      const name = document.getElementById('newTplName').value.trim() || '自定义格式';
+      const cat = document.getElementById('newTplCat').value;
+      const base = TEMPLATES.find(t => t.cat === cat) || TEMPLATES[0];
+      const id = 'tpl_' + Date.now();
+      TEMPLATES.unshift({ ...base, id, name, desc: '刚从范例文档导入保存' });
+      STATE.activeTemplateId = id;
+      closeModal();
+      toast('已保存新格式「' + name + '」');
+      renderAll();
+    };
+
+    document.getElementById('downloadBtn').onclick = () => toast('示例模式：将下载最终合规 Word (.docx)');
+
+    renderAll();
+  </script>
+</body>
+</html>

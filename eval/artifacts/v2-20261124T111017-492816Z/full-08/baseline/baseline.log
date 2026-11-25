@@ -1,0 +1,20 @@
+
+Traceback (most recent call last):
+  File "/home/missi/project/docs-agent/eval/baseline_worker.py", line 82, in <module>
+  File "/home/missi/project/docs-agent/eval/baseline_worker.py", line 78, in main
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "baseline.py", line 425, in <module>
+    main()
+    ~~~~^^
+  File "baseline.py", line 363, in main
+    create_style(doc, style_id, ROLES[role_key])
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "baseline.py", line 275, in create_style
+    set_run_props(rPr, cfg)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "baseline.py", line 253, in set_run_props
+    szCs = rPr.get_or_add_szCs()
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'CT_RPr' object has no attribute 'get_or_add_szCs'. Did you mean: 'get_or_add_bCs'?
