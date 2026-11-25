@@ -129,3 +129,17 @@
 五份指定真实模板的专项测试 5/5 通过。每份产物逐个比对主文档之外的 ZIP 部件字节，
 逐块比对槽位外 XML，核对分节、网格、图形节点数量，并实际转换 PDF 与首页 PNG。
 从插入段落读回长草稿逐字相等，首句和后文分别断言 w:b=1 与 w:b=0。
+
+## V3-M3 · 版面遥测、确定性收口与按需视觉终审
+
+`npm run typecheck`、`npm run stylecheck`、`npx vitest run`（7 文件 109 项）与单进程
+`e2e_verify_v3.ts` 全部退出 0，新增 `v3_layout_vision.test.ts` 与 `context_hook.test.ts`。
+用 render 真实生成末页仅 2 行、落款掉页的 .docx，`pdftohtml -xml` 与 `pdfinfo` 同时报出
+`tail_overflow` 与 `orphan_signature`；`compact_pages` 收口后再次遥测 `warnings=[]` 且总页
+数减 1，跨页表格按同一 `w:tbl` 单元格在相邻页复现检出。视觉终审在未配置时返回
+`skipped_no_vision_model` 且不调用回调，侧车配置返回 sidecar、`LLM_SUPPORTS_VISION=true`
+返回 native，审计或遥测未过时返回 `skipped_pending_layout`，采样 PNG 宽度实测 ≤ 960px。
+上下文钩子在审阅轮后清除历史 base64 图片块与 details、保留一行摘要，能力卡断言 ≤ 1,500
+字符。E2E 以真实 DeepSeek 贯通公文/论文/合同三类模板的 inspect → 内化 → 套版 → 审计 →
+遥测 → 视觉降级 → 版面调整，SSE 含 tool、usage、done 且无 error；累计消耗 15,753 tokens。
+`.env` 未配置单价与视觉模型，实测 `cost_usd` 为 null、视觉全程 text_only 优雅降级。

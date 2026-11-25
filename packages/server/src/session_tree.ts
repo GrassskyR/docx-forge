@@ -6,6 +6,7 @@ export interface SessionNode {
   id: string
   parent_id: string | null
   name: string
+  template_id?: string | null
   profile_id: string | null
   messages: AgentMessage[]
 }

@@ -1,3 +1,7 @@
+import { Workspace } from "./workspace.js"
+import { visionMode } from "@docs-agent/engine"
+import { Assert } from "typebox/value"
+import { toolSchemas, adjustments } from "@docs-agent/shared"
 import { createServer, type IncomingMessage } from "node:http"
 import { readFile, mkdir, writeFile } from "node:fs/promises"
 import { constants, accessSync } from "node:fs"
@@ -28,13 +32,13 @@ function available(name: string) {
   })
 }
 
-async function upload(req: IncomingMessage, dir: string) {
+async function upload(req: IncomingMessage, dir: string, draft = false) {
   const body = Readable.toWeb(req) as ReadableStream<Uint8Array<ArrayBuffer>>
   const form = await new Response(body, {
     headers: { "content-type": req.headers["content-type"]! },
   }).formData()
   const file = form.get("file")
-  if (!(file instanceof File) || !/\.docx?$/i.test(file.name))
+  if (!(file instanceof File) || !(draft ? /\.(docx|txt|md)$/i : /\.docx?$/i).test(file.name))
     throw new HttpError(422, "需要 .doc/.docx")
   const folder = join(dir, "uploads")
   await mkdir(folder, { recursive: true })
@@ -48,7 +52,8 @@ export function createApp(
   useModel = Boolean(process.env.LLM_API_KEY),
 ) {
   const docs = new Documents(directory, useModel)
-  const chat = chatHandler(docs)
+  const work = new Workspace(docs)
+  const chat = chatHandler(docs, work)
   const server = createServer(async (req, res) => {
     function send(code: number, value: unknown) {
       res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" })
@@ -61,21 +66,24 @@ export function createApp(
       if (method === "GET") {
         if (path === "/health") {
           docs.store.db.prepare("SELECT 1").get()
-          const vision =
-            process.env.LLM_SUPPORTS_VISION === "true"
-              ? "native"
-              : process.env.VISION_MODEL
-                ? "sidecar"
-                : "text_only"
           return send(200, {
             service: "ok",
             sqlite: "ok",
             libreoffice: available("soffice"),
             pdftoppm: available("pdftoppm"),
             llm_configured: Boolean(process.env.LLM_API_KEY),
-            vision_mode: vision,
+            vision_mode: visionMode(),
           })
         }
+        if (path === "/api/v3/templates")
+          return send(200, {
+            templates: work.templates.list(),
+            active_template_id: work.templates.activeId,
+            ...docs.profiles(),
+            usage: docs.bill.snapshot(),
+          })
+        if (/^\/api\/v3\/templates\/[^/]+$/.test(path))
+          return send(200, work.templates.get(path.split("/")[4]))
         if (path === "/api/profiles") return send(200, docs.profiles())
         if (/^\/api\/profiles\/[^/]+$/.test(path)) return send(200, docs.get(path.split("/")[3]))
         const dist = join(root, "packages/web/dist")
@@ -95,7 +103,14 @@ export function createApp(
         }
       }
       if (method === "POST" && req.headers["content-type"]?.startsWith("multipart/form-data")) {
-        const { form, path: source } = await upload(req, directory)
+        const { form, path: source } = await upload(
+          req,
+          directory,
+          path === "/api/v3/drafts/ingest",
+        )
+        if (path === "/api/v3/templates/inspect") return send(200, await work.inspect(source))
+        if (path === "/api/v3/drafts/ingest")
+          return send(200, await work.ingest({ file_path: source }))
         if (path === "/api/profiles/extract")
           return send(200, await docs.extract(source, String(form.get("name"))))
         if (path === "/api/documents/lint")
@@ -104,6 +119,46 @@ export function createApp(
       const chunks: Buffer[] = []
       for await (const chunk of req) chunks.push(Buffer.from(chunk))
       const payload = JSON.parse(Buffer.concat(chunks).toString() || "{}")
+      if (path.startsWith("/api/v3/")) {
+        const id = path.split("/")[4]
+        if (path === "/api/v3/templates" && method === "POST") {
+          const p = payload
+          const asset = p.blueprint
+            ? work.templates.save(
+                p.inspect_id,
+                p.name,
+                p.category,
+                p.blueprint,
+                p.rules_md,
+                p.set_active,
+              )
+            : await work.internalize(p.inspect_id, p.name, p.category, p.rules_md ?? "")
+          return send(200, asset)
+        }
+        if (path === "/api/v3/templates/active" && method === "PUT") {
+          work.templates.activate(payload.template_id)
+          return send(200, { active_template_id: work.templates.activeId })
+        }
+        if (path === "/api/v3/templates/" + id + "/fork" && method === "POST")
+          return send(200, work.templates.fork(id, payload.name))
+        if (path === "/api/v3/templates/" + id && method === "DELETE") {
+          work.templates.delete(id)
+          return send(200, { deleted: id })
+        }
+        if (path === "/api/v3/drafts/ingest" && method === "POST") {
+          return send(200, await work.ingest({ text: payload.text }))
+        }
+        if (path === "/api/v3/documents/compose" && method === "POST") {
+          if (payload.body_plan) Assert(toolSchemas.compose_document, payload)
+          return send(200, await work.compose(payload))
+        }
+        if (path === "/api/v3/documents/" + id + "/adjust-layout" && method === "POST") {
+          Assert(adjustments, payload.operations)
+          return send(200, await work.adjust(id, payload.operations))
+        }
+        if (path === "/api/v3/documents/" + id + "/visual-audit" && method === "POST")
+          return send(200, await work.audit(id, payload.run_vision))
+      }
       if (path === "/api/profiles/active" && method === "PUT")
         return send(200, docs.setActive(payload.profile_id))
       if (method === "DELETE" && /^\/api\/profiles\/[^/]+$/.test(path)) {

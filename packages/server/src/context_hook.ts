@@ -1,42 +1,44 @@
 import type { AgentMessage } from "@mariozechner/pi-agent-core"
-import { Documents } from "./documents.js"
-export function contextHook(client: Documents) {
+import type { TemplateStore } from "@docs-agent/engine"
+import type { Documents } from "./documents.js"
+
+export function clearReviewedImages(messages: AgentMessage[]): AgentMessage[] {
+  const reviewed = messages.findLastIndex((m) => m.role === "assistant")
+  return messages.map((m, i) => {
+    if (
+      i >= reviewed ||
+      (m.role !== "user" && m.role !== "toolResult") ||
+      typeof m.content === "string"
+    )
+      return m
+    const image = m.content.some((c) => c.type === "image")
+    if (!image) return m
+    const content = m.content.map((c) =>
+      c.type === "image" ? { type: "text" as const, text: "关键页图像已审阅。" } : c,
+    )
+    return m.role === "toolResult" ? { ...m, details: undefined, content } : { ...m, content }
+  })
+}
+
+export function contextHook(client: Documents, templates: TemplateStore) {
   return async (messages: AgentMessage[]): Promise<AgentMessage[]> => {
-    try {
-      const active = await client.active()
-      // Keep complete user turns, never orphan an assistant tool call from its result.
-      let history = messages.filter(
-        (m) =>
-          !(
-            m.role === "user" &&
-            typeof m.content === "string" &&
-            m.content.startsWith("[Active Profile]")
-          ),
-      )
-      if (JSON.stringify(history).length > 60000) {
-        const indexes = history.map((m, i) => (m.role === "user" ? i : -1)).filter((i) => i >= 0)
-        const cut = indexes[Math.max(0, indexes.length - 4)] || 0
-        const older = history
-          .slice(0, cut)
-          .filter((m) => m.role === "user")
-          .map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content)))
-          .join("\n")
-          .slice(-10000)
-        history = [
-          { role: "user", content: "[较早需求摘要]\n" + older, timestamp: Date.now() },
-          ...history.slice(cut),
-        ]
-      }
-      return [
-        {
-          role: "user",
-          content: "[Active Profile]\n" + JSON.stringify(active),
-          timestamp: Date.now(),
-        },
-        ...history,
-      ]
-    } catch {
-      return messages
+    let history = clearReviewedImages(messages)
+    const current = history.findLastIndex((m) => m.role === "user")
+    history = history.map((m, i) => {
+      if (i >= current || m.role !== "toolResult") return m
+      const summary = m.content
+        .flatMap((c) => (c.type === "text" ? [c.text.slice(0, 220)] : []))
+        .join(" ")
+      return { ...m, details: undefined, content: [{ type: "text", text: summary.slice(0, 240) }] }
+    })
+    if (JSON.stringify(history).length > 60000) {
+      const turns = history.map((m, i) => (m.role === "user" ? i : -1)).filter((i) => i >= 0)
+      history = history.slice(turns.at(-4) ?? 0)
     }
+    const id = templates.activeId
+    const content = id
+      ? templates.get(id).capability_card
+      : "[Active Profile]\n" + JSON.stringify(client.active())
+    return [{ role: "user", content, timestamp: Date.now() }, ...history]
   }
 }

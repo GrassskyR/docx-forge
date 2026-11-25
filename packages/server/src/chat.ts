@@ -1,12 +1,14 @@
+import { clearReviewedImages } from "./context_hook.js"
+import type { Workspace } from "./workspace.js"
 import type { IncomingMessage, ServerResponse } from "node:http"
 import { join } from "node:path"
 import { Documents } from "./documents.js"
 import { SessionTree, type SessionNode } from "./session_tree.js"
 import { makeAgent } from "./agent.js"
 
-export function chatHandler(client: Documents) {
+export function chatHandler(client: Documents, work: Workspace) {
   const tree = new SessionTree(join(client.directory, "sessions.json"))
-  const agent = makeAgent(client)
+  const agent = makeAgent(client, work)
   let busy = false
   async function branchState(node: SessionNode) {
     const profile = node.profile_id ? client.get(node.profile_id) : client.active()
@@ -54,9 +56,17 @@ export function chatHandler(client: Documents) {
         const active = await client.active()
         const profileId = (forking ? body.profile_id : target?.profile_id) || active.id
         const targetProfile = await client.get(profileId)
+        tree.node.template_id = work.templates.activeId
         tree.checkpoint(tree.node.messages, active.id)
         await client.setActive(targetProfile.id)
         const node = forking ? tree.fork(body.name || "新版本", profileId) : tree.switch(body.id)
+        const templateId = forking
+          ? (body.template_id ?? work.templates.activeId)
+          : node.template_id
+        if (templateId) work.templates.activate(templateId)
+        else client.store.db.prepare("DELETE FROM settings WHERE key='active_template'").run()
+        node.template_id = templateId ?? null
+        tree.save()
         if (!node.profile_id) tree.checkpoint(node.messages, profileId)
         agent.state.messages = structuredClone(node.messages)
         send(200, { ...node, profile_name: targetProfile.name })
@@ -88,9 +98,20 @@ export function chatHandler(client: Documents) {
     const unsubscribe = agent.subscribe((e) => {
       if (e.type === "message_update" && e.assistantMessageEvent.type === "text_delta")
         event({ type: "text", text: e.assistantMessageEvent.delta })
+      if (e.type === "message_end" && e.message.role === "assistant") {
+        const usage = client.bill.record(
+          e.message.usage,
+          Boolean(process.env.LLM_INPUT_USD_PER_MILLION && process.env.LLM_OUTPUT_USD_PER_MILLION),
+        )
+        event({ type: "usage", usage })
+      }
+      if (e.type === "tool_execution_start")
+        event({ type: "tool", name: e.toolName, phase: "start" })
       if (e.type === "tool_execution_end") {
         event({ type: "tool", name: e.toolName, isError: e.isError })
         const result = e.result.details
+        if (result?.layout) event({ type: "layout", layout: result.layout })
+        if (result?.vision) event({ type: "vision", vision: result.vision })
         if (result?.docx_url) event({ type: "document", result })
       }
     })
@@ -98,7 +119,8 @@ export function chatHandler(client: Documents) {
     try {
       await agent.prompt(body.prompt)
       if (agent.state.errorMessage) event({ type: "error", error: agent.state.errorMessage })
-      tree.checkpoint(agent.state.messages, (await client.active()).id)
+      tree.node.template_id = work.templates.activeId
+      tree.checkpoint(clearReviewedImages(agent.state.messages), (await client.active()).id)
       event({ type: "done" })
     } catch (e) {
       event({ type: "error", error: String(e) })

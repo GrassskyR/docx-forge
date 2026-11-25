@@ -1,3 +1,4 @@
+import { Billing } from "./billing.js"
 import { randomUUID } from "node:crypto"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
 import { realpath } from "node:fs/promises"
@@ -35,6 +36,7 @@ export async function dataFile(root: string, path: string) {
 }
 
 export class Documents {
+  readonly bill = new Billing()
   readonly store: Store
   constructor(
     readonly directory: string,
@@ -72,7 +74,7 @@ export class Documents {
 
   async parse(instruction: string, name: string, parent?: string) {
     const base = this.get(parent ?? "gbt-9704-2012")
-    const patch = this.useModel ? await requestPatch(instruction, base) : {}
+    const patch = this.useModel ? await requestPatch(instruction, base, this.bill) : {}
     return parseFormat(instruction, name, base, patch)
   }
 
