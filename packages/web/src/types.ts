@@ -1,11 +1,9 @@
 import type {
   ComposePlan,
-  DocContentAST,
+  DocumentMap,
   DraftIndex,
-  FormatProfile,
   LayoutTelemetry,
   LintReport,
-  Skeleton,
   TemplateAsset,
   VisionAudit,
 } from "@docs-agent/shared"
@@ -14,17 +12,16 @@ export type CategoryId = "all" | "gongwen" | "thesis" | "contract"
 
 export interface FormatOption {
   id: string
-  kind: "v3" | "v2"
   name: string
   category: Exclude<CategoryId, "all">
   categoryLabel: string
   desc: string
-  slots: string[]
+  fields: { name: string; label?: string }[]
+  contentSlots: string[]
   prototypes: string[]
   preserved: string[]
   capabilityCard: string
-  asset?: TemplateAsset
-  profile?: FormatProfile
+  asset: TemplateAsset
 }
 
 export interface UsageSnapshot {
@@ -48,8 +45,6 @@ export interface HealthInfo {
 export interface TemplatesResponse {
   templates: TemplateAsset[]
   active_template_id: string | null
-  profiles: FormatProfile[]
-  active_profile_id: string
   usage: UsageSnapshot
 }
 
@@ -70,7 +65,6 @@ export interface DocumentResult {
   fidelity?: number | null
   usage?: UsageSnapshot
   preview_urls: string[]
-  effective_profile?: FormatProfile
 }
 
 export interface MappingRow {
@@ -95,6 +89,7 @@ export interface ChatTurn {
 export const SLOT_LABELS: Record<string, string> = {
   title: "题目 / 标题",
   report_title: "报告题目",
+  course: "课程名称",
   student_id: "学号",
   college: "学院 / 部门",
   major: "专业",
@@ -115,8 +110,7 @@ export interface SessionBranch {
   id: string
   parent_id: string | null
   name: string
-  template_id?: string | null
-  profile_id: string | null
+  template_id: string | null
   message_count: number
 }
 
@@ -126,9 +120,8 @@ export interface SessionsResponse {
   node: {
     id: string
     name: string
-    template_id?: string | null
-    profile_id: string
-    profile_name: string
+    template_id: string | null
+    template_name: string
     messages: RawAgentMessage[]
   }
 }
@@ -142,19 +135,25 @@ export interface RawAgentMessage {
 
 export interface InspectResponse {
   inspect_id: string
-  skeleton: Skeleton
+  doc_map: DocumentMap
   sample_urls: string[]
 }
 
 export const CATEGORY_LABELS: Record<Exclude<CategoryId, "all">, string> = {
   gongwen: "公文",
-  thesis: "论文",
+  thesis: "论文/报告",
   contract: "合同/表",
 }
 
 export function normalizeCategory(raw: string): Exclude<CategoryId, "all"> {
   const value = raw.toLowerCase()
-  if (value.includes("thesis") || value.includes("academic") || value.includes("论文")) {
+  if (
+    value.includes("thesis") ||
+    value.includes("academic") ||
+    value.includes("lab") ||
+    value.includes("论文") ||
+    value.includes("报告")
+  ) {
     return "thesis"
   }
   if (
@@ -183,12 +182,13 @@ export const STARTER_DRAFTS: Record<Exclude<CategoryId, "all">, string> = {
     "2026年11月25日",
   ].join("\n"),
   thesis: [
-    "第3章 原生 XML 原型克隆与零拷贝套版引擎",
-    "3.1 样式指纹聚类与语义骨架压缩机制",
-    "针对长篇学术论文直接输入大语言模型导致上下文膨胀与格式失真的问题，本文提出基于 OOXML 样式指纹的确定性骨架压缩方法。",
-    "系统在保留原件封面、多节奇偶页眉及图片资产的前提下，直接深拷贝示范段落与表格的底层属性节点。",
-    "参考文献",
-    "[1] 全国信息与文献标准化技术委员会. 党政机关公文格式: GB/T 9704—2012[S]. 北京: 中国标准出版社, 2012.",
+    "1. 实验目的与运行环境",
+    "掌握操作系统银行家死锁避免安全性序列检测算法，对比最近最少使用（LRU）页面置换策略在不同物理页框配额下的缺页率表现。",
+    "2. 算法设计与关键步骤",
+    "2.1 安全性状态向量迭代检查",
+    "维护可利用资源向量 Work 与完成标记 Finish，循环寻找需求矩阵小于等于当前可用向量的就绪进程并回收其分配矩阵。",
+    "3. 实验结果分析与总结",
+    "实验结果表明增加物理页框并结合哈希双向链表实现 LRU 淘汰策略可显著降低抖动风险。",
   ].join("\n"),
   contract: [
     "合同编号：HT-2026-TECH-0092",
@@ -198,67 +198,4 @@ export const STARTER_DRAFTS: Record<Exclude<CategoryId, "all">, string> = {
     "3.1 乙方应于本合同生效后30个工作日内完成全部模块交付并配合验收。",
     "3.2 乙方承诺交付成果不侵犯任何第三方合法权益，否则承担全部法律及赔偿责任。",
   ].join("\n"),
-}
-
-export function buildAstFromDraft(raw: string, normalizePunct: boolean): DocContentAST {
-  const fix = (s: string) =>
-    normalizePunct ? s.replace(/[\[［](\d{4})[\]］]/g, "〔$1〕").replace(/:/g, "：") : s
-  const lines = raw
-    .split(/\r\n|\r|\n/)
-    .map((s) => fix(s.trim()))
-    .filter(Boolean)
-  const title = lines[0] || "未命名公文"
-  let start = 1
-  let doc_number: string | undefined
-  let recipient: string | undefined
-  if (lines[start] && /〔\d{4}〕.*号$/.test(lines[start])) {
-    doc_number = lines[start]
-    start++
-  }
-  if (lines[start] && /[：:]$/.test(lines[start]) && lines[start].length <= 36) {
-    recipient = lines[start]
-    start++
-  }
-  let end = lines.length
-  let date: string | undefined
-  let signature: string | undefined
-  if (end > start && /^\d{4}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日$/.test(lines[end - 1])) {
-    date = lines[end - 1]
-    end--
-  }
-  if (
-    end > start &&
-    lines[end - 1].length <= 24 &&
-    !/[。！？；，]/.test(lines[end - 1]) &&
-    /(办公室|委员会|学院|大学|局|处|部|公司|中心|院)$/.test(lines[end - 1])
-  ) {
-    signature = lines[end - 1]
-    end--
-  }
-  const attachments: string[] = []
-  const blocks: NonNullable<DocContentAST["blocks"]> = []
-  for (const line of lines.slice(start, end)) {
-    if (/^附件[：:]/.test(line)) {
-      attachments.push(line.replace(/^附件[：:]\s*/, ""))
-    } else if (/^[一二三四五六七八九十]+、/.test(line)) {
-      blocks.push({ type: "heading_1", text: line })
-    } else if (/^[（(][一二三四五六七八九十]+[)）]/.test(line)) {
-      blocks.push({ type: "heading_2", text: line })
-    } else if (/^\d+[.．、]/.test(line)) {
-      blocks.push({ type: "heading_3", text: line })
-    } else {
-      blocks.push({ type: "body", text: line })
-    }
-  }
-  if (!blocks.length) blocks.push({ type: "body", text: title })
-  return {
-    doc_type: "notice",
-    title,
-    ...(doc_number ? { doc_number } : {}),
-    ...(recipient ? { recipient } : {}),
-    ...(attachments.length ? { attachments } : {}),
-    ...(signature ? { signature, red_header_org: signature } : {}),
-    ...(date ? { date } : {}),
-    blocks,
-  }
 }

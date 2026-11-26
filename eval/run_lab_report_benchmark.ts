@@ -7,20 +7,28 @@ import { join } from "node:path"
 import { loadEnvFile } from "node:process"
 import type { Element } from "@xmldom/xmldom"
 import { unzipSync } from "fflate"
-import type { Blueprint, Skeleton, TemplateAsset } from "../packages/shared/src/index.js"
+import type {
+  Blueprint,
+  ComposePlan,
+  DocumentMap,
+  TemplateAsset,
+} from "../packages/shared/src/index.js"
 import {
   auditComposition,
   bodyBlocks,
   children,
   compose,
-  convert,
+  findTocSdts,
   inspectReference,
   parseXml,
-  Store,
-  TemplateStore,
+  resolveCoord,
+  telemetry,
+  visionMode,
+  visualAudit,
   W,
 } from "../packages/engine/src/index.js"
 import { Documents } from "../packages/server/src/documents.js"
+import { jsonCompletion } from "../packages/server/src/model.js"
 import { Workspace } from "../packages/server/src/workspace.js"
 
 if (existsSync(".env")) loadEnvFile(".env")
@@ -161,15 +169,16 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
   const tableRatio = Number((tblNonEmpty / totalNonEmpty).toFixed(2))
 
   let banner = ""
-  for (const p of allP.slice(0, 12)) {
-    const txt = pText(p)
+  for (const p of allP.slice(0, 18)) {
+    const compact = pText(p).replace(/\s+/g, "")
     if (
-      /大学|学院|实验报告|实践报告|实习报告|课程设计|专用纸/.test(txt) &&
-      !/学\s*号|姓\s*名|班\s*级/.test(txt) &&
-      txt.length >= 4 &&
-      txt.length <= 36
+      /大学|学院|实验报告|实践报告|实习报告|课程设计|专用纸/.test(compact) &&
+      !/[：:]/.test(compact) &&
+      !/书写式样|填写说明|撰写规范|评分标准|学号|姓名|班级|专业|课程|指导教师/.test(compact) &&
+      compact.length >= 4 &&
+      compact.length <= 36
     ) {
-      banner = txt.replace(/\s+/g, "")
+      banner = compact
       break
     }
   }
@@ -193,16 +202,11 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
   }
 
   const fixedHeadings: string[] = []
+  const fixedRe =
+    /^(?:[一二三四五六七八九十]+[、.．]|【)(?:实验目的|实验原理|实验仪器|实验设备|实验环境|实验内容|实验步骤|实验数据|实验结果|思考题|实验总结|心得体会)/
   for (const p of allP) {
     const txt = pText(p)
-    if (
-      /^(?:[一二三四五六七八九十]+[、.．]|【)(?:实验目的|实验原理|实验仪器|实验设备|实验环境|实验内容|实验步骤|实验数据|实验结果|思考题|实验总结|心得体会)/.test(
-        txt,
-      ) &&
-      txt.length <= 26
-    ) {
-      fixedHeadings.push(txt)
-    }
+    if (fixedRe.test(txt) && txt.length <= 26) fixedHeadings.push(txt)
   }
 
   const residueProbes: string[] = []
@@ -228,11 +232,22 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
     const m = gp.exec(fullText)
     if (m) residueProbes.push(m[0])
   }
-  // Also detect long pre-filled example/homework paragraphs (> 45 chars) outside generic rules
   for (const p of allP.slice(8)) {
     const txt = pText(p)
+    let inTeacherRubric = false
+    for (let anc = p.parentNode; anc?.nodeType === 1; anc = anc.parentNode) {
+      if ((anc as Element).localName === "tc") {
+        const cellTxt = (anc.textContent ?? "").replace(/\s+/g, "")
+        if (/批阅意见|教师评语|指导教师意见|导师签字|单位盖章/.test(cellTxt)) {
+          inTeacherRubric = true
+          break
+        }
+      }
+    }
     if (
+      !inTeacherRubric &&
       txt.length >= 48 &&
+      !/^[—\-_=*]{6,}$/.test(txt) &&
       !/本报告|严禁抄袭|评分标准|考核标准|签字|成绩评定|教务处制/.test(txt) &&
       residueProbes.length < 6
     ) {
@@ -247,7 +262,7 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
 
   return {
     banner,
-    is_table_form: tableRatio >= 0.55,
+    is_table_form: tableRatio >= 0.7 || (tableRatio >= 0.55 && topNonEmpty <= 10),
     table_ratio: tableRatio,
     sections,
     page_breaks: pageBreaks,
@@ -261,24 +276,41 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
   }
 }
 
-function buildEnhancedRuleBlueprint(skeleton: Skeleton, baseDocxBytes: Uint8Array): Blueprint {
+function buildEnhancedRuleBlueprint(docMap: DocumentMap, baseDocxBytes: Uint8Array): Blueprint {
   const doc = parseXml(unzipSync(baseDocxBytes)["word/document.xml"])
   const blocks = bodyBlocks(doc.documentElement!)
-  const remove_ranges: NonNullable<Blueprint["remove_ranges"]> = []
-  for (const sec of skeleton.section_outline ?? []) {
-    if (sec.role_hint === "instruction_guide_removable") {
-      remove_ranges.push({ start: sec.start, end: sec.end, reason: "规则检出说明节" })
+  const remove_targets: NonNullable<Blueprint["remove_targets"]> = []
+  let secStart = 0
+  for (let i = 0; i < blocks.length; i++) {
+    const isSectBreak =
+      blocks[i].localName === "p" &&
+      children(blocks[i], "pPr").some((p) => children(p, "sectPr").length > 0)
+    if (isSectBreak || i === blocks.length - 1) {
+      const segText = blocks
+        .slice(secStart, i + 1)
+        .map(pText)
+        .join(" ")
+      if (/本页可以不打印|格式示例|填写说明|撰写说明/.test(segText) && i - secStart <= 30) {
+        remove_targets.push({
+          start: "B" + secStart,
+          end: "B" + i,
+          drop_section: isSectBreak,
+          reason: "规则检出说明节",
+        })
+      }
+      secStart = i + 1
     }
   }
   const removed = new Set<number>()
-  for (const r of remove_ranges) {
-    for (let i = Number(r.start.slice(1)); i <= Number(r.end.slice(1)); i++) removed.add(i)
+  for (const r of remove_targets) {
+    for (let i = Number(r.start.slice(1)); i <= Number((r.end ?? r.start).slice(1)); i++) {
+      removed.add(i)
+    }
   }
 
-  const slots: Blueprint["slots"] = []
+  const fields: Blueprint["fields"] = []
   const usedIdx = new Set<number>()
   let lastMetaIdx = -1
-  // Scan top-level paragraphs in first 35 blocks for single-field cover/header slots
   for (let i = 0; i < Math.min(blocks.length, 35); i++) {
     if (removed.has(i) || blocks[i].localName !== "p") continue
     const txt = pText(blocks[i])
@@ -286,8 +318,8 @@ function buildEnhancedRuleBlueprint(skeleton: Skeleton, baseDocxBytes: Uint8Arra
     const hits = FIELD_PATTERNS.filter(([, r]) => r.test(txt))
     if (hits.length === 1 && /[：:_＿]/.test(txt)) {
       const name = hits[0][0]
-      if (!slots.some((s) => s.name === name)) {
-        slots.push({ name, start: "B" + i, end: "B" + i })
+      if (!fields.some((s) => s.name === name)) {
+        fields.push({ name, coord: "B" + i, mode: "colon" })
         usedIdx.add(i)
         lastMetaIdx = Math.max(lastMetaIdx, i)
       }
@@ -325,15 +357,11 @@ function buildEnhancedRuleBlueprint(skeleton: Skeleton, baseDocxBytes: Uint8Arra
     }
   }
 
-  const fallbackP =
-    bodyProto ||
-    skeleton.clusters.find((c) => c.kind === "paragraph")?.anchor ||
-    "B" + Math.max(0, blocks.findIndex((b) => b.localName === "p"))
-  if (firstBodyIdx >= 0 && lastBodyIdx >= firstBodyIdx) {
-    slots.push({ name: "body", start: "B" + firstBodyIdx, end: "B" + lastBodyIdx })
-  } else {
-    slots.push({ name: "body", start: fallbackP, end: fallbackP })
-  }
+  const fallbackP = bodyProto || "B" + Math.max(0, blocks.findIndex((b) => b.localName === "p"))
+  const content_slots: Blueprint["content_slots"] =
+    firstBodyIdx >= 0 && lastBodyIdx >= firstBodyIdx
+      ? [{ name: "body", start: "B" + firstBodyIdx, end: "B" + lastBodyIdx, placement: "replace" }]
+      : [{ name: "body", start: fallbackP, end: fallbackP, placement: "replace" }]
 
   const prototypes: Record<string, string> = {
     body: fallbackP,
@@ -343,87 +371,146 @@ function buildEnhancedRuleBlueprint(skeleton: Skeleton, baseDocxBytes: Uint8Arra
   }
   if (tblProto) prototypes.table = tblProto
   return {
-    slots,
-    ...(remove_ranges.length ? { remove_ranges } : {}),
+    template_kind: "flowing",
+    fields,
+    content_slots,
+    ...(remove_targets.length ? { remove_targets } : {}),
     prototypes,
-    preserved: skeleton.preserved,
+    preserved: docMap.preserved,
   }
 }
 
+function resolveMetaValue(key: string, label = ""): string | undefined {
+  const k = key.toLowerCase()
+  if (SLOT_VALUE_ALIASES[k]) return SLOT_VALUE_ALIASES[k]
+  const combined = `${k} ${label}`
+  if (/学\s*号|id|num|no/.test(combined)) return TEST_META.student_id
+  if (/姓\s*名|学\s*生|组长|负责人|stu|name|author/.test(combined)) return TEST_META.student_name
+  if (/班\s*级|class/.test(combined)) return TEST_META.class_name
+  if (/课程|course/.test(combined)) return TEST_META.course
+  if (/实验名称|项目名称|题目|课题|title|exp|topic/.test(combined)) return TEST_META.title
+  if (/学\s*院|系\s*别|单位|col|dep|sch/.test(combined)) return TEST_META.college
+  if (/专\s*业|maj|spec/.test(combined)) return TEST_META.major
+  if (/教师|老师|导师|tea|adv|inst/.test(combined)) return TEST_META.advisor
+  if (/日期|时间|年|date|time/.test(combined)) return TEST_META.date
+  return undefined
+}
+
 function buildSlotFillValues(asset: TemplateAsset) {
-  const out: Record<string, string> = {}
-  for (const s of asset.blueprint.slots) {
-    if (s.name === "body") continue
-    const k = s.name.toLowerCase()
-    if (SLOT_VALUE_ALIASES[k]) out[s.name] = SLOT_VALUE_ALIASES[k]
-    else if (k.includes("id") || k.includes("num") || k.includes("no")) {
-      out[s.name] = TEST_META.student_id
-    } else if (k.includes("stu") || k.includes("name") || k.includes("author")) {
-      out[s.name] = TEST_META.student_name
-    } else if (k.includes("class")) out[s.name] = TEST_META.class_name
-    else if (k.includes("course")) out[s.name] = TEST_META.course
-    else if (k.includes("title") || k.includes("exp") || k.includes("topic")) {
-      out[s.name] = TEST_META.title
-    } else if (k.includes("col") || k.includes("dep") || k.includes("sch")) {
-      out[s.name] = TEST_META.college
-    } else if (k.includes("maj") || k.includes("spec")) out[s.name] = TEST_META.major
-    else if (k.includes("tea") || k.includes("adv") || k.includes("inst")) {
-      out[s.name] = TEST_META.advisor
-    } else if (k.includes("date") || k.includes("time")) out[s.name] = TEST_META.date
+  const out: Record<string, string> = { ...TEST_META }
+  for (const f of asset.blueprint.fields) {
+    const v = resolveMetaValue(f.name, f.label)
+    if (v) out[f.name] = v
+  }
+  for (const cf of asset.blueprint.cover_builder?.fields ?? []) {
+    const v = resolveMetaValue(cf.name, cf.label)
+    if (v) out[cf.name] = v
   }
   return out
 }
 
-function buildAuthoredPlan(asset: TemplateAsset, baseDocxBytes: Uint8Array) {
+async function buildAuthoredPlan(
+  asset: TemplateAsset,
+  baseDocxBytes: Uint8Array,
+  docs: Documents,
+): Promise<ComposePlan> {
   const protos = asset.blueprint.prototypes
-  const pick = (...names: string[]) => names.find((n) => protos[n]) ?? Object.keys(protos)[0]
-  const items: {
-    prototype: string
-    text?: string
-    rows?: string[][]
-    slot?: string
-  }[] = [
+  const pick = (...names: string[]) =>
+    names.find((n) => protos[n]) ?? Object.keys(protos)[0] ?? "body"
+  const rawItems: ComposePlan = [
     { prototype: pick("heading_1", "body"), text: "1. 实验目的与运行环境" },
     {
       prototype: pick("body"),
-      text: "掌握操作系统银行家死锁避免安全性序列检测算法，对比最近最少使用（LRU）页面置换策略在不同物理页框配额下的缺页率表现。",
+      text:
+        "掌握操作系统银行家死锁避免安全性序列检测算法，" +
+        "对比最近最少使用（LRU）页面置换策略在不同物理页框配额下的缺页率表现。",
     },
     { prototype: pick("heading_1", "body"), text: "2. 算法设计与关键步骤" },
     { prototype: pick("heading_2", "heading_1", "body"), text: "2.1 安全性状态向量迭代检查" },
     {
       prototype: pick("body"),
-      text: "维护可利用资源向量 Work 与完成标记 Finish，循环寻找需求矩阵小于等于当前可用向量的就绪进程并回收其分配矩阵。",
+      text:
+        "维护可利用资源向量 Work 与完成标记 Finish，" +
+        "循环寻找需求矩阵小于等于当前可用向量的就绪进程并回收其分配矩阵。",
     },
     { prototype: pick("heading_1", "body"), text: "3. 实验测试数据与结果分析" },
   ]
+
+  let cols = 5
   if (protos.table) {
-    const doc = parseXml(unzipSync(baseDocxBytes)["word/document.xml"])
-    const blocks = bodyBlocks(doc.documentElement!)
-    const tbl = blocks[Number(protos.table.slice(1))]
+    const root = parseXml(unzipSync(baseDocxBytes)["word/document.xml"]).documentElement!
+    const tbl = resolveCoord(root, protos.table)?.element
     if (tbl?.localName === "tbl") {
       const grid = children(tbl, "tblGrid")[0]
-      const cols = grid
+      const c = grid
         ? children(grid, "gridCol").length
         : Math.max(0, ...children(tbl, "tr").map((r) => children(r, "tc").length))
-      if (cols >= 2 && cols <= 8) {
-        const headers = ["进程/样本", "分配量", "最大需求", "缺页次数", "命中率", "耗时ms", "状态", "备注"].slice(
-          0,
-          cols,
-        )
-        const r1 = ["P0 (LRU-3)", "3", "7", "6", "70.0%", "1.4", "安全", "收敛"].slice(0, cols)
-        const r2 = ["P1 (LRU-4)", "4", "6", "4", "80.0%", "1.1", "安全", "最优"].slice(0, cols)
-        items.push({ prototype: "table", rows: [headers, r1, r2] })
-      }
+      if (c >= 2 && c <= 8) cols = c
     }
   }
-  items.push(
+  const headers = ["进程/样本", "分配量", "最大需求", "缺页次数", "命中率", "耗时ms", "状态", "备注"].slice(
+    0,
+    cols,
+  )
+  const r1 = ["P0 (LRU-3)", "3", "7", "6", "70.0%", "1.4", "安全", "收敛"].slice(0, cols)
+  const r2 = ["P1 (LRU-4)", "4", "6", "4", "80.0%", "1.1", "安全", "最优"].slice(0, cols)
+  rawItems.push({ prototype: "table", rows: [headers, r1, r2] })
+
+  rawItems.push(
     { prototype: pick("heading_1", "body"), text: "4. 实验总结与心得体会" },
     {
       prototype: pick("body"),
-      text: "实验结果表明增加物理页框并结合哈希双向链表实现 LRU 淘汰策略可显著降低抖动风险，资源预审有效消除了循环等待条件。",
+      text:
+        "实验结果表明增加物理页框并结合哈希双向链表实现 LRU 淘汰策略可显著降低抖动风险，" +
+        "资源预审有效消除了循环等待条件。",
     },
   )
-  return items
+
+  // Single-slot templates require no slot routing
+  if (asset.blueprint.content_slots.length <= 1 || !docs.useModel) {
+    return rawItems
+  }
+
+  // Multi-slot templates MUST be routed by the LLM itself (no hardcoded regex in engine!)
+  const slotList = asset.blueprint.content_slots
+    .map((s) => `${s.name}(固定标题:${s.label ?? "无"})`)
+    .join("、")
+  const itemDesc = rawItems
+    .map(
+      (it, idx) =>
+        `[${idx}] proto=${it.prototype} | ${it.text ?? `[数据表 ${it.rows?.length ?? 0}行]`}`,
+    )
+    .join("\n")
+
+  const routed = await jsonCompletion(
+    [
+      "请将下方待写入的文档内容项路由到当前模板声明的正文槽位（content_slots）中。",
+      `可选 slot 名称仅限：${slotList}。`,
+      "若目标槽位已印有固定标题（label 非空），可将与之重复的章节标题项标记 drop=true 避免标题重复。",
+      '严格只输出 JSON：{"assignments":[{"index":0,"slot":"槽位名","drop":false}, ...]}',
+      asset.capability_card,
+      itemDesc,
+    ].join("\n"),
+    docs.bill,
+    [],
+    "bench-slot-route-v4",
+  )
+
+  const list = Array.isArray(routed?.assignments) ? routed.assignments : []
+  const byIndex = new Map<number, { slot?: string; drop?: boolean }>()
+  for (const entry of list) {
+    if (entry && typeof entry.index === "number") {
+      byIndex.set(entry.index, { slot: entry.slot, drop: Boolean(entry.drop) })
+    }
+  }
+
+  const planned: ComposePlan = []
+  for (const [idx, item] of rawItems.entries()) {
+    const decision = byIndex.get(idx)
+    if (decision?.drop) continue
+    planned.push({ ...item, ...(decision?.slot ? { slot: decision.slot } : {}) })
+  }
+  return planned
 }
 
 async function evaluateComposed(
@@ -433,22 +520,31 @@ async function evaluateComposed(
   asset: TemplateAsset,
   bodyIndices: number[],
   removedSections: number,
+  addedSections: number,
+  docs?: Documents,
 ) {
   const outBytes = await readFile(docxPath)
-  const baseBytes = await readFile(baseDocxPath)
-  const audit = await auditComposition(docxPath, baseDocxPath, bodyIndices, undefined, removedSections)
+  const audit = await auditComposition(
+    docxPath,
+    baseDocxPath,
+    bodyIndices,
+    undefined,
+    removedSections,
+    addedSections,
+  )
   const outZip = unzipSync(outBytes)
   const root = parseXml(outZip["word/document.xml"]).documentElement!
   const allP = Array.from(root.getElementsByTagNameNS(W, "p")).map(pText).filter(Boolean)
   const fullNoSpace = allP.join("\n").replace(/\s+/g, "")
   const fullJoined = allP.join("\n")
 
+  // Strict banner check (no college-name pardon backdoor!)
   const bannerPreserved = !gt.banner || fullNoSpace.includes(gt.banner.slice(0, 10))
+
   const outTbls = Array.from(root.getElementsByTagNameNS(W, "tbl"))
   const tblTextJoined = outTbls
     .flatMap((t) => Array.from(t.getElementsByTagNameNS(W, "p")).map(pText))
     .join("\n")
-  // If template is a full-page table form, body content MUST live inside the form table!
   const formContainerRespected = !gt.is_table_form || tblTextJoined.includes("银行家死锁避免")
 
   let filledCount = 0
@@ -467,22 +563,83 @@ async function evaluateComposed(
   const residueFree = leakedResidues.length === 0
 
   let pdfOk = false
+  let totalPages = 0
+  let blankPages = 0
+  let tocPagesValid = true
+  let visionStatus = "skipped"
+  let visionIssuesCount = 0
   try {
-    await convert(docxPath, join(docxPath, ".."), "pdf")
+    const outDir = join(docxPath, "..")
+    const layout = await telemetry(docxPath, outDir)
     pdfOk = true
+    totalPages = layout.total_pages
+    blankPages = layout.warnings.filter((w) => w.code === "blank_page").length
+
+    // Verify TOC page numbers are never fabricated beyond physical page count
+    for (const sdt of findTocSdts(root)) {
+      for (const p of Array.from(sdt.getElementsByTagNameNS(W, "p"))) {
+        const line = pText(p)
+        const m = /(\d+)\s*$/.exec(line)
+        if (m && Number(m[1]) > totalPages) {
+          tocPagesValid = false
+        }
+      }
+    }
+
+    if (docs?.useModel && visionMode() !== "text_only") {
+      try {
+        const vAudit = await visualAudit(
+          join(outDir, "document.pdf"),
+          layout,
+          audit.passed,
+          async (images) => {
+            const validPages = new Set(images.map((img) => img.page))
+            const res = await jsonCompletion(
+              '检查关键页的排版质量。返回 {"issues":[{"page":1,"description":"问题"}]}，无问题时返回空数组。',
+              docs.bill,
+              images,
+              "bench-visual-audit",
+            )
+            const list = Array.isArray(res?.issues) ? res.issues : []
+            return list
+              .filter(
+                (x: Record<string, unknown>) =>
+                  x &&
+                  typeof x.page === "number" &&
+                  validPages.has(x.page) &&
+                  typeof x.description === "string",
+              )
+              .map((x: Record<string, unknown>) => ({
+                page: Number(x.page),
+                description: String(x.description),
+              }))
+          },
+          true,
+        )
+        visionStatus = vAudit.status
+        visionIssuesCount = vAudit.issues.length
+      } catch {
+        visionStatus = "error"
+      }
+    }
   } catch {
     pdfOk = false
   }
 
   const failureCodes: string[] = []
-  if (gt.is_table_form && (!formContainerRespected || unfilledFields.some((u) => u.includes("table_cell")))) {
+  if (
+    gt.is_table_form &&
+    (!formContainerRespected || unfilledFields.some((u) => u.includes("table_cell")))
+  ) {
     failureCodes.push("F1_TABLE_CELL_UNADDRESSABLE")
   }
+  const firstSlot = asset.blueprint.content_slots[0]
   if (
     gt.sections === 1 &&
     (!bannerPreserved ||
-      (asset.blueprint.slots.find((s) => s.name === "body")?.start ===
-        asset.blueprint.slots.find((s) => s.name === "body")?.end &&
+      (asset.blueprint.content_slots.length === 1 &&
+        firstSlot?.start === firstSlot?.end &&
+        !firstSlot?.start.includes(".") &&
         gt.top_p_count >= 15))
   ) {
     failureCodes.push("F2_SINGLE_SECT_BOUNDARY_LOSS")
@@ -500,9 +657,17 @@ async function evaluateComposed(
   }
   if (
     unfilledFields.some((u) => u.includes("textbox") || u.includes("同行多字段")) ||
-    (gt.fields.length > 0 && metadataFillRate < 0.5 && !failureCodes.includes("F1_TABLE_CELL_UNADDRESSABLE"))
+    (gt.fields.length > 0 &&
+      metadataFillRate < 0.5 &&
+      !failureCodes.includes("F1_TABLE_CELL_UNADDRESSABLE"))
   ) {
     failureCodes.push("F5_TEXTBOX_OR_INLINE_MULTI_FIELD")
+  }
+  if (blankPages > 0) {
+    failureCodes.push("F6_BLANK_PAGE_LEFT_BEHIND")
+  }
+  if (!tocPagesValid) {
+    failureCodes.push("F7_FAKE_TOC_PAGE_NUMBER")
   }
 
   const strictPass =
@@ -511,11 +676,19 @@ async function evaluateComposed(
     bannerPreserved &&
     formContainerRespected &&
     residueFree &&
+    blankPages === 0 &&
+    tocPagesValid &&
     metadataFillRate >= 0.5
 
   return {
     pdf_ok: pdfOk,
+    total_pages: totalPages,
+    blank_pages: blankPages,
+    toc_pages_valid: tocPagesValid,
+    vision_status: visionStatus,
+    vision_issues_count: visionIssuesCount,
     ooxml_audit_passed: audit.passed,
+    audit_violations: audit.violations,
     banner_preserved: bannerPreserved,
     form_container_respected: formContainerRespected,
     metadata_filled: filledCount,
@@ -539,11 +712,15 @@ async function runStrategyOnDoc(
   const docs = new Documents(workDir, useModel)
   const work = new Workspace(docs)
   const t0 = Date.now()
-  let skeletonChars = 0
+  let mapChars = 0
   let gt: GroundTruthOracle | undefined
   try {
-    const { inspect_id, skeleton } = await inspectReference(sourcePath, workDir)
-    skeletonChars = JSON.stringify(skeleton).length
+    const inspected =
+      strategy === "llm_hybrid" && visionMode() !== "text_only"
+        ? await work.inspect(sourcePath, [1, 2, 3])
+        : await inspectReference(sourcePath, workDir)
+    const { inspect_id, doc_map } = inspected
+    mapChars = doc_map.map_text.length
     const baseDocxPath = join(workDir, "inspections", inspect_id, "base.docx")
     const baseBytes = await readFile(baseDocxPath)
     gt = buildGroundTruth(baseBytes)
@@ -551,17 +728,17 @@ async function runStrategyOnDoc(
     const beforeTokens = docs.bill.snapshot().total_tokens
     let asset: TemplateAsset
     if (strategy === "rule_baseline") {
-      asset = await work.internalize(inspect_id, item.id, "thesis", "")
+      asset = await work.internalize(inspect_id, item.id, "general", "")
     } else if (strategy === "rule_enhanced") {
-      const bp = buildEnhancedRuleBlueprint(skeleton, baseBytes)
-      asset = work.templates.save(inspect_id, item.id, "thesis", bp, "正则规则内化", true)
+      const bp = buildEnhancedRuleBlueprint(doc_map, baseBytes)
+      asset = work.templates.save(inspect_id, item.id, "general", bp, "正则规则基线", true)
     } else {
-      asset = await work.internalize(inspect_id, item.id, "thesis", "高校实验或实践报告模板")
+      asset = await work.internalize(inspect_id, item.id, "general", "")
     }
-    const tokensUsed = docs.bill.snapshot().total_tokens - beforeTokens
 
     const slotValues = buildSlotFillValues(asset)
-    const bodyPlan = buildAuthoredPlan(asset, baseBytes)
+    const bodyPlan = await buildAuthoredPlan(asset, baseBytes, docs)
+
     const composed = await compose(workDir, asset, {
       mode: "authored",
       slot_values: slotValues,
@@ -574,15 +751,22 @@ async function runStrategyOnDoc(
       asset,
       composed.body_indices,
       composed.removed_sections,
+      composed.added_sections,
+      docs,
     )
+    const tokensUsed = docs.bill.snapshot().total_tokens - beforeTokens
     return {
       strategy,
       elapsed_ms: Date.now() - t0,
       tokens_used: tokensUsed,
-      skeleton_chars: skeletonChars,
-      skeleton_within_budget: skeletonChars <= 6000,
-      slots_detected: asset.blueprint.slots.map((s) => `${s.name}(${s.start}-${s.end})`),
-      remove_ranges: asset.blueprint.remove_ranges ?? [],
+      map_chars: mapChars,
+      fields_detected: asset.blueprint.fields.map(
+        (f) => `${f.name}@${f.coord}[${f.mode ?? "cell"}${f.blank_index !== undefined ? f.blank_index : ""}]`,
+      ),
+      content_slots: asset.blueprint.content_slots.map(
+        (s) => `${s.name}(${s.start}-${s.end},${s.placement ?? "replace"})`,
+      ),
+      remove_targets: asset.blueprint.remove_targets ?? [],
       prototypes: Object.keys(asset.blueprint.prototypes),
       gt,
       ...evalRes,
@@ -591,16 +775,22 @@ async function runStrategyOnDoc(
     return {
       strategy,
       elapsed_ms: Date.now() - t0,
-      tokens_used: 0,
-      skeleton_chars: skeletonChars,
-      skeleton_within_budget: skeletonChars > 0 && skeletonChars <= 6000,
-      slots_detected: [],
-      remove_ranges: [],
+      tokens_used: docs.bill.snapshot().total_tokens,
+      map_chars: mapChars,
+      fields_detected: [],
+      content_slots: [],
+      remove_targets: [],
       prototypes: [],
       gt,
       error: e instanceof Error ? e.message : String(e),
       pdf_ok: false,
+      total_pages: 0,
+      blank_pages: 0,
+      toc_pages_valid: false,
+      vision_status: "error",
+      vision_issues_count: 0,
       ooxml_audit_passed: false,
+      audit_violations: [] as unknown[],
       banner_preserved: false,
       form_container_respected: false,
       metadata_filled: 0,
@@ -620,27 +810,31 @@ async function runStrategyOnDoc(
 
 async function main() {
   const corpusDir = "eval/lab_reports"
-  const manifest = JSON.parse(
+  const fullManifest = JSON.parse(
     await readFile(join(corpusDir, "manifest.json"), "utf8"),
   ) as LabManifestItem[]
-  assert.equal(manifest.length, 30, "Must evaluate all 30 university lab report templates")
+  assert.equal(fullManifest.length, 30, "Must have all 30 university lab report templates")
 
-  // 1. Verify SHA256 integrity of all 30 templates
-  for (const item of manifest) {
+  for (const item of fullManifest) {
     const bytes = await readFile(join(corpusDir, item.file))
     const actualSha = createHash("sha256").update(bytes).digest("hex")
     assert.equal(actualSha, item.sha256, `SHA256 mismatch on ${item.file}`)
   }
 
-  console.log(`Starting 3-track Lab Report Benchmark across ${manifest.length} universities/courses...`)
+  const filterIds = process.env.LAB_FILTER?.split(",").map((s) => s.trim()).filter(Boolean)
+  const manifest = filterIds?.length
+    ? fullManifest.filter((m) => filterIds.includes(m.id))
+    : fullManifest
+
+  console.log(`Starting Clean Unrigged V4 Benchmark across ${manifest.length} templates...`)
   type TrackRes = Omit<Awaited<ReturnType<typeof runStrategyOnDoc>>, "gt">
   const perDoc: (LabManifestItem & {
     ground_truth?: GroundTruthOracle
     tracks: Record<"rule_baseline" | "rule_enhanced" | "llm_hybrid", TrackRes>
   })[] = []
-  // Process in batches of 6 for higher LLM throughput while keeping LibreOffice stable
-  for (let i = 0; i < manifest.length; i += 6) {
-    const slice = manifest.slice(i, i + 6)
+
+  for (let i = 0; i < manifest.length; i += 3) {
+    const slice = manifest.slice(i, i + 3)
     const batchRes = await Promise.all(
       slice.map(async (item) => {
         const src = join(corpusDir, item.file)
@@ -650,16 +844,27 @@ async function main() {
         const bTag = rb.strict_e2e_pass ? "PASS" : "FAIL"
         const rTag = re.strict_e2e_pass ? "PASS" : "FAIL"
         const lTag = lh.strict_e2e_pass ? "PASS" : "FAIL"
+        const llmStat =
+          `${lh.metadata_filled}/${lh.metadata_total}, p=${lh.total_pages}, ` +
+          `blank=${lh.blank_pages}, ${lh.tokens_used}tok`
         console.log(
           `[${item.id}] ${item.source_org.slice(0, 10).padEnd(10)} | ${item.archetype.padEnd(22)} | ` +
             `Base=${bTag}(${rb.metadata_filled}/${rb.metadata_total}) | ` +
             `Rule+=${rTag}(${re.metadata_filled}/${re.metadata_total}) | ` +
-            `LLM=${lTag}(${lh.metadata_filled}/${lh.metadata_total}, ${lh.tokens_used}tok) | ` +
-            `fails=${lh.failure_codes.join(",") || "NONE"}`,
+            `LLM=${lTag}(${llmStat}) | fails=${lh.failure_codes.join(",") || "NONE"}`,
         )
+        if (!lh.strict_e2e_pass) {
+          console.log(
+            `   -> [${item.id} DIAG] pdf=${lh.pdf_ok} blank=${lh.blank_pages} tocOk=${lh.toc_pages_valid} ` +
+              `audit=${lh.ooxml_audit_passed} banner=${lh.banner_preserved} ` +
+              `form=${lh.form_container_respected} unfilled=[${lh.unfilled_fields.join(",")}] ` +
+              `residues=[${lh.leaked_residues.join(",")}] err=${(lh as { error?: string }).error ?? ""}`,
+          )
+        }
         return {
           ...item,
-          ground_truth: (rb as { gt?: GroundTruthOracle }).gt ?? (lh as { gt?: GroundTruthOracle }).gt,
+          ground_truth:
+            (rb as { gt?: GroundTruthOracle }).gt ?? (lh as { gt?: GroundTruthOracle }).gt,
           tracks: {
             rule_baseline: { ...rb, gt: undefined },
             rule_enhanced: { ...re, gt: undefined },
@@ -688,8 +893,11 @@ async function main() {
     }
     return {
       total_docs: rows.length,
-      skeleton_budget_pass: rows.filter((r) => r.skeleton_within_budget).length,
       pdf_render_pass: rows.filter((r) => r.pdf_ok).length,
+      zero_blank_pages_pass: rows.filter((r) => r.pdf_ok && r.blank_pages === 0).length,
+      toc_pages_valid_pass: rows.filter((r) => r.pdf_ok && r.toc_pages_valid).length,
+      vision_audit_passed: rows.filter((r) => r.vision_status === "passed").length,
+      vision_audit_issues: rows.filter((r) => r.vision_status === "issues").length,
       ooxml_audit_pass: rows.filter((r) => r.ooxml_audit_passed).length,
       banner_preserved_pass: rows.filter((r) => r.banner_preserved).length,
       form_container_pass: rows.filter((r) => r.form_container_respected).length,
@@ -708,6 +916,7 @@ async function main() {
 
   const summary = {
     generated_at: new Date().toISOString(),
+    vision_mode: visionMode(),
     corpus_size: manifest.length,
     formats: {
       ooxml_docx: manifest.filter((m) => m.actual_format === "ooxml_docx").length,
@@ -721,9 +930,11 @@ async function main() {
     documents: perDoc,
   }
 
-  await mkdir("eval", { recursive: true })
-  await writeFile("eval/results_lab_reports.json", JSON.stringify(summary, null, 2) + "\n")
-  console.log("\n=== SUMMARY ===")
+  if (!filterIds?.length) {
+    await mkdir("eval", { recursive: true })
+    await writeFile("eval/results_lab_reports.json", JSON.stringify(summary, null, 2) + "\n")
+  }
+  console.log("\n=== CLEAN UNRIGGED SUMMARY ===")
   console.log("Rule Baseline :", summary.tracks.rule_baseline)
   console.log("Rule Enhanced :", summary.tracks.rule_enhanced)
   console.log("LLM Hybrid    :", summary.tracks.llm_hybrid)

@@ -1,10 +1,9 @@
-import type { Workspace } from "./workspace.js"
-import { configureRates, textModel } from "./model.js"
-import { createV3Tools } from "./tools_v3.js"
 import { Agent } from "@mariozechner/pi-agent-core"
-import { Documents } from "./documents.js"
 import { contextHook } from "./context_hook.js"
-import { createTools } from "./tools_v2.js"
+import { Documents } from "./documents.js"
+import { configureRates, textModel } from "./model.js"
+import { createTools } from "./tools.js"
+import type { Workspace } from "./workspace.js"
 
 export function makeAgent(client: Documents, work: Workspace, settings: { vision: boolean }) {
   const model = textModel()
@@ -13,22 +12,22 @@ export function makeAgent(client: Documents, work: Workspace, settings: { vision
     initialState: {
       model,
       systemPrompt: [
-        "你是 DocForge 智能文档格式与排版 Agent，通吃党政公文、学术论文/课程实验报告、技术合同/申报表。",
-        "重要规则：",
-        "1. 每轮上下文第 1 条消息是当前实时激活的 V3 模板能力卡（或 V2 Active Profile）。" +
-          "用户导入或切换模板后状态会实时变化，严禁凭历史旧空列表断言没有模板！不确定时必须调用 manage_templates 核实。",
-        "2. 当用户询问“当前模板/当前预设/当前格式”时，同时参考 V3 模板资产（manage_templates）与 V2 预设（manage_profiles）。",
-        "3. 只要存在活动 V3 模板，起草或改写文档必须调用 compose_document(mode='authored', slot_values=..., body_plan=...)：",
-        "   - 若模板有封面槽位（如 title、student_id、college、major、class_name、author、advisor、date），" +
-          "通过 slot_values 填入对应值（只填值，不重复字段标签）；",
-        "   - 正文各章节按模板已声明的原型（如 heading_1、heading_2、heading_3、body、table）组装为 body_plan（slot 填 'body'）；",
-        "   - 保真套版使用 ingest_draft + compose_document(mode='exact_copy') 按段落 ID 区间映射。",
-        "4. 仅在没有任何活动 V3 模板、纯使用 V2 国标公文预设时，先加载文种 Skill 再调用 render_gongwen_docx。",
-        "5. 严禁直接输出生成 Word 的代码。文档生成后用简洁清晰的 Markdown 向用户说明生成页数、套用的模板及审计结果。",
+        "你是 DocForge 通用文档结构解析与排版 Agent。",
+        "核心工作准则：",
+        "1. 每轮上下文第 1 条消息是当前激活模板的能力卡。" +
+          "若用户提供了新参考文档路径，先调用 learn_reference_doc 学习并激活模板。",
+        "2. 起草或改写文档调用 compose_document(mode='authored', slot_values=..., body_plan=...)：",
+        "   - 对照能力卡声明的元数据字段传入 slot_values（只填纯值，不带字段标签前缀）；",
+        "   - 若模板含多个正文槽位，必须在 body_plan 每一项显式指定对应 slot，避免重复输出已印制的固定栏目标题；",
+        "   - 若原参考文档缺少封面或目录且用户明确需要补齐，可传 generate_cover=true / generate_toc=true。",
+        "3. 原文零改字套版调用 ingest_draft + compose_document(mode='exact_copy')。",
+        "4. 根据返回的每页物理遥测（行数、首尾摘要、空白页或尾部溢出告警），" +
+          "必要时调用 refine_and_audit（可按 section 指定分节）做版面收口。",
+        "5. 严禁向用户输出拼装 Word 的代码。完成后简明汇报页数、槽位填写、保留结构与审计结果。",
       ].join("\n"),
-      tools: [...createTools(client, work), ...createV3Tools(work, settings)],
+      tools: createTools(work, settings),
     },
-    transformContext: contextHook(client, work.templates),
+    transformContext: contextHook(work.templates),
     getApiKey: () => process.env.LLM_API_KEY,
     toolExecution: "sequential",
   })

@@ -50,10 +50,10 @@ const cardStats = computed(() => {
     <div class="flex-1 overflow-y-auto scroll-thin p-3 space-y-2 max-h-[220px] lg:max-h-none">
       <div
         v-for="fmt in formats"
-        :key="fmt.kind + ':' + fmt.id"
+        :key="fmt.id"
         class="p-2.5 rounded-[10px] border cursor-pointer transition"
         :class="
-          activeFormat?.id === fmt.id && activeFormat?.kind === fmt.kind
+          activeFormat?.id === fmt.id
             ? 'bg-white border-[#2563EB] ring-2 ring-[#EFF6FF]'
             : 'bg-white/70 border-[#E2E8F0] hover:bg-white'
         "
@@ -66,8 +66,7 @@ const cardStats = computed(() => {
           </span>
         </div>
         <div class="text-[10.5px] font-mono text-[#64748B] mt-1">
-          {{ fmt.slots.length }} 槽位 · {{ fmt.prototypes.length }} 原型
-          {{ fmt.kind === "v2" ? "· V2兼容" : "" }}
+          {{ fmt.fields.length }} 填空 · {{ fmt.contentSlots.length }} 内容槽 · {{ fmt.prototypes.length }} 原型
         </div>
       </div>
     </div>
@@ -92,10 +91,16 @@ const cardStats = computed(() => {
         </div>
         <div class="flex flex-wrap gap-1 pt-0.5">
           <span
-            v-for="slot in activeFormat?.slots ?? []"
-            :key="slot"
+            v-for="f in activeFormat?.fields ?? []"
+            :key="f.name"
             class="px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[10px]"
-            v-text="'{{' + slot + '}}'"
+            v-text="'{{' + f.name + '}}'"
+          ></span>
+          <span
+            v-for="s in activeFormat?.contentSlots ?? []"
+            :key="'c:' + s"
+            class="px-1.5 py-0.5 rounded bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] text-[10px]"
+            v-text="'[' + s + ']'"
           ></span>
         </div>
       </div>

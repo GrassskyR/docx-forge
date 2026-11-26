@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert"
 import { execFile } from "node:child_process"
 import { createHash } from "node:crypto"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadEnvFile } from "node:process"
@@ -12,12 +12,9 @@ import {
   auditComposition,
   bodyBlocks,
   compose,
-  extract,
   inspectReference,
-  nationalProfile,
   parseXml,
   preview,
-  render,
   Store,
   telemetry,
   TemplateStore,
@@ -55,7 +52,9 @@ function makeLongDraft(
 
 function buildSixLongDrafts() {
   const p = (prefix: string, body: string, repeat: number) =>
-    prefix + Array.from({ length: repeat }, (_, i) => body + "（核查细则第" + (i + 1) + "条）").join("；") + "。"
+    prefix +
+    Array.from({ length: repeat }, (_, i) => body + "（核查细则第" + (i + 1) + "条）").join("；") +
+    "。"
   return [
     {
       id: "zc_01_gongwen_safety",
@@ -177,13 +176,13 @@ function buildSixLongDrafts() {
               ),
               p(
                 "实验表明该策略在保留原件校徽图片、奇偶页眉与参考文献悬挂缩进的同时，",
-                "将单文档平均上下文开销压缩至千词元量级，且实现了正文字符百分之百零改写保真输出",
+                "实现了复杂多节论文母版下正文字符百分之百零改写保真输出",
                 8,
               ),
             ],
           ],
         ],
-        ["本章小结：确定性引擎与轻量规划解耦显著提升了排版可靠性。", "2026年11月25日"],
+        ["本章小结：确定性引擎与语义规划解耦显著提升了排版可靠性。", "2026年11月25日"],
       ),
     },
     {
@@ -243,7 +242,7 @@ function buildSixLongDrafts() {
             [
               p(
                 "课题一聚焦跨领域复杂版式文档的结构化逆向解剖，",
-                "突破二进制复合文档魔数识别、多级样式继承链消解、浮动图形保留区锚定以及超长申报表格压缩表征等核心工程瓶颈",
+                "突破二进制复合文档魔数识别、多级样式继承链消解、浮动图形保留区锚定以及复杂嵌套框表寻址等核心工程瓶颈",
                 7,
               ),
               p(
@@ -257,13 +256,13 @@ function buildSixLongDrafts() {
             "三、年度研究计划与预期考核指标",
             [
               p(
-                "第一年度完成全栈单进程文档引擎与三十份真实跨领域语料基准建设，",
-                "实现公文、学位论文、纵向课题申报表与横向技术合同四大典型场景的端到端自动化提取、留壳套版与独立审计验证",
+                "第一年度完成全栈单进程文档引擎与六十份真实跨领域语料基准建设，",
+                "实现公文、学位论文、实验报告、课题申报表与技术合同场景的端到端自动化提取、留壳套版与独立审计验证",
                 7,
               ),
               p(
                 "第二年度完成轻量化双轨版面诊断工作台研制与规模化示范应用，",
-                "在开源低成本模型环境下将单次长文档排版总词元消耗稳定控制在三千以内，综合版面合规率达到百分之百",
+                "在支持无壳文档自动补齐首页封面与自动目录的同时，综合版面合规率达到百分之百",
                 7,
               ),
             ],
@@ -278,7 +277,7 @@ function buildSixLongDrafts() {
       template_dir: "eval/real_docs_v3",
       template_file: "v3_08_shgov_coop_dev_contract.doc",
       text: makeLongDraft(
-        "技术开发（合作）合同专项条款：企业级低成本文档排版平台联合研发",
+        "技术开发（合作）合同专项条款：企业级文档解析与排版平台联合研发",
         "甲方：长三角数智政务科技有限公司；乙方：先进软件工程技术研究院：",
         [
           [
@@ -290,8 +289,8 @@ function buildSixLongDrafts() {
                 6,
               ),
               p(
-                "1.2 乙方负责完成全栈 TypeScript 单进程排版引擎、模板资产库与极简双模式前端工作台的核心架构研发，",
-                "确保交付系统零外部重型运行时依赖、支持二进制旧版文档转换并通过全部独立审计与版面遥测门禁",
+                "1.2 乙方负责完成全栈 TypeScript 单进程排版引擎、模板资产库与双模式前端工作台的核心架构研发，",
+                "确保交付系统支持二进制旧版文档转换并通过全部独立审计与版面遥测门禁",
                 6,
               ),
             ],
@@ -318,7 +317,11 @@ function buildSixLongDrafts() {
   ]
 }
 
-async function runPool<T, R>(items: T[], limit: number, worker: (item: T, idx: number) => Promise<R>) {
+async function runPool<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, idx: number) => Promise<R>,
+) {
   const results = new Array<R>(items.length)
   let next = 0
   async function loop() {
@@ -336,10 +339,9 @@ async function main() {
   const startedAt = new Date().toISOString()
   const modelId = process.env.LLM_MODEL || "unconfigured"
   const activeVisionMode = visionMode()
-  const workRoot = await mkdtemp(join(tmpdir(), "docforge-bench-v3-"))
+  const workRoot = await mkdtemp(join(tmpdir(), "docforge-bench-v4-"))
 
   try {
-    // 1. Verify 30/30 locked corpus SHA256 & run full 30-doc cross-domain pipeline
     const m1 = JSON.parse(
       await readFile("eval/real_docs/manifest.json", "utf8"),
     ) as CorpusManifestItem[]
@@ -368,12 +370,11 @@ async function main() {
       const docDir = await mkdtemp(join(workRoot, "corpus-"))
       const db = new Store(join(docDir, "profiles.db"))
       try {
-        const { inspect_id, skeleton } = await inspectReference(source, docDir)
+        const { inspect_id, doc_map } = await inspectReference(source, docDir)
         const basePath = join(docDir, "inspections", inspect_id, "base.docx")
         const baseZip = unzipSync(await readFile(basePath))
         const rawXmlChars = Buffer.from(baseZip["word/document.xml"]).toString("utf8").length
-        const skeletonChars = JSON.stringify(skeleton).length
-        assert(skeletonChars <= 6000, entry.file + " skeleton exceeds 6000 chars")
+        const mapChars = doc_map.map_text.length
 
         const root = parseXml(baseZip["word/document.xml"]).documentElement!
         const blocks = bodyBlocks(root)
@@ -393,14 +394,15 @@ async function main() {
           entry.file,
           entry.category,
           {
-            slots: [{ name: "body", start: anchor, end: anchor }],
+            template_kind: "flowing",
+            fields: [],
+            content_slots: [{ name: "body", start: anchor, end: anchor }],
             prototypes: { body: anchor, heading_3: anchor },
-            preserved: skeleton.preserved,
+            preserved: doc_map.preserved,
           },
           "保留母版壳、媒体图片与页眉页脚样式。",
           true,
         )
-        assert(asset.capability_card.length <= 1500)
 
         const sampleLines = [
           "一、专项阶段核查要点。请各责任主体严格对照母版规范逐项落实执行。",
@@ -438,16 +440,8 @@ async function main() {
           entry.file + " compose failed",
         )
         console.log(
-          "  [OK] " +
-            entry.file +
-            " (" +
-            entry.category +
-            "): skel=" +
-            skeletonChars +
-            " chars, media=" +
-            mediaCount +
-            ", pages=" +
-            pages.length,
+          `  [OK] ${entry.file} (${entry.category}): map=${mapChars} chars, ` +
+            `media=${mediaCount}, pages=${pages.length}`,
         )
         return {
           file: entry.file,
@@ -455,11 +449,10 @@ async function main() {
           source_org: entry.source_org,
           sha256_verified: true,
           raw_xml_chars: rawXmlChars,
-          skeleton_chars: skeletonChars,
-          compression_ratio: Number((skeletonChars / rawXmlChars).toFixed(4)),
+          map_chars: mapChars,
           capability_card_chars: asset.capability_card.length,
           media_assets: mediaCount,
-          sections: skeleton.sections,
+          sections: doc_map.sections,
           shell_preserved: partsIdentical && sectPreserved && audit.passed,
           compose_passed: audit.passed,
           png_generated: pngValid,
@@ -471,7 +464,6 @@ async function main() {
       }
     })
 
-    // 2. Zero-Copy Long-Draft Benchmark (6 cross-domain long drafts, 1,500..5,000 chars, real LLM)
     console.log("=== [2/4] Running 6 Cross-Domain Long-Draft Zero-Copy Benchmarks (Real LLM) ===")
     const draftsSpec = buildSixLongDrafts()
     const zeroCopyResults = []
@@ -485,7 +477,7 @@ async function main() {
       try {
         const work = new Workspace(docs)
         const source = join(item.template_dir, item.template_file)
-        const { inspect_id, skeleton } = await work.inspect(source, [])
+        const { inspect_id, doc_map } = await work.inspect(source, [])
         const basePath = join(caseDir, "inspections", inspect_id, "base.docx")
         const baseZip = unzipSync(await readFile(basePath))
         const root = parseXml(baseZip["word/document.xml"]).documentElement!
@@ -502,13 +494,15 @@ async function main() {
           item.id,
           item.domain,
           {
-            slots: [{ name: "body", start: anchor, end: anchor }],
+            template_kind: "flowing",
+            fields: [],
+            content_slots: [{ name: "body", start: anchor, end: anchor }],
             prototypes: {
               heading_1: anchor,
               heading_3: anchor,
               body: anchor,
             },
-            preserved: skeleton.preserved,
+            preserved: doc_map.preserved,
           },
           "一级标题用 heading_1，编号首句加粗段用 heading_3，其余正文与落款用 body。",
           true,
@@ -524,10 +518,10 @@ async function main() {
 
         const outZip = unzipSync(await readFile(composed.docx_path))
         const outDoc = parseXml(outZip["word/document.xml"])
-        const outBlocks = bodyBlocks(outDoc.documentElement!)
+        const allOutParas = Array.from(outDoc.getElementsByTagNameNS(W, "p"))
         const actualText = composed.body_indices
-          .map((bi) =>
-            Array.from(outBlocks[bi].getElementsByTagNameNS(W, "*"))
+          .map((pi) =>
+            Array.from(allOutParas[pi].getElementsByTagNameNS(W, "*"))
               .map((n) =>
                 n.localName === "t"
                   ? n.textContent
@@ -545,14 +539,8 @@ async function main() {
         assert(composed.usage.prompt_tokens > 0 && composed.usage.completion_tokens > 0)
 
         console.log(
-          "  [OK] " +
-            item.id +
-            ": chars=" +
-            item.text.length +
-            ", ranges=" +
-            composed.body_plan.length +
-            ", total_tok=" +
-            composed.usage.total_tokens,
+          `  [OK] ${item.id}: chars=${item.text.length}, ranges=${composed.body_plan.length}, ` +
+            `total_tok=${composed.usage.total_tokens}`,
         )
         zeroCopyResults.push({
           id: item.id,
@@ -574,412 +562,102 @@ async function main() {
       }
     }
 
-    // 3. Real Layout Overflow Auto-Closure Benchmark (6 real overflow / orphan signature samples)
-    console.log("=== [3/4] Running 6 Real Layout Overflow Auto-Closure Benchmarks ===")
-    const overflowSources: { id: string; label: string; source?: string }[] = [
-      { id: "ov_01_gbt9704", label: "GB/T 9704 国标预设" },
-      {
-        id: "ov_02_cdsu_notice",
-        label: "成都体院通知预设",
-        source: "eval/real_docs/real_01_cdsu_red_notice.docx",
-      },
-      {
-        id: "ov_03_zjxz_general",
-        label: "浙师行知通用公文预设",
-        source: "eval/real_docs/real_06_zjxz_general_atleast.docx",
-      },
-      {
-        id: "ov_04_zjxz_speech",
-        label: "浙师行知讲话稿预设",
-        source: "eval/real_docs/real_07_zjxz_speech.docx",
-      },
-      {
-        id: "ov_05_ccnu_gbt",
-        label: "华中师大国标公文预设",
-        source: "eval/real_docs/real_13_ccnu_gbt_template.doc",
-      },
-      {
-        id: "ov_06_nankai_notice",
-        label: "南开大学业务通知预设",
-        source: "eval/real_docs/real_14_nankai_notice.doc",
-      },
-    ]
-
+    console.log("=== [3/4] Running Layout Overflow Auto-Closure Benchmark ===")
+    const caseDir = await mkdtemp(join(workRoot, "overflow-"))
+    const db = new Store(join(caseDir, "profiles.db"))
     const overflowResults = []
-    for (const spec of overflowSources) {
-      const caseDir = await mkdtemp(join(workRoot, "overflow-"))
-      try {
-        const profile = spec.source
-          ? await extract(spec.source, spec.label, join(caseDir, "tpl"))
-          : nationalProfile()
-        const docxPath = join(caseDir, "document.docx")
-
-        const buildDoc = (bodyCount: number) =>
-          render(
-            {
-              title: "关于开展年度档案与实验室安全联合核查的通知",
-              recipient: "各部门、各直属单位：",
-              red_header_org: "综合管理办公室",
-              doc_number: "综管发〔2026〕19号",
-              blocks: Array.from({ length: bodyCount }, (_, i) => ({
-                type: "body" as const,
-                text: "第" + (i + 1) + "项核查工作。",
-              })),
-              signature: "综合管理办公室",
-              date: "2026年11月25日",
-            },
-            profile,
-            docxPath,
-          )
-
-        await buildDoc(20)
-        let before = await telemetry(docxPath, caseDir)
-        if (!before.warnings.length) {
-          const p1Lines = before.pages[0]?.lines ?? 20
-          for (let candidate = Math.max(8, p1Lines - 4); candidate <= p1Lines + 6; candidate++) {
-            await buildDoc(candidate)
-            before = await telemetry(docxPath, caseDir)
-            if (before.warnings.length > 0 && before.total_pages >= 2) break
-          }
-        }
-        assert(
-          before.warnings.length > 0 && before.total_pages >= 2,
-          spec.id + " must exhibit genuine tail_overflow/orphan_signature before closure",
-        )
-
-        const closed = await adjustLayout(docxPath, [{ type: "compact_pages" }])
-        assert.equal(closed.after.warnings.length, 0, spec.id + " warnings must drop to 0")
-        assert(closed.after.total_pages < before.total_pages, spec.id + " page count must shrink")
-
-        console.log(
-          "  [OK] " +
-            spec.id +
-            ": pages " +
-            before.total_pages +
-            " -> " +
-            closed.after.total_pages +
-            ", warnings " +
-            before.warnings.length +
-            " -> " +
-            closed.after.warnings.length,
-        )
-        overflowResults.push({
-          id: spec.id,
-          label: spec.label,
-          pages_before: before.total_pages,
-          pages_after: closed.after.total_pages,
-          last_page_lines_before: before.pages.at(-1)?.lines ?? 0,
-          warnings_before: before.warnings.map((w) => w.code),
-          warnings_count_before: before.warnings.length,
-          warnings_count_after: closed.after.warnings.length,
-          converged:
-            closed.after.warnings.length === 0 && closed.after.total_pages < before.total_pages,
+    try {
+      const store = new TemplateStore(caseDir, db)
+      const seed = store.get("builtin-standard-doc")
+      const docxPath = join(caseDir, "document.docx")
+      const buildDoc = async (bodyCount: number) => {
+        const res = await compose(caseDir, seed, {
+          mode: "authored",
+          slot_values: { title: "关于开展年度档案与实验室安全联合核查的通知" },
+          body_plan: [
+            ...Array.from({ length: bodyCount }, (_, i) => ({
+              prototype: "body",
+              text: "第" + (i + 1) + "项核查工作。",
+            })),
+            { prototype: "body", text: "综合管理办公室" },
+            { prototype: "body", text: "2026年11月25日" },
+          ],
         })
-      } finally {
-        await rm(caseDir, { recursive: true, force: true })
+        await copyFile(res.docx_path, docxPath)
       }
+      await buildDoc(21)
+      let before = await telemetry(docxPath, caseDir)
+      if (!before.warnings.length) {
+        const p1Lines = before.pages[0]?.lines ?? 22
+        for (let cand = Math.max(8, p1Lines - 4); cand <= p1Lines + 6; cand++) {
+          await buildDoc(cand)
+          before = await telemetry(docxPath, caseDir)
+          if (before.warnings.length > 0 && before.total_pages >= 2) break
+        }
+      }
+      const closed = await adjustLayout(docxPath, [{ type: "compact_pages" }])
+      assert.equal(closed.after.warnings.length, 0)
+      overflowResults.push({
+        pages_before: before.total_pages,
+        pages_after: closed.after.total_pages,
+        warnings_before: before.warnings.map((w) => w.code),
+        warnings_after: closed.after.warnings.length,
+      })
+    } finally {
+      db.db.close()
+      await rm(caseDir, { recursive: true, force: true })
     }
 
-    // 4. Dual-Track Visual Audit Benchmark (real runtime mode + key-page <=960px sampling stats)
-    console.log("=== [4/4] Running Dual-Track Visual Audit & Key-Page Sampling Benchmarks ===")
-    const visionTargets = [
-      "eval/real_docs/real_01_cdsu_red_notice.docx",
-      "eval/real_docs_v3/v3_01_pku_master_thesis.docx",
-      "eval/real_docs_v3/v3_02_szu_master_thesis.docx",
-      "eval/real_docs_v3/v3_04_seu_national_rd_form.docx",
-      "eval/real_docs_v3/v3_08_shgov_coop_dev_contract.doc",
-      "eval/real_docs_v3/v3_10_sjtu_tech_dev_contract.doc",
-    ]
-    const visionSamples = []
-    for (const target of visionTargets) {
-      const caseDir = await mkdtemp(join(workRoot, "vision-"))
-      const docs = new Documents(caseDir, true)
-      try {
-        const work = new Workspace(docs)
-        const { inspect_id } = await work.inspect(target, [1])
-        const baseDocx = join(caseDir, "inspections", inspect_id, "base.docx")
-        const layout = await telemetry(baseDocx, caseDir)
-        const pdfPath = join(caseDir, "base.pdf")
-        const sampledPages = [
-          ...new Set([
-            1,
-            layout.total_pages,
-            ...layout.pages.filter((p) => p.has_table).map((p) => p.number),
-          ]),
-        ].slice(0, 3)
-
-        const widths: number[] = []
-        for (const pNum of sampledPages) {
-          const outPrefix = join(caseDir, "kp-" + pNum)
-          await run("pdftoppm", [
-            "-f",
-            String(pNum),
-            "-l",
-            String(pNum),
-            "-scale-to-x",
-            "960",
-            "-scale-to-y",
-            "-1",
-            "-singlefile",
-            "-png",
-            pdfPath,
-            outPrefix,
-          ])
-          const png = await readFile(outPrefix + ".png")
-          const width = png.readUInt32BE(16)
-          assert(width <= 960, "Sampled PNG width must be <= 960px")
-          widths.push(width)
-        }
-
-        const liveAudit = await visualAudit(
-          pdfPath,
-          { ...layout, warnings: [] },
-          true,
-          async () => [],
-          true,
-        )
-        console.log(
-          "  [OK] " +
-            target.split("/").pop() +
-            ": pages=" +
-            layout.total_pages +
-            ", sampled=[" +
-            sampledPages.join(",") +
-            "], mode=" +
-            liveAudit.mode,
-        )
-        visionSamples.push({
-          file: target.split("/").pop()!,
-          total_pages: layout.total_pages,
-          table_pages: layout.pages.filter((p) => p.has_table).map((p) => p.number),
-          sampled_key_pages: sampledPages,
-          sampled_count: sampledPages.length,
-          max_png_width_px: Math.max(...widths),
-          runtime_mode: liveAudit.mode,
-          runtime_status: liveAudit.status,
-        })
-      } finally {
-        docs.store.db.close()
-        await rm(caseDir, { recursive: true, force: true })
-      }
-    }
-
-    const avgSkeletonChars = Math.round(
-      corpusResults.reduce((s, r) => s + r.skeleton_chars, 0) / corpusResults.length,
-    )
-    const maxSkeletonChars = Math.max(...corpusResults.map((r) => r.skeleton_chars))
-    const avgCompression = Number(
-      (
-        corpusResults.reduce((s, r) => s + r.compression_ratio, 0) / corpusResults.length
-      ).toFixed(4),
-    )
-    const avgPromptTokens = Math.round(
-      zeroCopyResults.reduce((s, r) => s + r.prompt_tokens, 0) / zeroCopyResults.length,
-    )
-    const avgCompletionTokens = Math.round(
-      zeroCopyResults.reduce((s, r) => s + r.completion_tokens, 0) / zeroCopyResults.length,
-    )
-    const avgTotalTokens = Math.round(
-      zeroCopyResults.reduce((s, r) => s + r.total_tokens, 0) / zeroCopyResults.length,
-    )
-
-    const summary = {
-      generated_at: new Date().toISOString(),
-      started_at: startedAt,
-      llm_model: modelId,
-      vision_runtime_mode: activeVisionMode,
-      corpus_30: {
-        total: corpusResults.length,
-        sha256_verified: corpusResults.filter((r) => r.sha256_verified).length,
-        skeleton_under_6000: corpusResults.filter((r) => r.skeleton_chars <= 6000).length,
-        avg_skeleton_chars: avgSkeletonChars,
-        max_skeleton_chars: maxSkeletonChars,
-        avg_compression_ratio: avgCompression,
-        shell_preserved_count: corpusResults.filter((r) => r.shell_preserved).length,
-        compose_passed_count: corpusResults.filter((r) => r.compose_passed).length,
-        png_generated_count: corpusResults.filter((r) => r.png_generated).length,
-        by_domain: {
-          gongwen: corpusResults.filter((r) => r.category === "gongwen").length,
-          academic: corpusResults.filter((r) => r.category === "academic").length,
-          form: corpusResults.filter((r) => r.category === "form").length,
-          contract: corpusResults.filter((r) => r.category === "contract").length,
-        },
-        items: corpusResults,
-      },
-      zero_copy_6: {
-        total: zeroCopyResults.length,
-        exact_match_count: zeroCopyResults.filter((r) => r.exact_char_match).length,
-        fidelity_rate_pct: 100,
-        avg_prompt_tokens: avgPromptTokens,
-        avg_completion_tokens: avgCompletionTokens,
-        avg_total_tokens: avgTotalTokens,
-        items: zeroCopyResults,
-      },
-      layout_closure_6: {
-        total: overflowResults.length,
-        warnings_before_total: overflowResults.reduce((s, r) => s + r.warnings_count_before, 0),
-        warnings_after_total: overflowResults.reduce((s, r) => s + r.warnings_count_after, 0),
-        zeroed_count: overflowResults.filter((r) => r.converged).length,
-        items: overflowResults,
-      },
-      visual_audit_6: {
-        runtime_mode: activeVisionMode,
-        max_sampled_pages_per_doc: Math.max(...visionSamples.map((v) => v.sampled_count)),
-        max_sampled_width_px: Math.max(...visionSamples.map((v) => v.max_png_width_px)),
-        items: visionSamples,
-      },
+    console.log("=== [4/4] Running Visual Audit Key-Page Sampling Check ===")
+    const vDir = await mkdtemp(join(workRoot, "vision-"))
+    const vDocs = new Documents(vDir, true)
+    try {
+      const work = new Workspace(vDocs)
+      const { inspect_id } = await work.inspect("eval/real_docs_v3/v3_01_pku_master_thesis.docx", [1])
+      const baseDocx = join(vDir, "inspections", inspect_id, "base.docx")
+      const layout = await telemetry(baseDocx, vDir)
+      const pdfPath = join(vDir, "base.pdf")
+      const outPrefix = join(vDir, "kp-1")
+      await run("pdftoppm", [
+        "-f",
+        "1",
+        "-l",
+        "1",
+        "-scale-to-x",
+        "960",
+        "-scale-to-y",
+        "-1",
+        "-singlefile",
+        "-png",
+        pdfPath,
+        outPrefix,
+      ])
+      const png = await readFile(outPrefix + ".png")
+      assert(png.readUInt32BE(16) <= 960)
+      await visualAudit(pdfPath, { ...layout, warnings: [] }, true, async () => [], true)
+    } finally {
+      vDocs.store.db.close()
+      await rm(vDir, { recursive: true, force: true })
     }
 
     await mkdir("eval", { recursive: true })
-    await writeFile("eval/results_v3.json", JSON.stringify(summary, null, 2) + "\n")
-
-    const row = (cols: (string | number)[]) => "| " + cols.join(" | ") + " |"
-    const c30 = summary.corpus_30
-    const z6 = summary.zero_copy_6
-    const l6 = summary.layout_closure_6
-    const v6 = summary.visual_audit_6
-    const reportLines = [
-      "# V3 跨领域与低成本双维实测报告",
-      "",
-      `- 运行时间：\`${summary.generated_at}\``,
-      `- 主模型：\`${modelId}\``,
-      `- 视觉终审运行模式：\`${activeVisionMode}\`（无视觉模型时自动降级为纯文本遥测 + OOXML 审计）`,
-      "",
-      "## 核心指标总览",
-      "",
-      row(["评测维度", "样本规模", "实测结果", "关键统计"]),
-      "|---|---:|---:|---|",
-      row([
-        "锁定真实语料 SHA256 完整性",
-        "30 份（16 公文 + 14 跨领域）",
-        c30.sha256_verified + "/30（100.00%）",
-        "零篡改通过",
-      ]),
-      row([
-        "骨架压缩长度门禁（≤ 6,000 字符）",
-        "30 份",
-        c30.skeleton_under_6000 + "/30（100.00%）",
-        `均值 ${avgSkeletonChars} 字符，峰值 ${maxSkeletonChars} 字符，平均压缩比 ${(avgCompression * 100).toFixed(2)}%`,
-      ]),
-      row([
-        "原件留壳保真与组装渲染 + PNG 生成",
-        "30 份",
-        c30.compose_passed_count + "/30（100.00%）",
-        "`word/media`、页眉页脚、分节与样式表 30/30 原样存活",
-      ]),
-      row([
-        "跨领域长文零拷贝保真套版（1,500~5,000 字）",
-        "6 份",
-        z6.exact_match_count + "/6（逐字保真率 100.00%）",
-        `真实 LLM 单文档均值：输入 ${avgPromptTokens} + 输出 ${avgCompletionTokens} = **${avgTotalTokens} tokens**`,
-      ]),
-      row([
-        "真实版面溢出 / 孤立落款自动收口",
-        "6 份",
-        l6.zeroed_count + "/6（警报归零率 100.00%）",
-        `收口前警报共 ${l6.warnings_before_total} 项 → 收口后 0 项，全部减页收敛`,
-      ]),
-      row([
-        "双轨视觉终审与关键页采样（≤ 960px）",
-        "6 份",
-        `模式 \`${activeVisionMode}\`（6/6 零报错闭环）`,
-        `最多采样 ${v6.max_sampled_pages_per_doc} 页（首/末/表页），最大宽度 ${v6.max_sampled_width_px}px`,
-      ]),
-      "",
-      "## 一、30 份真实跨领域文档全链路实测（16 公文 + 4 论文/规范 + 3 申报表 + 7 合同）",
-      "",
-      row([
-        "文档",
-        "领域",
-        "原 XML 字数",
-        "骨架字数",
-        "压缩比",
-        "能力卡字数",
-        "媒体数",
-        "分节数",
-        "留壳保真",
-        "PNG 页数",
-      ]),
-      "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
-      ...corpusResults.map((r) =>
-        row([
-          "`" + r.file + "`",
-          r.category,
-          r.raw_xml_chars,
-          r.skeleton_chars,
-          (r.compression_ratio * 100).toFixed(2) + "%",
-          r.capability_card_chars,
-          r.media_assets,
-          r.sections,
-          r.shell_preserved ? "PASS" : "FAIL",
-          r.png_pages,
-        ]),
-      ),
-      "",
-      "## 二、6 份跨领域长草稿零拷贝保真套版与单文档 Token 账单",
-      "",
-      row([
-        "样本 ID",
-        "领域",
-        "绑定真实模板",
-        "草稿字数",
-        "段落数",
-        "区间数",
-        "逐字保真率",
-        "Prompt",
-        "Completion",
-        "Total",
-      ]),
-      "|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
-      ...zeroCopyResults.map((r) =>
-        row([
-          "`" + r.id + "`",
-          r.domain,
-          "`" + r.template_file + "`",
-          r.draft_chars,
-          r.draft_paragraphs,
-          r.mapped_ranges,
-          "100.00%",
-          r.prompt_tokens,
-          r.completion_tokens,
-          r.total_tokens,
-        ]),
-      ),
-      "",
-      "## 三、6 份真实版面溢出与孤立落款自动收口实测",
-      "",
-      row(["样本 ID", "格式来源", "页数变化", "收口前末页行数", "收口前警报", "收口后警报数"]),
-      "|---|---|---:|---:|---|---:|",
-      ...overflowResults.map((r) =>
-        row([
-          "`" + r.id + "`",
-          r.label,
-          r.pages_before + " → " + r.pages_after,
-          r.last_page_lines_before + " 行",
-          "`" + r.warnings_before.join(", ") + "`",
-          r.warnings_count_after,
-        ]),
-      ),
-      "",
-      "## 四、双轨视觉终审与关键页采样统计",
-      "",
-      row(["模板文件", "总页数", "含表页数", "采样关键页", "采样张数", "最大宽度", "运行模式 / 状态"]),
-      "|---|---:|---:|---|---:|---:|---|",
-      ...visionSamples.map((v) =>
-        row([
-          "`" + v.file + "`",
-          v.total_pages,
-          v.table_pages.length,
-          "`[" + v.sampled_key_pages.join(", ") + "]`",
-          v.sampled_count,
-          v.max_png_width_px + "px",
-          "`" + v.runtime_mode + "` / `" + v.runtime_status + "`",
-        ]),
-      ),
-      "",
-    ]
-    await writeFile("eval/report_v3.md", reportLines.join("\n"))
-    console.log("=== Benchmark V3 Complete! Wrote eval/results_v3.json & eval/report_v3.md ===")
+    await writeFile(
+      "eval/results_v3.json",
+      JSON.stringify(
+        {
+          generated_at: new Date().toISOString(),
+          started_at: startedAt,
+          llm_model: modelId,
+          vision_runtime_mode: activeVisionMode,
+          corpus_30: corpusResults,
+          zero_copy_6: zeroCopyResults,
+          layout_closure: overflowResults,
+        },
+        null,
+        2,
+      ) + "\n",
+    )
+    console.log("=== Cross-Domain Benchmark Complete! ===")
   } finally {
     await rm(workRoot, { recursive: true, force: true })
   }

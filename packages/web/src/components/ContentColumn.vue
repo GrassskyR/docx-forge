@@ -48,14 +48,10 @@ watch(
   },
 )
 
-const extraSlots = computed(() =>
-  props.activeFormat?.kind === "v3"
-    ? props.activeFormat.slots.filter((s) => s !== "body")
-    : [],
-)
+const extraSlots = computed(() => props.activeFormat?.fields ?? [])
 
-function slotLabel(name: string) {
-  return SLOT_LABELS[name] ?? name
+function slotLabel(field: { name: string; label?: string }) {
+  return field.label || SLOT_LABELS[field.name] || field.name
 }
 
 function onDraftPicked(e: Event) {
@@ -139,14 +135,14 @@ function onChatKeydown(e: KeyboardEvent) {
             封面 / 抬头信息填空（共 {{ extraSlots.length }} 项，留空则保持原封面）
           </summary>
           <div class="grid grid-cols-2 gap-2.5 pt-2.5">
-            <div v-for="slot in extraSlots" :key="slot">
+            <div v-for="slot in extraSlots" :key="slot.name">
               <label class="block text-[11px] text-[#64748B] mb-0.5">{{ slotLabel(slot) }}</label>
               <input
                 type="text"
-                :value="slotValues[slot] ?? ''"
+                :value="slotValues[slot.name] ?? ''"
                 :placeholder="'填写' + slotLabel(slot)"
                 class="w-full h-8 px-2.5 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] bg-white text-[12px] text-[#0F172A] outline-none"
-                @input="emit('updateSlot', slot, ($event.target as HTMLInputElement).value)"
+                @input="emit('updateSlot', slot.name, ($event.target as HTMLInputElement).value)"
               />
             </div>
           </div>

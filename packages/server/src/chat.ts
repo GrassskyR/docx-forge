@@ -1,22 +1,29 @@
-import { clearReviewedImages, countImages } from "./context_hook.js"
-import type { Workspace } from "./workspace.js"
 import type { IncomingMessage, ServerResponse } from "node:http"
 import { join } from "node:path"
 import { visionMode } from "@docs-agent/engine"
-import { Documents } from "./documents.js"
-import { SessionTree, type SessionNode } from "./session_tree.js"
 import { makeAgent } from "./agent.js"
+import { clearReviewedImages, countImages } from "./context_hook.js"
+import { Documents } from "./documents.js"
 import { runTracedAgentPrompt } from "./observability.js"
+import { SessionTree, type SessionNode } from "./session_tree.js"
+import type { Workspace } from "./workspace.js"
 
 export function chatHandler(client: Documents, work: Workspace) {
   const tree = new SessionTree(join(client.directory, "sessions.json"))
   const settings = { vision: true }
   const agent = makeAgent(client, work, settings)
   let busy = false
-  async function branchState(node: SessionNode) {
-    const profile = node.profile_id ? client.get(node.profile_id) : client.active()
-    return { ...node, profile_id: profile.id, profile_name: profile.name }
+
+  function branchState(node: SessionNode) {
+    const tplId = node.template_id ?? work.templates.activeId
+    const tpl = tplId ? work.templates.get(tplId) : undefined
+    return {
+      ...node,
+      template_id: tpl?.id ?? null,
+      template_name: tpl?.name ?? "通用标准文档格式",
+    }
   }
+
   return async (
     req: IncomingMessage,
     res: ServerResponse,
@@ -29,7 +36,7 @@ export function chatHandler(client: Documents, work: Workspace) {
           message_count: messages.length,
         })),
         current: tree.current,
-        node: await branchState(tree.node),
+        node: branchState(tree.node),
       })
       return
     }
@@ -40,7 +47,7 @@ export function chatHandler(client: Documents, work: Workspace) {
     let raw = ""
     for await (const chunk of req) {
       raw += chunk
-      if (raw.length > 2000000) throw Error("请求过大")
+      if (raw.length > 2000000) throw new Error("请求过大")
     }
     const body = JSON.parse(raw || "{}")
     if (busy) {
@@ -56,23 +63,16 @@ export function chatHandler(client: Documents, work: Workspace) {
           send(404, { error: "分支不存在" })
           return
         }
-        const active = await client.active()
-        const profileId = (forking ? body.profile_id : target?.profile_id) || active.id
-        const targetProfile = await client.get(profileId)
-        tree.node.template_id = work.templates.activeId
-        tree.checkpoint(tree.node.messages, active.id)
-        await client.setActive(targetProfile.id)
-        const node = forking ? tree.fork(body.name || "新版本", profileId) : tree.switch(body.id)
-        const templateId = forking
+        tree.checkpoint(tree.node.messages, work.templates.activeId)
+        const nextTplId = forking
           ? (body.template_id ?? work.templates.activeId)
-          : node.template_id
-        if (templateId) work.templates.activate(templateId)
-        else client.store.db.prepare("DELETE FROM settings WHERE key='active_template'").run()
-        node.template_id = templateId ?? null
-        tree.save()
-        if (!node.profile_id) tree.checkpoint(node.messages, profileId)
+          : (target!.template_id ?? work.templates.activeId)
+        const node = forking
+          ? tree.fork(body.name || "新分支", nextTplId)
+          : tree.switch(body.id)
+        if (node.template_id) work.templates.activate(node.template_id)
         agent.state.messages = structuredClone(node.messages)
-        send(200, { ...node, profile_name: targetProfile.name })
+        send(200, branchState(node))
       } finally {
         busy = false
       }
@@ -106,8 +106,9 @@ export function chatHandler(client: Documents, work: Workspace) {
     const event = (data: unknown) => res.write("data: " + JSON.stringify(data) + "\n\n")
     agent.state.messages = structuredClone(tree.node.messages)
     const unsubscribe = agent.subscribe((e) => {
-      if (e.type === "message_update" && e.assistantMessageEvent.type === "text_delta")
+      if (e.type === "message_update" && e.assistantMessageEvent.type === "text_delta") {
         event({ type: "text", text: e.assistantMessageEvent.delta })
+      }
       if (e.type === "message_end" && e.message.role === "assistant") {
         const usage = client.bill.record(
           e.message.usage,
@@ -115,8 +116,9 @@ export function chatHandler(client: Documents, work: Workspace) {
         )
         event({ type: "usage", usage })
       }
-      if (e.type === "tool_execution_start")
+      if (e.type === "tool_execution_start") {
         event({ type: "tool", name: e.toolName, phase: "start" })
+      }
       if (e.type === "tool_execution_end") {
         event({ type: "tool", name: e.toolName, isError: e.isError })
         const result = e.result.details
@@ -136,10 +138,8 @@ export function chatHandler(client: Documents, work: Workspace) {
         activeTemplate: work.templates.activeId,
       })
       if (agent.state.errorMessage) event({ type: "error", error: agent.state.errorMessage })
-      tree.node.template_id = work.templates.activeId
       const history = clearReviewedImages(agent.state.messages)
-      tree.checkpoint(history, (await client.active()).id)
-      // 视觉终审图片走独立请求、从不进入主对话（isolated）；主对话里残留的图片在此清除（purged）。
+      tree.checkpoint(history, work.templates.activeId)
       event({
         type: "done",
         vision_enabled: settings.vision,

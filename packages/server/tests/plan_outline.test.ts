@@ -16,14 +16,23 @@ vi.mock("../src/model.js", async (original) => ({
 }))
 
 test("长草稿规划向模型提供全量段落目录", async () => {
+  vi.stubEnv("LLM_API_KEY", "test-key")
   const data = await mkdtemp(join(tmpdir(), "docforge-plan-"))
-  const docs = new Documents(data, false)
+  const docs = new Documents(data, true)
   try {
     const work = new Workspace(docs)
     const lines = Array.from({ length: 58 }, (_, i) => "第" + i + "段正文".repeat(20))
-    const { draft_id } = await work.ingest({ text: [...lines, "某某市人民政府", "2026年11月25日"].join("\n") })
-    const template = { capability_card: "能力卡", blueprint: { slots: [{ name: "body" }] } }
-    await work.plan(template as TemplateAsset, draft_id)
+    const { draft_id } = await work.ingest({
+      text: [...lines, "某某市人民政府", "2026年11月25日"].join("\n"),
+    })
+    const template = {
+      capability_card: "能力卡",
+      blueprint: {
+        content_slots: [{ name: "body", start: "B0", end: "B0" }],
+        prototypes: { body: "B0", heading_1: "B0" },
+      },
+    }
+    await work.plan(template as unknown as TemplateAsset, draft_id)
     expect(prompts[0]).toContain("P30|" + lines[30].length + "|" + lines[30].slice(0, 24))
     expect(prompts[0]).toContain("P58|7|某某市人民政府")
     expect(prompts[0]).toContain("P59|11|2026年11月25日")

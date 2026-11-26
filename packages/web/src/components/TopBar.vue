@@ -29,7 +29,7 @@ const emit = defineEmits<{
 const categories: { id: CategoryId; label: string }[] = [
   { id: "all", label: "全部" },
   { id: "gongwen", label: "公文" },
-  { id: "thesis", label: "论文" },
+  { id: "thesis", label: "论文/报告" },
   { id: "contract", label: "合同/表" },
 ]
 
@@ -133,11 +133,11 @@ const tokenSummary = computed(() => {
           <div class="p-2 max-h-[300px] overflow-y-auto scroll-thin space-y-1">
             <button
               v-for="fmt in filteredFormats"
-              :key="fmt.kind + ':' + fmt.id"
+              :key="fmt.id"
               type="button"
               class="w-full text-left px-3 py-2.5 rounded-lg transition cursor-pointer"
               :class="
-                activeFormat?.id === fmt.id && activeFormat?.kind === fmt.kind
+                activeFormat?.id === fmt.id
                   ? 'bg-[#EFF6FF] text-[#1D4ED8]'
                   : 'hover:bg-[#F8FAFC]'
               "
@@ -147,7 +147,7 @@ const tokenSummary = computed(() => {
                 <span
                   class="text-[12.5px] font-medium truncate"
                   :class="
-                    activeFormat?.id === fmt.id && activeFormat?.kind === fmt.kind
+                    activeFormat?.id === fmt.id
                       ? 'text-[#1D4ED8]'
                       : 'text-[#0F172A]'
                   "
@@ -156,7 +156,7 @@ const tokenSummary = computed(() => {
                 </span>
                 <span class="text-[10.5px] text-[#64748B] shrink-0">
                   {{
-                    activeFormat?.id === fmt.id && activeFormat?.kind === fmt.kind
+                    activeFormat?.id === fmt.id
                       ? "✓ 使用中"
                       : fmt.categoryLabel
                   }}

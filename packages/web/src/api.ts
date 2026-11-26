@@ -1,9 +1,4 @@
-import type {
-  ComposePlan,
-  DocContentAST,
-  TemplateAsset,
-  VisionAudit,
-} from "@docs-agent/shared"
+import type { ComposePlan, TemplateAsset, VisionAudit } from "@docs-agent/shared"
 import type {
   DocumentResult,
   DraftIngestResponse,
@@ -21,7 +16,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { ...init, headers })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
-    const detail = data?.detail ?? data?.error ?? ("请求失败 (" + res.status + ")")
+    const detail = data?.detail ?? data?.error ?? "请求失败 (" + res.status + ")"
     throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail))
   }
   return data as T
@@ -32,27 +27,20 @@ export function fetchHealth() {
 }
 
 export function fetchTemplates() {
-  return request<TemplatesResponse>("/api/v3/templates")
+  return request<TemplatesResponse>("/api/templates")
 }
 
 export function setActiveTemplate(templateId: string | null) {
-  return request<{ active_template_id: string | null }>("/api/v3/templates/active", {
+  return request<{ active_template_id: string | null }>("/api/templates/active", {
     method: "PUT",
     body: JSON.stringify({ template_id: templateId }),
-  })
-}
-
-export function setActiveProfile(profileId: string) {
-  return request<{ active_profile_id: string }>("/api/profiles/active", {
-    method: "PUT",
-    body: JSON.stringify({ profile_id: profileId }),
   })
 }
 
 export async function inspectDocFile(file: File) {
   const form = new FormData()
   form.set("file", file, file.name)
-  return request<InspectResponse>("/api/v3/templates/inspect", { method: "POST", body: form })
+  return request<InspectResponse>("/api/templates/inspect", { method: "POST", body: form })
 }
 
 export function saveTemplateFromInspect(
@@ -61,7 +49,7 @@ export function saveTemplateFromInspect(
   category: string,
   rulesMd: string,
 ) {
-  return request<TemplateAsset>("/api/v3/templates", {
+  return request<TemplateAsset>("/api/templates", {
     method: "POST",
     body: JSON.stringify({
       inspect_id: inspectId,
@@ -74,21 +62,14 @@ export function saveTemplateFromInspect(
 }
 
 export function forkTemplateAsset(id: string, name: string) {
-  return request<TemplateAsset>("/api/v3/templates/" + encodeURIComponent(id) + "/fork", {
+  return request<TemplateAsset>("/api/templates/" + encodeURIComponent(id) + "/fork", {
     method: "POST",
     body: JSON.stringify({ name }),
   })
 }
 
-export function forkFormatProfile(id: string, name: string) {
-  return request("/api/profiles/" + encodeURIComponent(id) + "/fork", {
-    method: "POST",
-    body: JSON.stringify({ name, patch_json: {} }),
-  })
-}
-
 export function ingestDraftText(text: string) {
-  return request<DraftIngestResponse>("/api/v3/drafts/ingest", {
+  return request<DraftIngestResponse>("/api/drafts/ingest", {
     method: "POST",
     body: JSON.stringify({ text }),
   })
@@ -97,7 +78,7 @@ export function ingestDraftText(text: string) {
 export function ingestDraftFile(file: File) {
   const form = new FormData()
   form.set("file", file, file.name)
-  return request<DraftIngestResponse>("/api/v3/drafts/ingest", { method: "POST", body: form })
+  return request<DraftIngestResponse>("/api/drafts/ingest", { method: "POST", body: form })
 }
 
 export function composeDocument(payload: {
@@ -107,17 +88,12 @@ export function composeDocument(payload: {
   slot_values?: Record<string, string>
   body_plan?: ComposePlan
   normalize_punctuation?: boolean
+  generate_cover?: boolean
+  generate_toc?: boolean
 }) {
-  return request<DocumentResult>("/api/v3/documents/compose", {
+  return request<DocumentResult>("/api/documents/compose", {
     method: "POST",
     body: JSON.stringify(payload),
-  })
-}
-
-export function renderProfileDoc(ast: DocContentAST, profileId?: string) {
-  return request<DocumentResult>("/api/documents/render", {
-    method: "POST",
-    body: JSON.stringify({ content_ast: ast, profile_id: profileId }),
   })
 }
 
@@ -133,7 +109,7 @@ export function adjustDocumentLayout(
   }[],
 ) {
   return request<DocumentResult>(
-    "/api/v3/documents/" + encodeURIComponent(docId) + "/adjust-layout",
+    "/api/documents/" + encodeURIComponent(docId) + "/adjust-layout",
     {
       method: "POST",
       body: JSON.stringify({ operations }),
@@ -143,7 +119,7 @@ export function adjustDocumentLayout(
 
 export function visualAuditDocument(docId: string, runVision = true) {
   return request<{ vision: VisionAudit }>(
-    "/api/v3/documents/" + encodeURIComponent(docId) + "/visual-audit",
+    "/api/documents/" + encodeURIComponent(docId) + "/visual-audit",
     {
       method: "POST",
       body: JSON.stringify({ run_vision: runVision }),
@@ -155,10 +131,10 @@ export function fetchSessions() {
   return request<SessionsResponse>("/sessions")
 }
 
-export function forkSessionBranch(name: string, templateId?: string | null, profileId?: string) {
+export function forkSessionBranch(name: string, templateId?: string | null) {
   return request<{ id: string }>("/sessions/fork", {
     method: "POST",
-    body: JSON.stringify({ name, template_id: templateId, profile_id: profileId }),
+    body: JSON.stringify({ name, template_id: templateId }),
   })
 }
 
@@ -181,7 +157,7 @@ export async function streamChat(
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err?.error ?? err?.detail ?? ("对话请求失败 (" + res.status + ")"))
+    throw new Error(err?.error ?? err?.detail ?? "对话请求失败 (" + res.status + ")")
   }
   const reader = res.body?.getReader()
   if (!reader) return

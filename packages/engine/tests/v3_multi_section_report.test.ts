@@ -18,7 +18,7 @@ import {
 
 const NS = 'xmlns:w="' + W + '"'
 
-test("多节报告模板：识别说明节剔除、封面键值原位填槽、自动刷新 TOC 目录且保留页眉分节", async () => {
+test("多节报告模板：识别说明节剔除、封面下划线填槽、自动刷新 TOC 目录且保留页眉分节", async () => {
   const dir = await mkdtemp(join(tmpdir(), "docforge-report-"))
   const db = new Store(join(dir, "profiles.db"))
   try {
@@ -65,15 +65,16 @@ test("多节报告模板：识别说明节剔除、封面键值原位填槽、�
       body.appendChild(doc.importNode(el, true))
     }
     base["word/document.xml"] = xmlBytes(doc)
-    base["word/header2.xml"] = strToU8(`<w:hdr ${NS}><w:p><w:r><w:t>实习报告</w:t></w:r></w:p></w:hdr>`)
+    base["word/header2.xml"] = strToU8(
+      `<w:hdr ${NS}><w:p><w:r><w:t>实习报告</w:t></w:r></w:p></w:hdr>`,
+    )
     const tplPath = join(dir, "os_tpl.docx")
     await writeFile(tplPath, zipSync(base))
 
-    const { inspect_id, skeleton } = await inspectReference(tplPath, dir)
-    const roles = skeleton.section_outline?.map((s) => s.role_hint) ?? []
-    expect(roles).toContain("cover")
-    expect(roles).toContain("instruction_guide_removable")
-    expect(roles).toContain("toc_preserved")
+    const { inspect_id, doc_map } = await inspectReference(tplPath, dir)
+    expect(doc_map.sections).toBe(4)
+    expect(doc_map.style_dna.has_existing_toc).toBe(true)
+    expect(doc_map.map_text).toContain("说明（本页可以不打印）")
 
     const store = new TemplateStore(dir, db)
     const asset = store.save(
@@ -81,23 +82,25 @@ test("多节报告模板：识别说明节剔除、封面键值原位填槽、�
       "实验报告",
       "thesis",
       {
-        slots: [
-          { name: "title", start: "B1", end: "B1" },
-          { name: "author", start: "B2", end: "B2" },
-          { name: "body", start: "B8", end: "B11" },
+        template_kind: "flowing",
+        fields: [
+          { name: "title", coord: "B1", mode: "cell" },
+          { name: "student_name", coord: "B2", mode: "blank", blank_index: 0 },
         ],
-        remove_ranges: [{ start: "B4", end: "B6", reason: "不打印说明页" }],
+        content_slots: [{ name: "body", start: "B8", end: "B11", placement: "replace" }],
+        remove_targets: [{ start: "B4", end: "B6", drop_section: true, reason: "不打印说明页" }],
         prototypes: { heading_1: "B8", body: "B9", table: "B10" },
-        preserved: skeleton.preserved,
+        toc: { mode: "refresh_existing" },
+        preserved: doc_map.preserved,
       },
       "保留封面与页眉，移除说明节。",
       true,
     )
-    expect(asset.capability_card).toContain("table(4列)")
+    expect(asset.capability_card).toContain("table")
 
     const out = await compose(dir, asset, {
       mode: "authored",
-      slot_values: { title: "进程调度模拟实现", author: "学生：李明轩" },
+      slot_values: { title: "进程调度模拟实现", student_name: "李明轩" },
       body_plan: [
         { prototype: "heading_1", text: "1. 进程调度实验设计" },
         { prototype: "body", text: "采用多级反馈队列实现内核调度模拟。" },
@@ -109,6 +112,7 @@ test("多节报告模板：识别说明节剔除、封面键值原位填槽、�
       out.body_indices,
       ["1. 进程调度实验设计", "采用多级反馈队列实现内核调度模拟。"],
       out.removed_sections,
+      out.added_sections,
     )
     expect(audit.passed).toBe(true)
 

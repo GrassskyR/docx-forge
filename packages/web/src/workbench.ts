@@ -2,7 +2,6 @@ import { computed, reactive } from "vue"
 import type { ComposePlan } from "@docs-agent/shared"
 import * as api from "./api.js"
 import {
-  buildAstFromDraft,
   CATEGORY_LABELS,
   normalizeCategory,
   STARTER_DRAFTS,
@@ -72,7 +71,10 @@ function buildMappings(plan: ComposePlan | undefined, paragraphs: string[]): Map
     const text = count > 1 ? sample + "（共 " + count + " 段零拷贝）" : sample
     return {
       id: id.replace("-", "–"),
-      target: item.slot && item.slot !== "body" ? "slot:" + item.slot : "proto:" + item.prototype,
+      target:
+        item.slot && item.slot !== "body"
+          ? item.slot + ":" + item.prototype
+          : "proto:" + item.prototype,
       text,
     }
   })
@@ -103,7 +105,7 @@ export function useWorkbench() {
     isolatedPages: 0,
     health: null as HealthInfo | null,
     formats: [] as FormatOption[],
-    activeKey: "",
+    activeId: "",
     usage: {
       prompt_tokens: 0,
       completion_tokens: 0,
@@ -129,7 +131,7 @@ export function useWorkbench() {
   }
 
   const activeFormat = computed<FormatOption | undefined>(
-    () => state.formats.find((f) => f.kind + ":" + f.id === state.activeKey) ?? state.formats[0],
+    () => state.formats.find((f) => f.id === state.activeId) ?? state.formats[0],
   )
 
   const previewUrls = computed(() =>
@@ -139,54 +141,30 @@ export function useWorkbench() {
   async function refreshFormats() {
     const data = await api.fetchTemplates()
     state.usage = data.usage
-    const v3: FormatOption[] = data.templates.map((t) => {
+    state.formats = data.templates.map((t) => {
       const cat = normalizeCategory(t.category)
       return {
         id: t.id,
-        kind: "v3",
         name: t.name,
         category: cat,
         categoryLabel: CATEGORY_LABELS[cat],
         desc:
           "保留：" +
-          (t.blueprint.preserved.length ? t.blueprint.preserved.join(" · ") : "原件母版壳与样式"),
-        slots: t.blueprint.slots.map((s) => s.name),
+          (t.blueprint.preserved.length
+            ? t.blueprint.preserved.join(" · ")
+            : "原件母版壳与样式"),
+        fields: t.blueprint.fields.map((f) => ({ name: f.name, label: f.label })),
+        contentSlots: t.blueprint.content_slots.map((s) => s.name),
         prototypes: Object.keys(t.blueprint.prototypes),
         preserved: t.blueprint.preserved,
         capabilityCard: t.capability_card,
         asset: t,
       }
     })
-    const v2: FormatOption[] = data.profiles.map((p) => ({
-      id: p.id,
-      kind: "v2",
-      name: p.name,
-      category: "gongwen",
-      categoryLabel: "公文",
-      desc: p.description || "GB/T 9704 标准确定性公文预设（含 8 类公文角色样式）",
-      slots: ["标题", "发文字号", "主送机关", "正文", "落款", "日期"],
-      prototypes: Object.keys(p.styles),
-      preserved: p.red_header.enabled ? ["电子红头", "版头横线", "页码域"] : ["版心边距", "页码域"],
-      capabilityCard:
-        p.name +
-        " · 公文预设\n正文字体：" +
-        p.styles.body.font_cn +
-        " " +
-        p.styles.body.font_size_pt +
-        "pt\n标题字体：" +
-        p.styles.title.font_cn +
-        " " +
-        p.styles.title.font_size_pt +
-        "pt",
-      profile: p,
-    }))
-    state.formats = [...v3, ...v2]
-    if (data.active_template_id && v3.some((item) => item.id === data.active_template_id)) {
-      state.activeKey = "v3:" + data.active_template_id
-    } else if (v2.some((item) => item.id === data.active_profile_id)) {
-      state.activeKey = "v2:" + data.active_profile_id
+    if (data.active_template_id && state.formats.some((f) => f.id === data.active_template_id)) {
+      state.activeId = data.active_template_id
     } else if (state.formats[0]) {
-      state.activeKey = state.formats[0].kind + ":" + state.formats[0].id
+      state.activeId = state.formats[0].id
     }
   }
 
@@ -209,13 +187,8 @@ export function useWorkbench() {
 
   async function selectFormat(option: FormatOption) {
     state.popoverOpen = false
-    if (option.kind === "v3") {
-      await api.setActiveTemplate(option.id)
-    } else {
-      await api.setActiveTemplate(null)
-      await api.setActiveProfile(option.id)
-    }
-    state.activeKey = option.kind + ":" + option.id
+    await api.setActiveTemplate(option.id)
+    state.activeId = option.id
     state.slotValues = {}
     state.page = 1
     if (!state.draftEdited) {
@@ -251,53 +224,33 @@ export function useWorkbench() {
     state.busyLabel = "正在排版并执行审计…"
     const prevTokens = state.usage.total_tokens
     try {
-      if (fmt.kind === "v3" && fmt.asset) {
-        const draft = await api.ingestDraftText(state.draftText)
-        state.draftParagraphs = draft.paragraphs
-        const fallbackPlan: ComposePlan | undefined = state.health?.llm_configured
-          ? undefined
-          : [
-              {
-                range: draft.count > 1 ? "P0-P" + (draft.count - 1) : "P0",
-                prototype: Object.keys(fmt.asset.blueprint.prototypes)[0] ?? "body",
-              },
-            ]
-        const slotEntries = Object.entries(state.slotValues).filter(
-          ([k, v]) => k !== "body" && v.trim(),
-        )
-        const doc = await api.composeDocument({
-          template_id: fmt.id,
-          mode: "exact_copy",
-          draft_id: draft.draft_id,
-          ...(slotEntries.length ? { slot_values: Object.fromEntries(slotEntries) } : {}),
-          body_plan: fallbackPlan,
-          normalize_punctuation: state.normalizePunct,
-        })
-        if (doc.usage) {
-          state.usage = doc.usage
-          state.lastTokenDelta = Math.max(0, doc.usage.total_tokens - prevTokens)
-        }
-        const audit = await api.visualAuditDocument(doc.doc_id, state.visionEnabled)
-        doc.vision = audit.vision
-        state.currentDoc = doc
-        state.mappings = buildMappings(doc.body_plan, draft.paragraphs)
-      } else {
-        const ast = buildAstFromDraft(state.draftText, state.normalizePunct)
-        const doc = await api.renderProfileDoc(ast, fmt.id)
-        if (doc.layout) {
-          const audit = await api.visualAuditDocument(doc.doc_id, state.visionEnabled)
-          doc.vision = audit.vision
-        }
-        const lines = state.draftText.split(/\r\n|\r|\n/).filter(Boolean)
-        state.draftParagraphs = lines
-        state.mappings = lines.slice(0, 5).map((line, idx) => ({
-          id: "P" + idx,
-          target: idx === 0 ? "role:title" : "role:body",
-          text: line.slice(0, 28),
-        }))
-        state.lastTokenDelta = 0
-        state.currentDoc = doc
+      const draft = await api.ingestDraftText(state.draftText)
+      state.draftParagraphs = draft.paragraphs
+      const fallbackPlan: ComposePlan | undefined = state.health?.llm_configured
+        ? undefined
+        : [
+            {
+              range: draft.count > 1 ? "P0-P" + (draft.count - 1) : "P0",
+              prototype: Object.keys(fmt.asset.blueprint.prototypes)[0] ?? "body",
+            },
+          ]
+      const slotEntries = Object.entries(state.slotValues).filter(([, v]) => v.trim())
+      const doc = await api.composeDocument({
+        template_id: fmt.id,
+        mode: "exact_copy",
+        draft_id: draft.draft_id,
+        ...(slotEntries.length ? { slot_values: Object.fromEntries(slotEntries) } : {}),
+        body_plan: fallbackPlan,
+        normalize_punctuation: state.normalizePunct,
+      })
+      if (doc.usage) {
+        state.usage = doc.usage
+        state.lastTokenDelta = Math.max(0, doc.usage.total_tokens - prevTokens)
       }
+      const audit = await api.visualAuditDocument(doc.doc_id, state.visionEnabled)
+      doc.vision = audit.vision
+      state.currentDoc = doc
+      state.mappings = buildMappings(doc.body_plan, draft.paragraphs)
       state.docVersion++
       state.page = 1
       toast("已按「" + fmt.name + "」完成排版")
@@ -309,9 +262,7 @@ export function useWorkbench() {
     }
   }
 
-  async function runSurgery(
-    kind: "compact" | "orphan" | "tighten" | "vision",
-  ) {
+  async function runSurgery(kind: "compact" | "orphan" | "tighten" | "vision") {
     if (!state.currentDoc) {
       toast("请先套用格式或生成一份文档")
       return
@@ -354,17 +305,17 @@ export function useWorkbench() {
 
   async function importTemplate(file: File, name: string, category: string, rules: string) {
     state.busy = true
-    state.busyLabel = "正在解剖范例骨架并内化模板…"
+    state.busyLabel = "正在全量透视解剖并试填验证模板…"
     try {
       const inspected = await api.inspectDocFile(file)
       const asset = await api.saveTemplateFromInspect(inspected.inspect_id, name, category, rules)
       await refreshFormats()
-      state.activeKey = "v3:" + asset.id
+      state.activeId = asset.id
       if (!state.draftEdited) {
         state.draftText = STARTER_DRAFTS[normalizeCategory(category)]
       }
       state.importOpen = false
-      toast("已保存新格式「" + asset.name + "」")
+      toast("已通过自检并保存新格式「" + asset.name + "」")
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e))
     } finally {
@@ -378,12 +329,8 @@ export function useWorkbench() {
     if (!fmt) return
     const copyName = fmt.name + "（副本）"
     try {
-      if (fmt.kind === "v3") {
-        const created = await api.forkTemplateAsset(fmt.id, copyName)
-        await api.setActiveTemplate(created.id)
-      } else {
-        await api.forkFormatProfile(fmt.id, copyName)
-      }
+      const created = await api.forkTemplateAsset(fmt.id, copyName)
+      await api.setActiveTemplate(created.id)
       await refreshFormats()
       toast("已派生格式「" + copyName + "」")
     } catch (e) {
@@ -462,11 +409,7 @@ export function useWorkbench() {
     const fmt = activeFormat.value
     const label = "v" + (state.branches.length + 1) + " · 分支"
     try {
-      await api.forkSessionBranch(
-        label,
-        fmt?.kind === "v3" ? fmt.id : null,
-        fmt?.kind === "v2" ? fmt.id : undefined,
-      )
+      await api.forkSessionBranch(label, fmt?.id ?? null)
       await Promise.all([refreshSessions(), refreshFormats()])
       toast("已创建并切换到「" + label + "」")
     } catch (e) {

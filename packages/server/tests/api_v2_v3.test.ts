@@ -1,82 +1,98 @@
 import { test, expect } from "vitest"
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { once } from "node:events"
 import type { AddressInfo } from "node:net"
-import { unzipSync, zipSync } from "fflate"
 import { createApp } from "../src/app.js"
-import { parseXml, xmlBytes, W } from "@docs-agent/engine"
 
-test("单端口 V2 HTTP 契约、文件、修复与会话树", async () => {
+test("单端口 V4 HTTP 契约、模板管理、无壳补齐生成、版面收口与会话树", async () => {
   const dir = await mkdtemp(join(tmpdir(), "docforge-api-"))
   const server = createApp(dir, false)
   server.listen(0, "127.0.0.1")
   await once(server, "listening")
   const origin = "http://127.0.0.1:" + (server.address() as AddressInfo).port
   async function request(path: string, body?: unknown, method = body ? "POST" : "GET") {
-    const res = await fetch(origin + path, { method, headers: body instanceof FormData ? {} :
-      { "Content-Type": "application/json" }, body: body instanceof FormData ? body : JSON.stringify(body) })
+    const res = await fetch(origin + path, {
+      method,
+      headers: body instanceof FormData ? {} : { "Content-Type": "application/json" },
+      body: body instanceof FormData ? body : JSON.stringify(body),
+    })
     const result = await res.json()
     expect(res.status, JSON.stringify(result)).toBe(200)
     return result
   }
   try {
     expect((await fetch(origin + "/")).status).toBe(200)
-    expect(await request("/health")).toMatchObject({ service: "ok", sqlite: "ok", libreoffice: true, pdftoppm: true })
-    const { active_profile_id: id } = await request("/api/profiles")
-    expect((await request("/api/profiles/" + id)).id).toBe(id)
-    const form = new FormData()
-    form.set("name", "格式")
-    form.set("file", new Blob([await readFile("eval/fixtures/04.doc")]), "格式.doc")
-    expect((await request("/api/profiles/extract", form)).base_template_path).toBeTruthy()
-    const parsed = await request("/api/profiles/from-nl", { name: "自然语言", instruction: "正文四号黑体" })
-    expect(parsed.profile.styles.body.font_size_pt).toBe(14)
-    const child = await request("/api/profiles/" + id + "/fork", { name: "子预设", patch_instruction: "标题小二号" })
-    expect(child.styles.title.font_size_pt).toBe(18)
-    await request("/api/profiles/active", { profile_id: child.id }, "PUT")
-    const result = await request("/api/documents/render", { content_ast: { title: "关于测试的通知",
-      blocks: [{ type: "body", text: "真实文件上传、渲染、审计与预览。" }] } })
-    expect(result.lint_report.passed).toBe(true)
-    expect(Buffer.from(await (await fetch(origin + result.docx_url)).arrayBuffer()).subarray(0, 2).toString()).toBe("PK")
-    const png = Buffer.from(await (await fetch(origin + result.preview_urls[0])).arrayBuffer())
-    expect(png.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
-    const lintRequest = { docx_path: result.docx_path, profile_id: child.id }
-    expect((await request("/api/documents/lint", lintRequest)).passed).toBe(true)
-    const zip = unzipSync(await readFile(result.docx_path))
-    form.set("file", new Blob([await readFile(result.docx_path)]), "notice.docx")
-    form.set("profile_id", child.id)
-    expect((await request("/api/documents/lint", form)).passed).toBe(true)
-    const doc = parseXml(zip["word/document.xml"])
-    for (const [tag, key, value] of [["pgMar", "top", "100"], ["rFonts", "ascii", "错"],
-      ["jc", "val", "left"], ["sz", "val", "8"], ["ind", "firstLine", "500"], ["spacing", "line", "1"],
-      ["b", "val", "1"], ["i", "val", "1"]]) {
-      doc.getElementsByTagNameNS(W, tag)[0].setAttributeNS(W, "w:" + key, value)
-    }
-    doc.getElementsByTagNameNS(W, "t")[0].textContent = "保留外部改动"
-    zip["word/document.xml"] = xmlBytes(doc)
-    await writeFile(result.docx_path, zipSync(zip))
-    const damaged = await request("/api/documents/lint", lintRequest)
-    expect(damaged.violations.length).toBeGreaterThanOrEqual(8)
-    const repaired = await request("/api/documents/repair", {
-      docx_path: result.docx_path, effective_profile: result.effective_profile, repair_violations: damaged.violations,
+    expect(await request("/health")).toMatchObject({
+      service: "ok",
+      sqlite: "ok",
+      libreoffice: true,
+      pdftoppm: true,
     })
-    expect(repaired.lint_report.violations).toEqual([])
-    const fixed = unzipSync(await readFile(repaired.docx_path))
-    expect(parseXml(fixed["word/document.xml"]).documentElement!.textContent).toContain("保留外部改动")
+
+    const listed = await request("/api/templates")
+    const seedId = listed.active_template_id
+    expect(seedId).toBe("builtin-standard-doc")
+    expect((await request("/api/templates/" + seedId)).id).toBe(seedId)
+
+    const form = new FormData()
+    form.set("file", new Blob([await readFile("eval/fixtures/04.doc")]), "格式.doc")
+    const inspected = await request("/api/templates/inspect", form)
+    expect(inspected.inspect_id).toBeTruthy()
+    expect(inspected.sample_urls.length).toBeGreaterThan(0)
+
+    const learned = await request("/api/templates", {
+      inspect_id: inspected.inspect_id,
+      name: "上传测试模板",
+      category: "gongwen",
+      rules_md: "保持默认段落样式。",
+    })
+    expect(learned.blueprint.content_slots.length).toBeGreaterThan(0)
+
+    const child = await request("/api/templates/" + learned.id + "/fork", { name: "派生子模板" })
+    expect(child.parent_id).toBe(learned.id)
+    await request("/api/templates/active", { template_id: child.id }, "PUT")
+
+    const composed = await request("/api/documents/compose", {
+      mode: "authored",
+      generate_cover: true,
+      generate_toc: true,
+      slot_values: { title: "年度总结报告", student_name: "测试人", date: "2026年11月26日" },
+      body_plan: [
+        { prototype: "heading_1", text: "一、总体进展" },
+        { prototype: "body", text: "真实文件上传、封面与目录补齐、审计与预览。" },
+      ],
+    })
+    expect(composed.lint_report.passed).toBe(true)
+    const docxHead = Buffer.from(await (await fetch(origin + composed.docx_url)).arrayBuffer())
+    expect(docxHead.subarray(0, 2).toString()).toBe("PK")
+    const png = Buffer.from(await (await fetch(origin + composed.preview_urls[0])).arrayBuffer())
+    expect(png.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
+
+    const adjusted = await request("/api/documents/" + composed.doc_id + "/adjust-layout", {
+      operations: [{ type: "space_after_delta", delta: -1 }],
+    })
+    expect(adjusted.after.total_pages).toBeGreaterThan(0)
+
     const tree = await request("/sessions")
-    const branch = await request("/sessions/fork", { name: "修改稿", profile_id: id })
+    const branch = await request("/sessions/fork", { name: "修改稿", template_id: seedId })
     expect((await request("/sessions")).current).toBe(branch.id)
-    expect((await request("/sessions/switch", { id: tree.current })).profile_id).toBe(child.id)
-    await request("/api/profiles/active", { profile_id: id }, "PUT")
-    expect((await request("/api/profiles/" + child.id, {}, "DELETE")).deleted).toBe(child.id)
-    expect((await fetch(origin + "/api/profiles/" + child.id)).status).toBe(404)
-    const unplanned = await fetch(origin + "/api/v3/documents/compose", { method: "POST",
-      body: JSON.stringify({ mode: "authored" }) })
+    expect((await request("/sessions/switch", { id: tree.current })).template_id).toBe(child.id)
+
+    await request("/api/templates/active", { template_id: seedId }, "PUT")
+    expect((await request("/api/templates/" + child.id, {}, "DELETE")).deleted).toBe(child.id)
+    expect((await fetch(origin + "/api/templates/" + child.id)).status).toBe(404)
+
+    const unplanned = await fetch(origin + "/api/v3/documents/compose", {
+      method: "POST",
+      body: JSON.stringify({ mode: "authored" }),
+    })
     expect(unplanned.status).toBe(422)
     expect((await unplanned.json()).detail).toContain("body_plan")
     expect((await fetch(origin + "/chat", { method: "POST", body: "{}" })).status).toBe(
-      process.env.LLM_API_KEY ? 422 : 503)
+      process.env.LLM_API_KEY ? 422 : 503,
+    )
   } finally {
     server.close()
     await once(server, "close")

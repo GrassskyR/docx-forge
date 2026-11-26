@@ -2,6 +2,9 @@ import { DOMParser, XMLSerializer, type Document, type Element } from "@xmldom/x
 import { strFromU8, strToU8 } from "fflate"
 
 export const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+export const R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+export const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+
 export const PPR_ORDER = [
   "pStyle", "keepNext", "keepLines", "pageBreakBefore", "framePr", "widowControl", "numPr",
   "suppressLineNumbers", "pBdr", "shd", "tabs", "suppressAutoHyphens", "kinsoku", "wordWrap",
@@ -10,6 +13,7 @@ export const PPR_ORDER = [
   "textDirection", "textAlignment", "textboxTightWrap", "outlineLvl", "divId", "cnfStyle",
   "rPr", "sectPr", "pPrChange",
 ]
+
 export const RPR_ORDER = [
   "rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps", "strike", "dstrike",
   "outline", "shadow", "emboss", "imprint", "noProof", "snapToGrid", "vanish", "webHidden",
@@ -17,10 +21,12 @@ export const RPR_ORDER = [
   "bdr", "shd", "fitText", "vertAlign", "rtl", "cs", "em", "lang", "eastAsianLayout",
   "specVanish", "oMath", "rPrChange",
 ]
+
 export const SECTPR_ORDER = [
   "headerReference", "footerReference", "footnotePr", "endnotePr", "type", "pgSz", "pgMar",
   "paperSrc", "pgBorders", "lnNumType", "pgNumType", "cols", "formProt", "vAlign",
-  "noEndnote", "titlePg", "textDirection", "bidi", "rtlGutter", "docGrid", "printerSettings", "sectPrChange",
+  "noEndnote", "titlePg", "textDirection", "bidi", "rtlGutter", "docGrid", "printerSettings",
+  "sectPrChange",
 ]
 
 export function parseXml(bytes: Uint8Array) {
@@ -31,23 +37,34 @@ export function xmlBytes(document: Document) {
   return strToU8(new XMLSerializer().serializeToString(document))
 }
 
-export function children(parent: Element, name?: string) {
-  return Array.from(parent.childNodes).filter((node): node is Element =>
-    node.nodeType === 1 && (node as Element).namespaceURI === W &&
-    (!name || (node as Element).localName === name))
+export function children(parent: Element | undefined, name?: string) {
+  if (!parent) return []
+  return Array.from(parent.childNodes).filter(
+    (node): node is Element =>
+      node.nodeType === 1 &&
+      (node as Element).namespaceURI === W &&
+      (!name || (node as Element).localName === name),
+  )
 }
 
 export function insertInSchemaOrder(parent: Element, element: Element, order: string[]) {
   const rank = order.indexOf(element.localName!)
-  const next = children(parent).find(child => order.indexOf(child.localName!) > rank)
-  const node = element.ownerDocument === parent.ownerDocument
-    ? element
-    : parent.ownerDocument!.importNode(element, true)
+  const next = children(parent).find((c) => order.indexOf(c.localName!) > rank)
+  const node =
+    element.ownerDocument === parent.ownerDocument
+      ? element
+      : parent.ownerDocument!.importNode(element, true)
   return parent.insertBefore(node, next ?? null)
 }
 
-export function wordElement(document: Document, name: string, attrs: Record<string, string | number> = {}) {
+export function wordElement(
+  document: Document,
+  name: string,
+  attrs: Record<string, string | number> = {},
+) {
   const element = document.createElementNS(W, "w:" + name)
-  for (const [key, value] of Object.entries(attrs)) element.setAttributeNS(W, "w:" + key, String(value))
+  for (const [key, value] of Object.entries(attrs)) {
+    element.setAttributeNS(W, "w:" + key, String(value))
+  }
   return element
 }

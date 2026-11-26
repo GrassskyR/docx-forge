@@ -1,5 +1,6 @@
 {
-  "generated_at": "2026-11-25T13:27:19.586Z",
+  "generated_at": "2026-11-26T10:21:03.110Z",
+  "vision_mode": "native",
   "corpus_size": 30,
   "formats": {
     "ooxml_docx": 15,
@@ -8,23 +9,27 @@
   "tracks": {
     "rule_baseline": {
       "total_docs": 30,
-      "skeleton_budget_pass": 30,
       "pdf_render_pass": 30,
+      "zero_blank_pages_pass": 26,
+      "toc_pages_valid_pass": 30,
+      "vision_audit_passed": 0,
+      "vision_audit_issues": 0,
       "ooxml_audit_pass": 30,
-      "banner_preserved_pass": 27,
-      "form_container_pass": 19,
-      "residue_free_pass": 12,
+      "banner_preserved_pass": 25,
+      "form_container_pass": 21,
+      "residue_free_pass": 9,
       "metadata_filled_total": "6/183",
       "metadata_fill_pct": 3.3,
       "strict_e2e_pass": 0,
       "strict_e2e_pct": 0,
       "avg_tokens": 0,
       "failure_breakdown": {
-        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 24,
-        "F3_PREFILLED_OR_GUIDE_RESIDUE": 18,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 21,
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 25,
         "F2_SINGLE_SECT_BOUNDARY_LOSS": 18,
-        "F1_TABLE_CELL_UNADDRESSABLE": 11,
-        "F4_MULTI_SLOT_FIXED_SECTIONS": 2
+        "F1_TABLE_CELL_UNADDRESSABLE": 9,
+        "F4_MULTI_SLOT_FIXED_SECTIONS": 2,
+        "F6_BLANK_PAGE_LEFT_BEHIND": 4
       },
       "by_archetype": {
         "multi_section_flowing": {
@@ -51,24 +56,27 @@
     },
     "rule_enhanced": {
       "total_docs": 30,
-      "skeleton_budget_pass": 30,
-      "pdf_render_pass": 25,
-      "ooxml_audit_pass": 24,
-      "banner_preserved_pass": 24,
-      "form_container_pass": 18,
-      "residue_free_pass": 11,
-      "metadata_filled_total": "78/183",
-      "metadata_fill_pct": 42.6,
-      "strict_e2e_pass": 4,
-      "strict_e2e_pct": 13.3,
+      "pdf_render_pass": 30,
+      "zero_blank_pages_pass": 25,
+      "toc_pages_valid_pass": 30,
+      "vision_audit_passed": 0,
+      "vision_audit_issues": 0,
+      "ooxml_audit_pass": 30,
+      "banner_preserved_pass": 27,
+      "form_container_pass": 21,
+      "residue_free_pass": 14,
+      "metadata_filled_total": "84/183",
+      "metadata_fill_pct": 45.9,
+      "strict_e2e_pass": 5,
+      "strict_e2e_pct": 16.7,
       "avg_tokens": 0,
       "failure_breakdown": {
-        "F3_PREFILLED_OR_GUIDE_RESIDUE": 14,
-        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 17,
-        "F1_TABLE_CELL_UNADDRESSABLE": 7,
-        "F2_SINGLE_SECT_BOUNDARY_LOSS": 5,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 16,
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 21,
+        "F1_TABLE_CELL_UNADDRESSABLE": 9,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 9,
         "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
-        "F0_PIPELINE_EXCEPTION": 5
+        "F6_BLANK_PAGE_LEFT_BEHIND": 5
       },
       "by_archetype": {
         "multi_section_flowing": {
@@ -85,7 +93,7 @@
         },
         "hybrid_table_sections": {
           "total": 6,
-          "pass": 0
+          "pass": 1
         },
         "textbox_heavy_layout": {
           "total": 1,
@@ -95,45 +103,49 @@
     },
     "llm_hybrid": {
       "total_docs": 30,
-      "skeleton_budget_pass": 30,
-      "pdf_render_pass": 24,
-      "ooxml_audit_pass": 23,
-      "banner_preserved_pass": 18,
-      "form_container_pass": 17,
-      "residue_free_pass": 20,
-      "metadata_filled_total": "85/183",
-      "metadata_fill_pct": 46.4,
-      "strict_e2e_pass": 8,
-      "strict_e2e_pct": 26.7,
-      "avg_tokens": 5820,
+      "pdf_render_pass": 29,
+      "zero_blank_pages_pass": 28,
+      "toc_pages_valid_pass": 29,
+      "vision_audit_passed": 0,
+      "vision_audit_issues": 17,
+      "ooxml_audit_pass": 29,
+      "banner_preserved_pass": 28,
+      "form_container_pass": 28,
+      "residue_free_pass": 24,
+      "metadata_filled_total": "162/183",
+      "metadata_fill_pct": 88.5,
+      "strict_e2e_pass": 21,
+      "strict_e2e_pct": 70,
+      "avg_tokens": 16113,
       "failure_breakdown": {
-        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 13,
-        "F1_TABLE_CELL_UNADDRESSABLE": 7,
-        "F0_PIPELINE_EXCEPTION": 6,
-        "F2_SINGLE_SECT_BOUNDARY_LOSS": 4,
+        "F0_PIPELINE_EXCEPTION": 1,
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 2,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 1,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 5,
         "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
-        "F3_PREFILLED_OR_GUIDE_RESIDUE": 4
+        "F1_TABLE_CELL_UNADDRESSABLE": 1,
+        "F6_BLANK_PAGE_LEFT_BEHIND": 1
       },
       "by_archetype": {
         "multi_section_flowing": {
           "total": 5,
-          "pass": 4
+          "pass": 5
         },
         "single_section_flowing": {
           "total": 12,
-          "pass": 4
+          "pass": 10
         },
         "table_form_grid": {
           "total": 6,
-          "pass": 0
+          "pass": 3
         },
         "hybrid_table_sections": {
           "total": 6,
-          "pass": 0
+          "pass": 2
         },
         "textbox_heavy_layout": {
           "total": 1,
-          "pass": 0
+          "pass": 1
         }
       }
     }
@@ -225,26 +237,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 439,
+          "elapsed_ms": 2994,
           "tokens_used": 0,
-          "skeleton_chars": 3944,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B48-B84)"
+          "map_chars": 3359,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [
-            {
-              "start": "B21",
-              "end": "B46",
-              "reason": "填写说明与格式示例节"
-            }
-          ],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 1,
@@ -258,32 +269,42 @@
             "advisor@top_p",
             "date@top_p"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "本页可以不打印",
+            "图片格式示例",
+            "表格格式示例",
+            "操作系统安装与操练",
+            "不得少于300字",
+            "正文全文字体统一使用宋体。大标题使用三号字，小标"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2495,
+          "elapsed_ms": 4298,
           "tokens_used": 0,
-          "skeleton_chars": 3944,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_id(B0-B0)",
-            "college(B9-B9)",
-            "major(B10-B10)",
-            "class_name(B11-B11)",
-            "student_name(B12-B12)",
-            "advisor(B13-B13)",
-            "body(B48-B84)"
+          "map_chars": 3359,
+          "fields_detected": [
+            "student_id@B0[colon]",
+            "college@B9[colon]",
+            "major@B10[colon]",
+            "class_name@B11[colon]",
+            "student_name@B12[colon]",
+            "advisor@B13[colon]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "body(B48-B84,replace)"
+          ],
+          "remove_targets": [
             {
               "start": "B21",
               "end": "B46",
+              "drop_section": true,
               "reason": "规则检出说明节"
             }
           ],
@@ -294,7 +315,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 7,
@@ -308,26 +335,38 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 57859,
-          "tokens_used": 4676,
-          "skeleton_chars": 3944,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_id(B0-B0)",
-            "title(B7-B7)",
-            "college(B9-B9)",
-            "major(B10-B10)",
-            "class(B11-B11)",
-            "student_name(B12-B12)",
-            "advisor(B13-B13)",
-            "date(B19-B19)",
-            "body(B48-B84)"
+          "elapsed_ms": 31072,
+          "tokens_used": 7837,
+          "map_chars": 3359,
+          "fields_detected": [
+            "student_id@B0[blank0]",
+            "course@B5[blank0]",
+            "title@B7[match]",
+            "college@B9[blank0]",
+            "major@B10[blank0]",
+            "class_name@B11[blank0]",
+            "student_name@B12[blank0]",
+            "advisor@B13[blank0]",
+            "score@B14[blank0]",
+            "comments@B15[blank0]",
+            "comments_line_2@B16[blank0]",
+            "comments_line_3@B17[blank0]",
+            "date@B19[match]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "body(B48-B83,replace)"
+          ],
+          "remove_targets": [
             {
               "start": "B21",
               "end": "B46",
-              "reason": "填写说明页，本页可不打印"
+              "drop_section": true,
+              "reason": "第2节整节为说明页与图片、表格格式示例，页上注明可以不打印，整节删除避免残留空白页"
+            },
+            {
+              "start": "B84",
+              "match": "（不得少于300字）",
+              "reason": "心得体会字数提示语，属填写说明性质，局部剥离"
             }
           ],
           "prototypes": [
@@ -337,7 +376,13 @@
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 7,
@@ -417,20 +462,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3879,
+          "elapsed_ms": 5639,
           "tokens_used": 0,
-          "skeleton_chars": 4059,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B13-B13)"
+          "map_chars": 7442,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 11,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -443,6 +493,7 @@
           ],
           "residue_free": false,
           "leaked_residues": [
+            "完善封面信息，报告双面打印",
             "特别注意：在形成报告时，删除所有提示的文字，即文",
             "特别注意：正文为小四号宋体（中文）+Time N",
             "同时定位与地图构建（Simultaneous L",
@@ -457,17 +508,18 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4324,
+          "elapsed_ms": 6928,
           "tokens_used": 0,
-          "skeleton_chars": 4059,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "major(B16-B16)",
-            "student_id(B17-B17)",
-            "student_name(B18-B18)",
-            "body(B50-B138)"
+          "map_chars": 7442,
+          "fields_detected": [
+            "major@B16[colon]",
+            "student_id@B17[colon]",
+            "student_name@B18[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B50-B138,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -476,7 +528,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 3,
@@ -498,35 +556,33 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 176935,
-          "tokens_used": 11220,
-          "skeleton_chars": 4059,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B7-B7)",
-            "academic_term(B5-B5)",
-            "major(B16-B16)",
-            "student_id(B17-B17)",
-            "student_name(B18-B18)",
-            "score(B19-B19)",
-            "date(B28-B28)",
-            "body(B36-B143)"
+          "elapsed_ms": 80740,
+          "tokens_used": 18878,
+          "map_chars": 7442,
+          "fields_detected": [
+            "semester@B5[match]",
+            "major@B16[blank0]",
+            "student_id@B17[blank0]",
+            "student_name@B18[blank0]",
+            "grade@B19[blank0]",
+            "date@B28[match]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "body(B36-B122,replace)",
+            "references(B126-B138,replace)"
+          ],
+          "remove_targets": [
             {
               "start": "B13",
-              "end": "B13",
-              "reason": "封面填写说明"
+              "reason": "封面蓝色填写说明"
             },
             {
               "start": "B31",
-              "end": "B31",
-              "reason": "目录更新提示"
+              "reason": "目录蓝色提示"
             },
             {
               "start": "B34",
-              "end": "B34",
-              "reason": "模板使用说明"
+              "reason": "目录后红蓝特别提示"
             }
           ],
           "prototypes": [
@@ -537,7 +593,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 9,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 3,
@@ -613,20 +675,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2056,
+          "elapsed_ms": 4049,
           "tokens_used": 0,
-          "skeleton_chars": 2977,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B45-B66)"
+          "map_chars": 1828,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -637,24 +704,29 @@
             "student_name@top_p",
             "class_name@top_p(同行多字段)"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "导航技术发展概论是一门面向本科的校级公共选修课，",
+            "惯性导航系统（Inertial Navigati"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4097,
+          "elapsed_ms": 4017,
           "tokens_used": 0,
-          "skeleton_chars": 2977,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_name(B19-B19)",
-            "body(B50-B64)"
+          "map_chars": 1828,
+          "fields_detected": [
+            "student_name@B19[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B50-B64,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -662,7 +734,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 1,
@@ -684,18 +762,34 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 166542,
-          "tokens_used": 10507,
-          "skeleton_chars": 2977,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B8-B8)",
-            "class(B16-B16)",
-            "student_name(B19-B19)",
-            "date(B31-B31)",
-            "body(B45-B66)"
+          "elapsed_ms": 33881,
+          "tokens_used": 10491,
+          "map_chars": 1828,
+          "fields_detected": [
+            "academic_year@B5[match]",
+            "semester@B5[match]",
+            "course@B8[match]",
+            "class_name@B16[blank0]",
+            "student_id@B16[blank1]",
+            "student_name@B19[blank0]",
+            "grade@B19[blank1]",
+            "date@B31[match]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B45-B57,replace)",
+            "summary(B58-B58,insert_after)",
+            "references(B61-B63,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B59",
+              "reason": "总结栏填写提示语（必须写收获、感想和课程建议）"
+            },
+            {
+              "start": "B64",
+              "reason": "参考文献必须在正文顺序引用的说明提示"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
@@ -703,21 +797,23 @@
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 2,
+          "metadata_filled": 3,
           "metadata_total": 3,
-          "metadata_fill_rate": 0.67,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "failure_codes": []
         }
       }
     },
@@ -783,20 +879,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 1917,
+          "elapsed_ms": 6480,
           "tokens_used": 0,
-          "skeleton_chars": 3359,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B45-B77)"
+          "map_chars": 2123,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -807,24 +908,29 @@
             "student_name@top_p",
             "class_name@top_p(同行多字段)"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "导航技术发展概论是一门面向本科的校级公共选修课，",
+            "惯性导航系统（Inertial Navigati"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4202,
+          "elapsed_ms": 3606,
           "tokens_used": 0,
-          "skeleton_chars": 3359,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_name(B19-B19)",
-            "body(B51-B75)"
+          "map_chars": 2123,
+          "fields_detected": [
+            "student_name@B19[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B51-B75,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -832,7 +938,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 1,
@@ -854,20 +966,28 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 141549,
-          "tokens_used": 6022,
-          "skeleton_chars": 3359,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B10-B10)",
-            "course_name(B8-B8)",
-            "semester(B5-B5)",
-            "class_and_student_id(B16-B16)",
-            "name_and_score(B19-B19)",
-            "date(B31-B31)",
-            "body(B45-B77)"
+          "elapsed_ms": 27962,
+          "tokens_used": 6563,
+          "map_chars": 2123,
+          "fields_detected": [
+            "academic_year_term@B5[match]",
+            "course@B8[match]",
+            "class_name@B16[blank0]",
+            "student_id@B16[blank1]",
+            "student_name@B19[blank0]",
+            "score@B19[blank1]",
+            "date@B31[match]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B45-B77,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B35",
+              "end": "B43",
+              "reason": "目录页预留空白段，交由自动生成目录填充，避免残留空行"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
@@ -875,21 +995,23 @@
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 2,
+          "metadata_filled": 3,
           "metadata_total": 3,
-          "metadata_fill_rate": 0.67,
-          "unfilled_fields": [
-            "class_name@top_p(同行多字段)"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "failure_codes": []
         }
       }
     },
@@ -961,20 +1083,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2825,
+          "elapsed_ms": 6886,
           "tokens_used": 0,
-          "skeleton_chars": 3068,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B23-B23)"
+          "map_chars": 3271,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -1003,14 +1130,14 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4205,
+          "elapsed_ms": 1642,
           "tokens_used": 0,
-          "skeleton_chars": 3068,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B24-B82)"
+          "map_chars": 3271,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B24-B82,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -1018,7 +1145,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -1041,41 +1174,77 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 156579,
-          "tokens_used": 6328,
-          "skeleton_chars": 3068,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B6-B6)",
-            "title(B7-B7)",
-            "student_name_class(B3-B3)",
-            "date_period_grade(B4-B4)",
-            "body(B9-B82)"
+          "elapsed_ms": 36805,
+          "tokens_used": 9387,
+          "map_chars": 3271,
+          "fields_detected": [
+            "student_name@B3[blank0]",
+            "class_name@B3[blank1]",
+            "student_id@B3[blank2]",
+            "station_no@B3[blank3]",
+            "date@B4[blank0]",
+            "period@B4[blank1]",
+            "score@B4[blank2]",
+            "teacher_sign@B4[blank3]",
+            "course@B6[cell]",
+            "title@B7[match]",
+            "subtitle@B8[match]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "objective(B10-B12,replace)",
+            "equipment(B14-B16,replace)",
+            "procedure(B18-B76,replace)",
+            "discussion(B78-B82,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B50",
+              "end": "B51",
+              "reason": "示例提示语（下同）"
+            },
+            {
+              "start": "B54",
+              "reason": "示例元件提示语"
+            },
+            {
+              "start": "B61",
+              "end": "B63",
+              "reason": "示例元件与仿真参数提示"
+            },
+            {
+              "start": "B66",
+              "end": "B71",
+              "reason": "示例提示与正弦源参数设置说明"
+            },
+            {
+              "start": "B23",
+              "match": "解题步骤：",
+              "reason": "剥离示例引导词"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 1,
+          "metadata_filled": 3,
           "metadata_total": 3,
-          "metadata_fill_rate": 0.33,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "class_name@top_p(同行多字段)"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -1158,21 +1327,26 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 1533,
+          "elapsed_ms": 6063,
           "tokens_used": 0,
-          "skeleton_chars": 403,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B0)"
+          "map_chars": 823,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B1-B1,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 7,
@@ -1191,20 +1365,19 @@
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
-            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3614,
+          "elapsed_ms": 3456,
           "tokens_used": 0,
-          "skeleton_chars": 403,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B1-B1)"
+          "map_chars": 823,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B1-B1,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -1213,7 +1386,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -1238,42 +1417,54 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 86277,
-          "tokens_used": 3837,
-          "skeleton_chars": 403,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B1-B1)"
+          "elapsed_ms": 53698,
+          "tokens_used": 10052,
+          "map_chars": 823,
+          "fields_detected": [
+            "college@B0.R1.C0.P0[blank0]",
+            "grade@B0.R1.C0.P0[blank1]",
+            "major@B0.R1.C0.P0[blank2]",
+            "class_name@B0.R1.C0.P0[blank3]",
+            "student_name@B0.R1.C0.P0[blank4]",
+            "student_id@B0.R1.C0.P0[blank5]",
+            "course@B0.R1.C0.P1[blank0]",
+            "exp_date@B0.R1.C0.P1[blank1]",
+            "score@B0.R1.C0.P1[blank2]",
+            "partner@B0.R1.C0.P2[blank0]",
+            "signature@B0.R1.C2.P35[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "left_body(B0.R2.C0-B0.R2.C0,replace)",
+            "right_body(B0.R2.C2-B0.R2.C2,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B1",
+              "reason": "表格后遗留空白段落"
+            }
+          ],
           "prototypes": [
-            "table",
-            "body",
-            "heading_3"
+            "heading_1",
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 5,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "form_container_respected": true,
+          "metadata_filled": 7,
           "metadata_total": 7,
-          "metadata_fill_rate": 0,
-          "unfilled_fields": [
-            "student_id@table_cell(同行多字段)",
-            "student_name@table_cell(同行多字段)",
-            "class_name@table_cell(同行多字段)",
-            "college@table_cell(同行多字段)",
-            "major@table_cell(同行多字段)",
-            "course@table_cell(同行多字段)",
-            "date@table_cell(同行多字段)"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -1363,20 +1554,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 6141,
+          "elapsed_ms": 4636,
           "tokens_used": 0,
-          "skeleton_chars": 1970,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B32-B32)"
+          "map_chars": 5872,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 12,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -1406,18 +1602,19 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4332,
+          "elapsed_ms": 3949,
           "tokens_used": 0,
-          "skeleton_chars": 1970,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B8-B8)",
-            "student_id(B20-B20)",
-            "student_name(B21-B21)",
-            "advisor(B22-B22)",
-            "body(B31-B160)"
+          "map_chars": 5872,
+          "fields_detected": [
+            "course@B8[colon]",
+            "student_id@B20[colon]",
+            "student_name@B21[colon]",
+            "advisor@B22[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B31-B160,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -1426,7 +1623,13 @@
             "table"
           ],
           "pdf_ok": true,
-          "ooxml_audit_passed": false,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 6,
@@ -1447,21 +1650,32 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 221519,
-          "tokens_used": 8634,
-          "skeleton_chars": 1970,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B8-B8)",
-            "major_class(B19-B19)",
-            "student_id(B20-B20)",
-            "student_name(B21-B21)",
-            "instructor(B22-B22)",
-            "date(B23-B23)",
-            "college(B28-B28)",
-            "body(B30-B160)"
+          "elapsed_ms": 39866,
+          "tokens_used": 11987,
+          "map_chars": 5872,
+          "fields_detected": [
+            "course_name@B8[blank0]",
+            "class_name@B19[blank0]",
+            "student_id@B20[blank0]",
+            "student_name@B21[blank0]",
+            "advisor@B22[blank0]",
+            "date@B23[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B30-B142,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B91",
+              "end": "B135",
+              "reason": "格式说明、示例提示与课程设计说明整块，不属正文内容"
+            },
+            {
+              "start": "B143",
+              "end": "B160",
+              "reason": "参考文献格式说明、示例条目模板与转载声明"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
@@ -1470,7 +1684,13 @@
             "table"
           ],
           "pdf_ok": true,
-          "ooxml_audit_passed": false,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 3,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 7,
@@ -1479,7 +1699,7 @@
           "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
+          "strict_e2e_pass": true,
           "failure_codes": []
         }
       }
@@ -1556,20 +1776,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3574,
+          "elapsed_ms": 2659,
           "tokens_used": 0,
-          "skeleton_chars": 1036,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B18-B18)"
+          "map_chars": 889,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 10,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -1592,17 +1817,18 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3375,
+          "elapsed_ms": 3391,
           "tokens_used": 0,
-          "skeleton_chars": 1036,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B5-B5)",
-            "date(B7-B7)",
-            "student_name(B8-B8)",
-            "body(B17-B39)"
+          "map_chars": 889,
+          "fields_detected": [
+            "title@B5[colon]",
+            "date@B7[colon]",
+            "student_name@B8[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B17-B39,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -1610,7 +1836,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 3,
@@ -1629,41 +1861,55 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 142105,
-          "tokens_used": 6768,
-          "skeleton_chars": 1036,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B5-B5)",
-            "experiment_location(B6-B6)",
-            "body(B17-B43)"
+          "elapsed_ms": 40359,
+          "tokens_used": 8975,
+          "map_chars": 889,
+          "fields_detected": [
+            "title@B0[match]",
+            "experiment_name@B5[blank0]",
+            "location@B6[blank0]",
+            "date@B7[blank0]",
+            "student_name@B8[blank0]",
+            "student_id@B9[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "purpose(B18-B20,replace)",
+            "experiment_content(B23-B36,replace)",
+            "reflection(B37-B37,insert_after)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B38",
+              "end": "B39",
+              "reason": "实验体会栏示例提示语"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "body",
-            "heading_3"
+            "heading_3",
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 1,
+          "metadata_filled": 4,
           "metadata_total": 5,
-          "metadata_fill_rate": 0.2,
+          "metadata_fill_rate": 0.8,
           "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "student_name@top_p",
-            "college@top_p",
-            "date@top_p"
+            "college@top_p"
           ],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -1694,7 +1940,7 @@
         "sample": "中 南 大 学 / 专业学位研究生专业实践报告 / 学 号＿＿＿＿＿＿＿＿＿ / 姓 名＿＿＿＿＿＿＿＿＿ / 二级培养单位＿＿＿＿＿＿＿＿＿ / 专 业 类 别＿＿＿＿＿＿＿＿＿"
       },
       "ground_truth": {
-        "banner": "专业学位研究生专业实践报告",
+        "banner": "中南大学",
         "is_table_form": true,
         "table_ratio": 0.84,
         "sections": 1,
@@ -1748,20 +1994,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3525,
+          "elapsed_ms": 2622,
           "tokens_used": 0,
-          "skeleton_chars": 1314,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B7-B7)"
+          "map_chars": 6272,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -1793,18 +2044,19 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3440,
+          "elapsed_ms": 3263,
           "tokens_used": 0,
-          "skeleton_chars": 1314,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_id(B7-B7)",
-            "student_name(B8-B8)",
-            "college(B9-B9)",
-            "major(B10-B10)",
-            "body(B26-B28)"
+          "map_chars": 6272,
+          "fields_detected": [
+            "student_id@B7[colon]",
+            "student_name@B8[colon]",
+            "college@B9[colon]",
+            "major@B10[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B26-B28,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -1813,7 +2065,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 4,
@@ -1840,16 +2098,22 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 202362,
-          "tokens_used": 0,
-          "skeleton_chars": 1314,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
+          "elapsed_ms": 117702,
+          "tokens_used": 22679,
+          "map_chars": 6272,
+          "fields_detected": [],
+          "content_slots": [],
+          "remove_targets": [],
           "prototypes": [],
-          "error": "模板未声明槽位 body",
+          "error": "Expected ',' or '}' after property value in JSON at position 9394 (line 113 column 6)",
           "pdf_ok": false,
+          "total_pages": 0,
+          "blank_pages": 0,
+          "toc_pages_valid": false,
+          "vision_status": "error",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": false,
+          "audit_violations": [],
           "banner_preserved": false,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -1946,20 +2210,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4001,
+          "elapsed_ms": 3004,
           "tokens_used": 0,
-          "skeleton_chars": 1961,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B44-B44)"
+          "map_chars": 4269,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -1989,18 +2258,19 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3549,
+          "elapsed_ms": 2458,
           "tokens_used": 0,
-          "skeleton_chars": 1961,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B11-B11)",
-            "student_name(B13-B13)",
-            "date(B17-B17)",
-            "title(B25-B25)",
-            "body(B44-B44)"
+          "map_chars": 4269,
+          "fields_detected": [
+            "course@B11[colon]",
+            "student_name@B13[colon]",
+            "date@B17[colon]",
+            "title@B25[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -2008,7 +2278,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 5,
@@ -2035,41 +2311,67 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 165195,
-          "tokens_used": 7341,
-          "skeleton_chars": 1961,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B11-B11)",
-            "title(B12-B12)",
-            "student_name(B13-B13)",
-            "body(B19-B105)"
+          "elapsed_ms": 57335,
+          "tokens_used": 13627,
+          "map_chars": 4269,
+          "fields_detected": [
+            "course@B11[blank0]",
+            "experiment_name@B12[blank0]",
+            "major@B12[blank1]",
+            "student_name@B13[blank0]",
+            "student_id@B14[blank0]",
+            "location@B15[blank0]",
+            "score@B16[blank0]",
+            "date@B17[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B19-B106,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B25",
+              "end": "B28",
+              "reason": "示例任务提示语与代码排版建议文字"
+            },
+            {
+              "start": "B57",
+              "end": "B60",
+              "reason": "实验任务2示例提示语"
+            },
+            {
+              "start": "B62",
+              "end": "B70",
+              "reason": "实验任务3、4示例提示语"
+            },
+            {
+              "start": "B82",
+              "end": "B105",
+              "reason": "附录中重复的示例代码清单"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 5,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 3,
+          "metadata_filled": 6,
           "metadata_total": 6,
-          "metadata_fill_rate": 0.5,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "major@top_p(同行多字段)",
-            "date@top_p"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "failure_codes": []
         }
       }
     },
@@ -2139,20 +2441,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 9502,
+          "elapsed_ms": 14190,
           "tokens_used": 0,
-          "skeleton_chars": 1819,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B4-B4)"
+          "map_chars": 9387,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 21,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -2181,15 +2488,16 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 6612,
+          "elapsed_ms": 13192,
           "tokens_used": 0,
-          "skeleton_chars": 1819,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_id(B8-B8)",
-            "body(B4-B4)"
+          "map_chars": 9387,
+          "fields_detected": [
+            "student_id@B8[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -2197,7 +2505,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 21,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 1,
@@ -2225,37 +2539,50 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 88207,
-          "tokens_used": 3944,
-          "skeleton_chars": 1819,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B144)"
+          "elapsed_ms": 66997,
+          "tokens_used": 17242,
+          "map_chars": 9387,
+          "fields_detected": [
+            "title@D0.P2[match]",
+            "group_leader@D0.P4[match]",
+            "group_members@D0.P4[match]",
+            "date@D0.P5[cell]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B144,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B39",
+              "reason": "示例提示语"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 8,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 0,
+          "metadata_filled": 1,
           "metadata_total": 3,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 0.33,
           "unfilled_fields": [
             "student_id@top_p",
-            "student_name@table_cell",
             "college@table_cell"
           ],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         }
@@ -2346,20 +2673,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5178,
+          "elapsed_ms": 3949,
           "tokens_used": 0,
-          "skeleton_chars": 1506,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B23-B23)"
+          "map_chars": 1252,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -2384,16 +2716,17 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4786,
+          "elapsed_ms": 3820,
           "tokens_used": 0,
-          "skeleton_chars": 1506,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "date(B24-B24)",
-            "title(B27-B27)",
-            "body(B28-B40)"
+          "map_chars": 1252,
+          "fields_detected": [
+            "date@B24[colon]",
+            "title@B27[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B28-B40,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -2401,7 +2734,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -2423,41 +2762,59 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 156806,
-          "tokens_used": 6390,
-          "skeleton_chars": 1506,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B10-B10)",
-            "student_name(B23-B23)",
-            "student_id(B24-B24)",
-            "college(B25-B25)",
-            "major(B26-B26)",
-            "class(B27-B27)",
-            "advisor(B41-B41)",
-            "date(B29-B29)",
-            "body(B30-B36)"
+          "elapsed_ms": 78383,
+          "tokens_used": 15683,
+          "map_chars": 1252,
+          "fields_detected": [
+            "college@B1[blank0]",
+            "course@B10[blank0]",
+            "student_name@B23[blank0]",
+            "student_id@B23[blank1]",
+            "advisor@B23[blank2]",
+            "location@B24[blank0]",
+            "date@B24[blank1]",
+            "lab_name@B26[blank0]",
+            "experiment_name@B27[blank0]",
+            "hours@B28[blank0]",
+            "score@B40[blank0]",
+            "advisor_sign@B41[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "principle(B29-B29,insert_after)",
+            "purpose(B30-B30,insert_after)",
+            "content(B31-B31,insert_after)",
+            "equipment(B32-B32,insert_after)",
+            "steps(B33-B33,insert_after)",
+            "data_analysis(B34-B34,insert_after)",
+            "conclusion(B35-B35,insert_after)",
+            "summary(B36-B36,insert_after)",
+            "suggestions(B37-B37,insert_after)"
+          ],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "heading_1",
+            "heading_2",
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 7,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
+          "audit_violations": [],
+          "banner_preserved": false,
           "form_container_respected": true,
-          "metadata_filled": 6,
+          "metadata_filled": 7,
           "metadata_total": 7,
-          "metadata_fill_rate": 0.86,
-          "unfilled_fields": [
-            "course@top_p"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": true,
+          "strict_e2e_pass": false,
           "failure_codes": [
-            "F4_MULTI_SLOT_FIXED_SECTIONS"
+            "F2_SINGLE_SECT_BOUNDARY_LOSS"
           ]
         }
       }
@@ -2489,7 +2846,7 @@
         "sample": "电 子 科 技 大 学 / 实 验 报 告 / 学生姓名：关文聪 学号：2016060601 / 实验地点：主楼A2-412 实验时间：201 / 实验室名称：计算机实验室 / 实验项目名称：进程与资源管理实验"
       },
       "ground_truth": {
-        "banner": "",
+        "banner": "电子科技大学",
         "is_table_form": false,
         "table_ratio": 0,
         "sections": 1,
@@ -2538,20 +2895,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5509,
+          "elapsed_ms": 8116,
           "tokens_used": 0,
-          "skeleton_chars": 2711,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B118-B118)"
+          "map_chars": 38443,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 38,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -2582,16 +2944,17 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4614,
+          "elapsed_ms": 6041,
           "tokens_used": 0,
-          "skeleton_chars": 2711,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "date(B3-B3)",
-            "title(B5-B5)",
-            "body(B8-B788)"
+          "map_chars": 38443,
+          "fields_detected": [
+            "date@B3[colon]",
+            "title@B5[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B8-B788,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -2599,7 +2962,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -2622,47 +2991,61 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 178701,
-          "tokens_used": 8529,
-          "skeleton_chars": 2711,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "student_info(B2-B2)",
-            "lab_location(B3-B3)",
-            "lab_name(B4-B4)",
-            "report_score(B664-B664)",
-            "instructor_signature(B665-B665)",
-            "final_instructor_signature(B789-B789)",
-            "body(B8-B373)"
+          "elapsed_ms": 102530,
+          "tokens_used": 34699,
+          "map_chars": 38443,
+          "fields_detected": [
+            "student_name@B2[match]",
+            "student_id@B2[match]",
+            "advisor@B2[match]",
+            "location@B3[match]",
+            "date@B3[match]",
+            "lab_name@B4[colon]",
+            "project_name@B5[colon]",
+            "hours@B6[colon]",
+            "report_score@B664[blank0]",
+            "advisor_signature@B665[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "principle(B8-B94,replace)",
+            "purpose(B96-B97,replace)",
+            "content(B99-B99,replace)",
+            "equipment(B101-B101,replace)",
+            "steps(B103-B657,replace)",
+            "conclusion(B659-B659,replace)",
+            "summary(B661-B661,replace)",
+            "suggestions(B663-B663,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B669",
+              "end": "B790",
+              "reason": "删除重复的第二份实验报告示例与分页，仅保留单份模板"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 2,
+          "metadata_filled": 5,
           "metadata_total": 5,
-          "metadata_fill_rate": 0.4,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "title@top_p",
-            "date@top_p"
-          ],
-          "residue_free": false,
-          "leaked_residues": [
-            "关文聪"
-          ],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -2750,20 +3133,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5085,
+          "elapsed_ms": 5603,
           "tokens_used": 0,
-          "skeleton_chars": 693,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B0)"
+          "map_chars": 775,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -2789,14 +3177,14 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 5914,
+          "elapsed_ms": 8165,
           "tokens_used": 0,
-          "skeleton_chars": 693,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B0)"
+          "map_chars": 775,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -2804,7 +3192,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -2830,42 +3224,60 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 207779,
-          "tokens_used": 9530,
-          "skeleton_chars": 693,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B1-B1)",
-            "student_info(B2-B2)",
-            "body(B41-B68)"
+          "elapsed_ms": 92913,
+          "tokens_used": 16036,
+          "map_chars": 775,
+          "fields_detected": [
+            "course_name@B1[blank0]",
+            "experiment_name@B1[blank1]",
+            "experiment_code@B1[blank2]",
+            "experiment_type@B1[blank3]",
+            "experiment_location@B1[blank4]",
+            "score_assessment@B1[blank5]",
+            "student_name@B2[blank0]",
+            "student_id@B2[blank1]",
+            "college@B2[blank2]",
+            "department@B2[blank3]",
+            "major@B2[blank4]",
+            "experiment_start_year@B2[blank5]",
+            "experiment_start_month@B2[blank6]",
+            "experiment_start_day@B2[blank7]",
+            "experiment_start_ampm@B2[blank8]",
+            "experiment_end_month@B2[blank9]",
+            "experiment_end_day@B2[blank10]",
+            "experiment_end_ampm@B2[blank11]",
+            "temperature@B2[blank12]",
+            "humidity@B2[blank13]",
+            "advisor@B2[blank14]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B3-B40,replace)",
+            "appendix_body(B42-B68,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "heading_1",
-            "body",
-            "heading_3"
+            "heading_2",
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 2,
+          "metadata_filled": 8,
           "metadata_total": 8,
-          "metadata_fill_rate": 0.25,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "college@top_p(同行多字段)",
-            "major@top_p(同行多字段)",
-            "title@top_p(同行多字段)",
-            "advisor@top_p(同行多字段)",
-            "date@top_p(同行多字段)"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -2896,7 +3308,7 @@
         "sample": "深 圳 大 学 实 验 报 告 / 课程名称： / 实验项目名称： / 学院： 光 电 工 程 学 院 / 专业： / 指导教师："
       },
       "ground_truth": {
-        "banner": "学院：光电工程学院",
+        "banner": "深圳大学实验报告",
         "is_table_form": true,
         "table_ratio": 0.71,
         "sections": 1,
@@ -2956,20 +3368,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5067,
+          "elapsed_ms": 5611,
           "tokens_used": 0,
-          "skeleton_chars": 1173,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B5-B5)"
+          "map_chars": 2159,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -2994,26 +3411,28 @@
             "F1_TABLE_CELL_UNADDRESSABLE",
             "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F4_MULTI_SLOT_FIXED_SECTIONS"
+            "F4_MULTI_SLOT_FIXED_SECTIONS",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 5754,
+          "elapsed_ms": 8330,
           "tokens_used": 0,
-          "skeleton_chars": 1173,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B5-B5)",
-            "title(B7-B7)",
-            "college(B9-B9)",
-            "major(B11-B11)",
-            "advisor(B13-B13)",
-            "student_id(B15-B15)",
-            "date(B17-B17)",
-            "body(B5-B5)"
+          "map_chars": 2159,
+          "fields_detected": [
+            "course@B5[colon]",
+            "title@B7[colon]",
+            "college@B9[colon]",
+            "major@B11[colon]",
+            "advisor@B13[colon]",
+            "student_id@B15[colon]",
+            "date@B17[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -3022,8 +3441,14 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 7,
           "metadata_total": 7,
@@ -3039,54 +3464,92 @@
             "F1_TABLE_CELL_UNADDRESSABLE",
             "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F4_MULTI_SLOT_FIXED_SECTIONS"
+            "F4_MULTI_SLOT_FIXED_SECTIONS",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 160460,
-          "tokens_used": 5305,
-          "skeleton_chars": 1173,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B2-B2)",
-            "course_name(B5-B5)",
-            "experiment_name(B7-B7)",
-            "college(B9-B9)",
-            "body(B23-B23)"
+          "elapsed_ms": 72243,
+          "tokens_used": 19573,
+          "map_chars": 2159,
+          "fields_detected": [
+            "course@B5[blank0]",
+            "title@B7[blank0]",
+            "college@B9[blank0]",
+            "major@B11[blank0]",
+            "advisor@B13[blank0]",
+            "student_name@B15[blank0]",
+            "student_id@B15[blank1]",
+            "group@B15[blank2]",
+            "experiment_date@B17[blank0]",
+            "submit_date@B19[blank0]",
+            "grade@B23.R15.C0.P3[blank0]",
+            "advisor_sign@B23.R15.C0.P6[blank0]",
+            "remark@B23.R16.C0[blank0]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "purpose(B23.R1.C0-B23.R1.C0,replace)",
+            "equipment(B23.R3.C0-B23.R3.C0,replace)",
+            "principle(B23.R5.C0-B23.R5.C0,replace)",
+            "content(B23.R7.C0-B23.R7.C0,replace)",
+            "process(B23.R9.C0-B23.R9.C0,replace)",
+            "process_continued(B23.R10.C0-B23.R10.C0,replace)",
+            "analysis(B23.R12.C0-B23.R12.C0,replace)",
+            "harvest(B23.R14.C0-B23.R14.C0,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B23.R4.C0.P1",
+              "reason": "填写要求提示语"
+            },
+            {
+              "start": "B23.R6.C0.P1",
+              "reason": "填写要求提示语"
+            },
+            {
+              "start": "B23.R8.C0.P1",
+              "reason": "填写要求提示语"
+            },
+            {
+              "start": "B23.R11.C0.P1",
+              "reason": "填写要求提示语"
+            },
+            {
+              "start": "B23.R13.C0.P1",
+              "reason": "填写要求提示语"
+            },
+            {
+              "start": "B23.R10.C0.P0",
+              "reason": "加页提示语"
+            },
             {
               "start": "B24",
               "end": "B26",
-              "reason": "注意事项与填写说明，非报告正文"
+              "reason": "文末注意事项填写说明"
             }
           ],
           "prototypes": [
-            "heading_1",
-            "body",
-            "table",
-            "heading_3"
+            "heading_1"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 4,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
           "metadata_total": 7,
-          "metadata_fill_rate": 0.57,
-          "unfilled_fields": [
-            "student_id@top_p",
-            "advisor@top_p",
-            "date@top_p"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F2_SINGLE_SECT_BOUNDARY_LOSS"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -3117,7 +3580,7 @@
         "sample": "深 圳 大 学 实 验 报 告 / 课程名称： / 实验项目名称： / 学院： / 专业： / 指导教师："
       },
       "ground_truth": {
-        "banner": "实验报告提交时间：",
+        "banner": "深圳大学实验报告",
         "is_table_form": false,
         "table_ratio": 0.43,
         "sections": 1,
@@ -3179,20 +3642,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 7398,
+          "elapsed_ms": 2791,
           "tokens_used": 0,
-          "skeleton_chars": 1494,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B5-B5)"
+          "map_chars": 1454,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -3214,58 +3682,114 @@
           "strict_e2e_pass": false,
           "failure_codes": [
             "F2_SINGLE_SECT_BOUNDARY_LOSS",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2844,
+          "elapsed_ms": 4169,
           "tokens_used": 0,
-          "skeleton_chars": 1494,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "map_chars": 1454,
+          "fields_detected": [
+            "course@B5[colon]",
+            "title@B7[colon]",
+            "college@B9[colon]",
+            "major@B11[colon]",
+            "advisor@B13[colon]",
+            "date@B17[colon]"
+          ],
+          "content_slots": [
+            "body(B30-B30,replace)"
+          ],
+          "remove_targets": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 6,
           "metadata_total": 9,
-          "metadata_fill_rate": 0,
-          "unfilled_fields": [],
-          "residue_free": false,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
+          "strict_e2e_pass": true,
           "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 125419,
-          "tokens_used": 0,
-          "skeleton_chars": 1494,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "elapsed_ms": 70536,
+          "tokens_used": 16392,
+          "map_chars": 1454,
+          "fields_detected": [
+            "course@B5[blank0]",
+            "experiment_name@B7[blank0]",
+            "college@B9[blank0]",
+            "major@B11[blank0]",
+            "advisor@B13[blank0]",
+            "student_name@B15[blank0]",
+            "student_id@B15[blank1]",
+            "class_name@B15[blank2]",
+            "experiment_date@B17[blank0]",
+            "submit_date@B19[blank0]"
+          ],
+          "content_slots": [
+            "purpose_and_requirements(B22.R0.C0-B22.R0.C0,insert_after)",
+            "methods_and_steps(B22.R1.C0-B22.R1.C0,insert_after)",
+            "process_and_content(B22.R2.C1-B22.R2.C1,insert_after)",
+            "data_analysis(B22.R3.C1-B22.R3.C1,insert_after)",
+            "conclusion(B28.R0.C0-B28.R0.C0,insert_after)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B29",
+              "end": "B30",
+              "reason": "文末两条填写注释说明，非正文内容"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 7,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 9,
           "metadata_total": 9,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 1,
           "unfilled_fields": [],
-          "residue_free": false,
+          "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -3296,8 +3820,8 @@
         "sample": "深 圳 大 学 实 验 报 告 / 课程名称： 《 材料力学（1） 》 / 实验项目名称： 万能试验机测量材料的拉伸力学 / 学院： / 专业： / 指导教师："
       },
       "ground_truth": {
-        "banner": "",
-        "is_table_form": true,
+        "banner": "深圳大学实验报告",
+        "is_table_form": false,
         "table_ratio": 0.66,
         "sections": 3,
         "page_breaks": 1,
@@ -3366,22 +3890,27 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 9549,
+          "elapsed_ms": 3245,
           "tokens_used": 0,
-          "skeleton_chars": 3324,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B2-B2)"
+          "map_chars": 10753,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
-          "form_container_respected": false,
+          "audit_violations": [],
+          "banner_preserved": false,
+          "form_container_respected": true,
           "metadata_filled": 0,
           "metadata_total": 9,
           "metadata_fill_rate": 0,
@@ -3403,7 +3932,6 @@
           ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
             "F3_PREFILLED_OR_GUIDE_RESIDUE",
             "F4_MULTI_SLOT_FIXED_SECTIONS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
@@ -3411,20 +3939,21 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 7180,
+          "elapsed_ms": 4754,
           "tokens_used": 0,
-          "skeleton_chars": 3324,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B2-B2)",
-            "title(B4-B4)",
-            "college(B6-B6)",
-            "major(B8-B8)",
-            "advisor(B10-B10)",
-            "date(B20-B20)",
-            "body(B25-B109)"
+          "map_chars": 10753,
+          "fields_detected": [
+            "course@B2[colon]",
+            "title@B4[colon]",
+            "college@B6[colon]",
+            "major@B8[colon]",
+            "advisor@B10[colon]",
+            "date@B20[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B25-B109,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -3433,9 +3962,15 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 2,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
+          "form_container_respected": true,
           "metadata_filled": 6,
           "metadata_total": 9,
           "metadata_fill_rate": 0.67,
@@ -3448,58 +3983,91 @@
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 192397,
-          "tokens_used": 9460,
-          "skeleton_chars": 3324,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B4-B4)",
-            "course_name(B2-B2)",
-            "college(B6-B6)",
-            "major(B8-B8)",
-            "advisor(B10-B10)",
-            "student_name(B13-B13)",
-            "class(B14-B14)",
-            "experiment_date(B20-B20)",
-            "submit_date(B22-B22)",
-            "body(B25-B65)"
+          "elapsed_ms": 59174,
+          "tokens_used": 19049,
+          "map_chars": 10753,
+          "fields_detected": [
+            "course@B2[blank0]",
+            "experiment_name@B4[blank0]",
+            "college@B6[blank0]",
+            "major@B8[blank0]",
+            "advisor@B10[blank0]",
+            "reporter_name@B13[blank0]",
+            "reporter_id@B13[blank1]",
+            "reporter_class@B13[blank2]",
+            "member1_name@B14[blank0]",
+            "member1_id@B14[blank1]",
+            "member1_class@B14[blank2]",
+            "member2_name@B15[blank0]",
+            "member2_id@B15[blank1]",
+            "member2_class@B15[blank2]",
+            "member3_name@B16[blank0]",
+            "member3_id@B16[blank1]",
+            "member3_class@B16[blank2]",
+            "member4_name@B17[blank0]",
+            "member4_id@B17[blank1]",
+            "member4_class@B17[blank2]",
+            "experiment_time@B20[blank0]",
+            "submit_time@B22[blank0]",
+            "equipment_name@B45[blank0]",
+            "diameter_gauge@B46[blank0]",
+            "diameter_gauge_precision@B46[blank1]",
+            "elongation_device@B47[blank0]",
+            "elongation_precision@B47[blank1]",
+            "advisor_comments@B106.R0.C0.P1[blank0]",
+            "grade@B106.R0.C0.P14[blank0]",
+            "advisor_sign@B106.R0.C0.P25[blank0]",
+            "remark@B106.R1.C0[blank0]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "purpose(B26-B43,replace)",
+            "equipment_notes(B48-B55,replace)",
+            "data_text(B59-B60,replace)",
+            "curve(B63-B63,replace)",
+            "answer_1(B66-B81,replace)",
+            "answer_2(B83-B105,replace)"
+          ],
+          "remove_targets": [
             {
-              "start": "B109",
+              "start": "B108",
               "end": "B109",
-              "reason": "教师批改时间说明，非报告正文"
+              "reason": "文末填写说明注"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
-            "body",
-            "table"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
-          "metadata_filled": 8,
+          "form_container_respected": true,
+          "metadata_filled": 9,
           "metadata_total": 9,
-          "metadata_fill_rate": 0.89,
-          "unfilled_fields": [
-            "student_id@top_p(同行多字段)"
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "注：铸铁材料的的弹性模量为割线弹性模量。在工程计",
+            "1. 为什么拉伸试验必须采用标准比例的试样？材料"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F4_MULTI_SLOT_FIXED_SECTIONS"
           ]
         }
       }
@@ -3531,7 +4099,7 @@
         "sample": "深 圳 大 学 实 验 报 告 / 课程名称 / : / 土木工程材料 / 实验项目名称 / :"
       },
       "ground_truth": {
-        "banner": "土木与交通工程学院",
+        "banner": "深圳大学实验报告",
         "is_table_form": true,
         "table_ratio": 0.73,
         "sections": 1,
@@ -3593,20 +4161,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 9430,
+          "elapsed_ms": 8670,
           "tokens_used": 0,
-          "skeleton_chars": 2837,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B10-B10)"
+          "map_chars": 28186,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 30,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -3635,14 +4208,14 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 7138,
+          "elapsed_ms": 6254,
           "tokens_used": 0,
-          "skeleton_chars": 2837,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B14-B645)"
+          "map_chars": 28186,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B14-B645,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -3651,7 +4224,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -3676,46 +4255,120 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 131853,
-          "tokens_used": 5730,
-          "skeleton_chars": 2837,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B0-B0)",
-            "course_name(B2-B2)",
-            "report_info(B4-B4)",
-            "experiment_time(B6-B6)",
-            "body(B14-B645)"
+          "elapsed_ms": 76029,
+          "tokens_used": 28519,
+          "map_chars": 28186,
+          "fields_detected": [
+            "experiment_name_1@B2.R1.C2[cell]",
+            "major_1@B2.R3.C2[cell]",
+            "lab_time_1@B6.R0.C2[cell]",
+            "submit_time_1@B6.R1.C2[cell]",
+            "date_year_1@B12[blank0]",
+            "date_month_1@B12[blank1]",
+            "date_day_1@B12[blank2]",
+            "lab_temperature_1@B12[blank3]",
+            "lab_humidity_1@B12[blank4]",
+            "grade_1@B101[blank0]",
+            "advisor_sign_1@B106[blank0]",
+            "sign_year_1@B107[blank0]",
+            "sign_month_1@B107[blank1]",
+            "sign_day_1@B107[blank2]",
+            "experiment_name_2@B111.R1.C2[cell]",
+            "major_2@B111.R3.C2[cell]",
+            "lab_time_2@B115.R0.C2[cell]",
+            "submit_time_2@B115.R1.C2[cell]",
+            "experiment_name_3@B226.R1.C2[cell]",
+            "major_3@B226.R3.C2[cell]",
+            "lab_time_3@B230.R0.C2[cell]",
+            "submit_time_3@B230.R1.C2[cell]",
+            "experiment_name_4@B316.R1.C2[cell]",
+            "major_4@B316.R3.C2[cell]",
+            "lab_time_4@B320.R0.C2[cell]",
+            "submit_time_4@B320.R1.C2[cell]",
+            "experiment_name_5@B454.R1.C2[cell]",
+            "major_5@B454.R3.C2[cell]",
+            "lab_time_5@B458.R0.C2[cell]",
+            "submit_time_5@B458.R1.C2[cell]",
+            "experiment_name_6@B549.R1.C2[cell]",
+            "major_6@B549.R3.C2[cell]",
+            "lab_time_6@B553.R0.C2[cell]",
+            "submit_time_6@B553.R1.C2[cell]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "purpose_1(B15-B22,replace)",
+            "equipment_1(B24-B29,replace)",
+            "process_1(B31-B49,replace)",
+            "discussion_1_1(B61-B63,replace)",
+            "discussion_1_2(B65-B68,replace)",
+            "discussion_1_3(B70-B90,replace)",
+            "purpose_2(B123-B127,replace)",
+            "equipment_2(B129-B135,replace)",
+            "process_2(B137-B156,replace)",
+            "discussion_2_1(B180-B182,replace)",
+            "discussion_2_2(B184-B191,replace)",
+            "discussion_2_3(B193-B196,replace)",
+            "purpose_3(B239-B244,replace)",
+            "equipment_3(B246-B253,replace)",
+            "process_3(B255-B266,replace)",
+            "discussion_3_1(B285-B287,replace)",
+            "discussion_3_2(B289-B295,replace)",
+            "purpose_4(B330-B335,replace)",
+            "equipment_4(B337-B341,replace)",
+            "mix_design_calc_4(B356-B361,replace)",
+            "process_4(B367-B379,replace)",
+            "discussion_4_1(B397-B402,replace)",
+            "discussion_4_2(B404-B406,replace)",
+            "discussion_4_3(B408-B431,replace)",
+            "purpose_5(B466-B472,replace)",
+            "equipment_5(B474-B479,replace)",
+            "process_5(B481-B504,replace)",
+            "discussion_5_1(B515-B518,replace)",
+            "discussion_5_2(B520-B527,replace)",
+            "purpose_6(B562-B565,replace)",
+            "equipment_6(B567-B572,replace)",
+            "process_6(B574-B601,replace)",
+            "data_processing_6(B610-B616,replace)",
+            "discussion_6_1(B619-B624,replace)",
+            "discussion_6_2(B626-B627,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B364",
+              "reason": "填写提示语"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "body",
-            "table",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 23,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": false,
-          "metadata_filled": 2,
+          "metadata_filled": 4,
           "metadata_total": 8,
-          "metadata_fill_rate": 0.25,
+          "metadata_fill_rate": 0.5,
           "unfilled_fields": [
-            "student_id@table_cell",
             "class_name@table_cell",
             "college@table_cell",
-            "major@table_cell",
-            "advisor@top_p",
-            "date@table_cell"
+            "course@table_cell",
+            "title@table_cell"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "3．用静水力天平测量材料的表观密度，为何要将材料"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
-            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
           ]
         }
       }
@@ -3787,20 +4440,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5282,
+          "elapsed_ms": 4681,
           "tokens_used": 0,
-          "skeleton_chars": 711,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B0)"
+          "map_chars": 1397,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": false,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -3826,52 +4484,111 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1930,
+          "elapsed_ms": 4102,
           "tokens_used": 0,
-          "skeleton_chars": 711,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
+          "map_chars": 1397,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": false,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 4,
           "metadata_fill_rate": 0,
-          "unfilled_fields": [],
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "student_name@top_p",
+            "title@table_cell",
+            "advisor@table_cell"
+          ],
           "residue_free": false,
-          "leaked_residues": [],
+          "leaked_residues": [
+            "项目进度与阶段性成果说明（项目整体安排及目前进度",
+            "项目变更信息（研究名称或内容、实施方案、项目成员"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 66303,
-          "tokens_used": 0,
-          "skeleton_chars": 711,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "elapsed_ms": 64481,
+          "tokens_used": 14155,
+          "map_chars": 1397,
+          "fields_detected": [
+            "project_no@B1.R0.C1[cell]",
+            "project_name@B1.R0.C3[cell]",
+            "project_leader@B1.R1.C1[cell]",
+            "leader_id@B1.R1.C3[cell]",
+            "leader_phone@B1.R1.C5[cell]",
+            "team_members@B1.R2.C1[cell]",
+            "advisor@B1.R3.C1[cell]",
+            "project_period@B1.R4.C1[match]",
+            "project_due_date@B1.R4.C3[match]"
+          ],
+          "content_slots": [
+            "progress(B1.R5.C0.P1-B1.R5.C0.P11,replace)",
+            "resource_usage(B1.R6.C0.P1-B1.R6.C0.P9,replace)",
+            "budget_usage(B1.R7.C0.P1-B1.R7.C0.P10,replace)",
+            "difficulties(B1.R8.C0.P1-B1.R8.C0.P9,replace)",
+            "suggestions(B1.R9.C0.P1-B1.R9.C0.P8,replace)",
+            "changes(B1.R10.C0.P1-B1.R10.C0.P5,replace)",
+            "next_plan(B1.R11.C0.P1-B1.R11.C0.P6,replace)",
+            "teamwork(B1.R12.C0.P1-B1.R12.C0.P9,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B2",
+              "reason": "表末填写说明备注行，不属于正式报告内容"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 7,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 4,
           "metadata_total": 4,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 1,
           "unfilled_fields": [],
           "residue_free": false,
-          "leaked_residues": [],
+          "leaked_residues": [
+            "项目进度与阶段性成果说明（项目整体安排及目前进度",
+            "项目变更信息（研究名称或内容、实施方案、项目成员"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
           ]
         }
       }
@@ -3955,27 +4672,31 @@
           "1、有较好的动手能力，能够很好解决实验过程中出现",
           "2、有一定的动手能力，能够解决实验过程中出现的一",
           "3、动手能力较差，仪器误差、有效数字无正确概念，",
-          "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
-          "动手能力较好，操作认真，对实验有充分的准备，能自"
+          "遵守实验室的规章制度，实验完毕后整理桌面上的实验"
         ]
       },
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3925,
+          "elapsed_ms": 3248,
           "tokens_used": 0,
-          "skeleton_chars": 2514,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B10-B10)"
+          "map_chars": 3522,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -3996,31 +4717,32 @@
             "1、有较好的动手能力，能够很好解决实验过程中出现",
             "2、有一定的动手能力，能够解决实验过程中出现的一",
             "3、动手能力较差，仪器误差、有效数字无正确概念，",
-            "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
-            "动手能力较好，操作认真，对实验有充分的准备，能自"
+            "遵守实验室的规章制度，实验完毕后整理桌面上的实验"
           ],
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
-            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2919,
+          "elapsed_ms": 2703,
           "tokens_used": 0,
-          "skeleton_chars": 2514,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B10-B10)",
-            "title(B11-B11)",
-            "class_name(B12-B12)",
-            "advisor(B13-B13)",
-            "student_id(B14-B14)",
-            "date(B17-B17)",
-            "body(B10-B10)"
+          "map_chars": 3522,
+          "fields_detected": [
+            "course@B10[colon]",
+            "title@B11[colon]",
+            "class_name@B12[colon]",
+            "advisor@B13[colon]",
+            "student_id@B14[colon]",
+            "date@B17[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -4029,7 +4751,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 6,
@@ -4044,64 +4772,74 @@
             "1、有较好的动手能力，能够很好解决实验过程中出现",
             "2、有一定的动手能力，能够解决实验过程中出现的一",
             "3、动手能力较差，仪器误差、有效数字无正确概念，",
-            "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
-            "动手能力较好，操作认真，对实验有充分的准备，能自"
+            "遵守实验室的规章制度，实验完毕后整理桌面上的实验"
           ],
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
-            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 133497,
-          "tokens_used": 6781,
-          "skeleton_chars": 2514,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B10-B10)",
-            "title(B11-B11)",
-            "class(B12-B12)",
-            "instructor(B13-B13)",
-            "student_name(B14-B14)",
-            "co_author(B15-B15)",
-            "location(B16-B16)",
-            "experiment_date(B17-B17)",
-            "submit_date(B18-B18)",
-            "body(B24-B33)"
+          "elapsed_ms": 56051,
+          "tokens_used": 14769,
+          "map_chars": 3522,
+          "fields_detected": [
+            "course_no@B0.TX0.P0[blank0]",
+            "score@B1.R1.C0[cell]",
+            "teacher_sign@B1.R1.C1[cell]",
+            "grade_date@B1.R1.C2[cell]",
+            "course_name@B10[blank0]",
+            "experiment_name@B11[blank0]",
+            "class_name@B12[blank0]",
+            "advisor@B13[blank0]",
+            "student_name@B14[blank0]",
+            "student_id@B14[blank1]",
+            "partner@B15[blank0]",
+            "group_no@B15[blank1]",
+            "lab_location@B16[blank0]",
+            "exp_year@B17[blank0]",
+            "exp_month@B17[blank1]",
+            "exp_day@B17[blank2]",
+            "exp_weekday@B17[blank3]",
+            "submit_date@B18[blank0]"
           ],
-          "remove_ranges": [
-            {
-              "start": "B21",
-              "end": "B23",
-              "reason": "评分标准说明页"
-            }
+          "content_slots": [
+            "body(B34.R0.C0-B34.R0.C0,replace)"
           ],
+          "remove_targets": [],
           "prototypes": [
             "heading_1",
             "heading_2",
             "heading_3",
-            "body",
-            "table"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 9,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
-          "metadata_filled": 6,
+          "form_container_respected": true,
+          "metadata_filled": 7,
           "metadata_total": 7,
-          "metadata_fill_rate": 0.86,
-          "unfilled_fields": [
-            "student_id@top_p"
-          ],
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": false,
           "leaked_residues": [
-            "动手能力较好，操作认真，对实验有充分的准备，能自"
+            "总体要求：实验目的明确，对实验原理清晰，对实验仪",
+            "1、有较好的动手能力，能够很好解决实验过程中出现",
+            "2、有一定的动手能力，能够解决实验过程中出现的一",
+            "3、动手能力较差，仪器误差、有效数字无正确概念，",
+            "遵守实验室的规章制度，实验完毕后整理桌面上的实验"
           ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
             "F3_PREFILLED_OR_GUIDE_RESIDUE"
           ]
         }
@@ -4134,7 +4872,7 @@
         "sample": "江 苏 大 学 / 实 验 报 告 / 系 别 班 级 作 实 验 日 期 年 月  / 姓 名 学 号 交 报 告 日 期 年 月  / 完 成 报 告 所 需 时 间 教 师 评  / 131445143510"
       },
       "ground_truth": {
-        "banner": "",
+        "banner": "江苏大学",
         "is_table_form": false,
         "table_ratio": 0,
         "sections": 1,
@@ -4171,21 +4909,26 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3535,
+          "elapsed_ms": 2925,
           "tokens_used": 0,
-          "skeleton_chars": 888,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B2-B2)"
+          "map_chars": 674,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
+          "audit_violations": [],
+          "banner_preserved": false,
           "form_container_respected": true,
           "metadata_filled": 0,
           "metadata_total": 4,
@@ -4200,19 +4943,20 @@
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2480,
+          "elapsed_ms": 2465,
           "tokens_used": 0,
-          "skeleton_chars": 888,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B2-B2)"
+          "map_chars": 674,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -4220,8 +4964,14 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
+          "audit_violations": [],
+          "banner_preserved": false,
           "form_container_respected": true,
           "metadata_filled": 0,
           "metadata_total": 4,
@@ -4236,33 +4986,62 @@
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 130260,
-          "tokens_used": 0,
-          "skeleton_chars": 888,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "模板未声明槽位 body",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "elapsed_ms": 32699,
+          "tokens_used": 8545,
+          "map_chars": 674,
+          "fields_detected": [
+            "department@B2[blank0]",
+            "class_name@B2[blank1]",
+            "experiment_year@B2[blank2]",
+            "experiment_month@B2[blank3]",
+            "experiment_day@B2[blank4]",
+            "student_name@B3[blank0]",
+            "student_id@B3[blank1]",
+            "submit_year@B3[blank2]",
+            "submit_month@B3[blank3]",
+            "submit_day@B3[blank4]",
+            "duration@B4[blank0]",
+            "teacher_comment@B4[blank1]",
+            "experiment_name@B7[blank0]"
+          ],
+          "content_slots": [
+            "body(B11-B11,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B8",
+              "end": "B9",
+              "reason": "多余连续分页符造成空白页"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 6,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 4,
           "metadata_total": 4,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 1,
           "unfilled_fields": [],
-          "residue_free": false,
+          "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -4353,20 +5132,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3635,
+          "elapsed_ms": 3002,
           "tokens_used": 0,
-          "skeleton_chars": 1998,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B14-B14)"
+          "map_chars": 3220,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -4391,61 +5175,35 @@
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
             "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 507,
+          "elapsed_ms": 2436,
           "tokens_used": 0,
-          "skeleton_chars": 1998,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
-          "metadata_total": 8,
-          "metadata_fill_rate": 0,
-          "unfilled_fields": [],
-          "residue_free": false,
-          "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
-          ]
-        },
-        "llm_hybrid": {
-          "strategy": "llm_hybrid",
-          "elapsed_ms": 163036,
-          "tokens_used": 6763,
-          "skeleton_chars": 1998,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "cover_info(B9-B9)",
-            "body(B21-B58)"
+          "map_chars": 3220,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [
-            {
-              "start": "B11",
-              "end": "B20",
-              "reason": "填写说明页"
-            }
-          ],
+          "remove_targets": [],
           "prototypes": [
-            "heading_1",
-            "table",
-            "table_2",
-            "table_3",
             "body",
-            "heading_3"
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
           ],
           "pdf_ok": true,
+          "total_pages": 8,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
@@ -4461,12 +5219,84 @@
             "title@top_p(同行多字段)",
             "advisor@table_cell"
           ],
+          "residue_free": false,
+          "leaked_residues": [
+            "每份实验报告首页抬头信息须完整、规范填写；根据内",
+            "实验报告内容应完整规范，每份报告一般包括 6 部"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD",
+            "F6_BLANK_PAGE_LEFT_BEHIND"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 107175,
+          "tokens_used": 26190,
+          "map_chars": 3220,
+          "fields_detected": [
+            "course@B9.R0.C1[cell]",
+            "term_start_year@B9.R1.C1[cell]",
+            "term_end_year@B9.R1.C3[cell]",
+            "term_no@B9.R1.C5[cell]",
+            "major@B9.R2.C1[cell]",
+            "class_name@B9.R3.C1[cell]",
+            "student_name@B9.R4.C1[cell]",
+            "student_id@B9.R5.C1[cell]",
+            "advisor@B9.R6.C1[cell]",
+            "report_score@B9.R7.C1[cell]",
+            "experiment_no@B21.R0.C1[cell]",
+            "date_year@B21.R0.C5[cell]",
+            "date_month@B21.R0.C7[cell]",
+            "date_day@B21.R0.C9[cell]",
+            "college@B21.R2.C0.P0[match]",
+            "grade_year@B21.R2.C1.P0[blank0]",
+            "class_seq@B21.R2.C1.P0[blank1]",
+            "experiment_name@B21.R2.C4[cell]",
+            "student_name_hdr@B21.R3.C1[cell]",
+            "grade@B21.R3.C4[cell]",
+            "group_members@B21.R4.C1[cell]",
+            "advisor_hdr@B21.R4.C4[cell]"
+          ],
+          "content_slots": [
+            "body(B22-B57,replace)",
+            "appendix(B59-B100,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B11",
+              "end": "B20",
+              "drop_section": true,
+              "reason": "整节填写说明页，属不打印提示内容，连同分节符一并移除以免残留空白页"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 8,
+          "metadata_total": 8,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         }
       }
@@ -4554,21 +5384,26 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4688,
+          "elapsed_ms": 4402,
           "tokens_used": 0,
-          "skeleton_chars": 409,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B0-B0)"
+          "map_chars": 1281,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B1-B1,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 7,
@@ -4587,59 +5422,105 @@
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
-            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2015,
+          "elapsed_ms": 4024,
           "tokens_used": 0,
-          "skeleton_chars": 409,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
+          "map_chars": 1281,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B1-B1,replace)"
+          ],
+          "remove_targets": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 7,
           "metadata_fill_rate": 0,
-          "unfilled_fields": [],
-          "residue_free": false,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "student_name@table_cell",
+            "college@table_cell(同行多字段)",
+            "major@table_cell",
+            "course@table_cell",
+            "title@table_cell",
+            "date@table_cell(同行多字段)"
+          ],
+          "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 105705,
-          "tokens_used": 0,
-          "skeleton_chars": 409,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "elapsed_ms": 104819,
+          "tokens_used": 22643,
+          "map_chars": 1281,
+          "fields_detected": [
+            "lab_location@B0.R1.C0[match]",
+            "date@B0.R1.C0[match]",
+            "college@B0.R2.C1[cell]",
+            "grade_major_class@B0.R2.C3[cell]",
+            "student_name@B0.R2.C5[cell]",
+            "student_id@B0.R2.C7[cell]",
+            "course@B0.R3.C1[cell]",
+            "score@B0.R3.C3[cell]",
+            "title@B0.R4.C1[cell]",
+            "advisor@B0.R4.C3[cell]"
+          ],
+          "content_slots": [
+            "purpose(B0.R5.C0.P1-B0.R5.C0.P3,replace)",
+            "principle(B0.R5.C0.P6-B0.R5.C0.P6,replace)",
+            "materials(B0.R5.C0.P9-B0.R5.C0.P11,replace)",
+            "steps(B0.R5.C0.P14-B0.R5.C0.P16,replace)",
+            "process_records(B0.R5.C0.P20-B0.R5.C0.P21,replace)",
+            "analysis(B0.R5.C0.P25-B0.R5.C0.P25,replace)"
+          ],
+          "remove_targets": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 1,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 8,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
           "metadata_total": 7,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 1,
           "unfilled_fields": [],
-          "residue_free": false,
+          "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -4731,20 +5612,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3094,
+          "elapsed_ms": 2540,
           "tokens_used": 0,
-          "skeleton_chars": 978,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B5-B5)"
+          "map_chars": 945,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -4770,21 +5656,22 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2535,
+          "elapsed_ms": 2085,
           "tokens_used": 0,
-          "skeleton_chars": 978,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B6-B6)",
-            "date(B7-B7)",
-            "major(B9-B9)",
-            "student_id(B10-B10)",
-            "student_name(B11-B11)",
-            "advisor(B12-B12)",
-            "title(B17-B17)",
-            "body(B18-B23)"
+          "map_chars": 945,
+          "fields_detected": [
+            "course@B6[colon]",
+            "date@B7[colon]",
+            "major@B9[colon]",
+            "student_id@B10[colon]",
+            "student_name@B11[colon]",
+            "advisor@B12[colon]",
+            "title@B17[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B18-B23,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -4792,7 +5679,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 7,
@@ -4808,38 +5701,60 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 172444,
-          "tokens_used": 7984,
-          "skeleton_chars": 978,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B16-B16)",
-            "term(B5-B5)",
-            "course(B6-B6)",
-            "student_name(B7-B7)",
-            "student_id(B8-B8)",
-            "college(B9-B9)",
-            "major(B10-B10)",
-            "class(B11-B11)",
-            "advisor(B12-B12)",
-            "date(B13-B13)",
-            "body(B17-B23)"
+          "elapsed_ms": 85934,
+          "tokens_used": 18084,
+          "map_chars": 945,
+          "fields_detected": [
+            "term@B5[colon]",
+            "course@B6[blank0]",
+            "date_range@B7[blank0]",
+            "location@B8[colon]",
+            "grade_major@B9[colon]",
+            "student_id@B10[blank0]",
+            "student_name@B11[blank0]",
+            "advisor@B12[blank0]",
+            "title@B17[colon]",
+            "lab_advisor@B18[blank0]",
+            "group_members@B19[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "objective(B20-B20,insert_after)",
+            "procedure(B21-B21,insert_after)",
+            "reflection(B22-B22,insert_after)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B16",
+              "match": "（居中，三号宋体加粗）",
+              "reason": "红色排版说明"
+            },
+            {
+              "start": "B17",
+              "match": "（标题四号宋体加粗，后面填写内容，小四，宋体，不加粗）（下同）",
+              "reason": "红色排版说明"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 8,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 8,
+          "metadata_filled": 7,
           "metadata_total": 8,
-          "metadata_fill_rate": 1,
-          "unfilled_fields": [],
+          "metadata_fill_rate": 0.88,
+          "unfilled_fields": [
+            "college@top_p"
+          ],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
@@ -4875,7 +5790,7 @@
       },
       "ground_truth": {
         "banner": "民族学与社会学学院",
-        "is_table_form": true,
+        "is_table_form": false,
         "table_ratio": 0.6,
         "sections": 2,
         "page_breaks": 0,
@@ -4927,22 +5842,27 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 6715,
+          "elapsed_ms": 4742,
           "tokens_used": 0,
-          "skeleton_chars": 2951,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B18-B18)"
+          "map_chars": 5657,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 7,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
+          "form_container_respected": true,
           "metadata_filled": 0,
           "metadata_total": 6,
           "metadata_fill_rate": 0,
@@ -4956,6 +5876,7 @@
           ],
           "residue_free": false,
           "leaked_residues": [
+            "实习结束后学生应按照指导老师的要求及时提交实习报",
             "（1）实习报告题目，宋体小二号加粗，要居中书写；",
             "（2）一级标题，宋体小三号加粗；二级标题，宋体四",
             "（3）一级标题顶格书写且单独占行，标题末尾不书写",
@@ -4963,24 +5884,25 @@
           ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE",
-            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4654,
+          "elapsed_ms": 4016,
           "tokens_used": 0,
-          "skeleton_chars": 2951,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "major(B9-B9)",
-            "student_id(B10-B10)",
-            "student_name(B11-B11)",
-            "advisor(B12-B12)",
-            "body(B17-B45)"
+          "map_chars": 5657,
+          "fields_detected": [
+            "major@B9[colon]",
+            "student_id@B10[colon]",
+            "student_name@B11[colon]",
+            "advisor@B12[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B17-B45,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -4989,9 +5911,15 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 1,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
-          "form_container_respected": false,
+          "form_container_respected": true,
           "metadata_filled": 4,
           "metadata_total": 6,
           "metadata_fill_rate": 0.67,
@@ -5003,56 +5931,74 @@
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE"
+            "F6_BLANK_PAGE_LEFT_BEHIND"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 184337,
-          "tokens_used": 11304,
-          "skeleton_chars": 2951,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "college(B1-B1)",
-            "term(B6-B6)",
-            "practice_unit(B7-B7)",
-            "practice_time(B8-B8)",
-            "grade_major(B9-B9)",
-            "student_id(B10-B10)",
-            "student_name(B11-B11)",
-            "advisor(B12-B12)",
-            "practice_grade(B13-B13)",
-            "body(B42-B45)"
+          "elapsed_ms": 42674,
+          "tokens_used": 15661,
+          "map_chars": 5657,
+          "fields_detected": [
+            "term@B6[match]",
+            "intern_org@B7[blank0]",
+            "intern_period@B8[colon]",
+            "grade_major@B9[blank0]",
+            "student_id@B10[blank0]",
+            "student_name@B11[blank0]",
+            "advisor@B12[blank0]",
+            "grade@B13[colon]",
+            "college@B43.R0.C1[cell]",
+            "grade_table@B43.R0.C3[cell]",
+            "major@B43.R0.C5[cell]",
+            "student_name_table@B43.R1.C1[cell]",
+            "gender@B43.R1.C3[cell]",
+            "intern_date_range@B43.R1.C5[match]",
+            "student_id_table@B43.R2.C1[cell]",
+            "intern_org_table@B43.R2.C3[cell]",
+            "intern_org_phone@B43.R2.C5[cell]",
+            "teacher_sign@B43.R25.C1.P4[blank0]",
+            "teacher_sign_date@B43.R25.C1.P6[match]",
+            "unit_sign_date@B43.R24.C1.P5[match]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "body(B16-B40,replace)"
+          ],
+          "remove_targets": [
             {
-              "start": "B16",
-              "end": "B41",
-              "reason": "格式规范及打印要求填写说明页，含示例标题与占位文字"
+              "start": "B41",
+              "match": "必须A4纸打印；上、下边距一律为2.3；左边距为2.5, 右边距为2.0。",
+              "reason": "剥离打印要求说明文字，保留分节符"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
-            "body",
-            "table"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
-          "form_container_respected": false,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
           "metadata_filled": 5,
           "metadata_total": 6,
           "metadata_fill_rate": 0.83,
           "unfilled_fields": [
             "title@top_p"
           ],
-          "residue_free": true,
-          "leaked_residues": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "② 表中的A、B、C、D、E分别对应优、良、中、"
+          ],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F1_TABLE_CELL_UNADDRESSABLE"
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
           ]
         }
       }
@@ -5138,20 +6084,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4387,
+          "elapsed_ms": 2483,
           "tokens_used": 0,
-          "skeleton_chars": 881,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B5-B5)"
+          "map_chars": 915,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -5179,19 +6130,20 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2469,
+          "elapsed_ms": 1960,
           "tokens_used": 0,
-          "skeleton_chars": 881,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "date(B6-B6)",
-            "major(B8-B8)",
-            "student_id(B9-B9)",
-            "student_name(B10-B10)",
-            "advisor(B11-B11)",
-            "body(B18-B22)"
+          "map_chars": 915,
+          "fields_detected": [
+            "date@B6[colon]",
+            "major@B8[colon]",
+            "student_id@B9[colon]",
+            "student_name@B10[colon]",
+            "advisor@B11[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B18-B22,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -5199,7 +6151,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 5,
@@ -5221,37 +6179,66 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 168903,
-          "tokens_used": 8560,
-          "skeleton_chars": 881,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B16-B16)",
-            "semester(B5-B5)",
-            "period(B6-B6)",
-            "college(B7-B7)",
-            "major(B8-B8)",
-            "class(B9-B9)",
-            "student_name(B10-B10)",
-            "student_id(B11-B11)",
-            "advisor(B12-B12)",
-            "body(B17-B21)"
+          "elapsed_ms": 63287,
+          "tokens_used": 14423,
+          "map_chars": 915,
+          "fields_detected": [
+            "semester@B5[colon]",
+            "practice_period@B6[blank0]",
+            "practice_location@B7[blank0]",
+            "grade_major@B8[colon]",
+            "student_id@B9[blank0]",
+            "student_name@B10[blank0]",
+            "advisor@B11[blank0]",
+            "practice_score@B12[colon]",
+            "title@B17[colon]",
+            "practice_advisor@B18[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body_purpose(B19-B19,insert_after)",
+            "body_process(B20-B20,insert_after)",
+            "body_reflection(B21-B21,insert_after)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B17",
+              "match": "（标题四号宋体加粗，后面填写内容，小四，宋体，不加粗）（下同）(学生根据实践内容可自拟一个名称，但同一组实习的同学，必须保持一致)"
+            },
+            {
+              "start": "B16",
+              "match": "（居中，三号宋体加粗）"
+            },
+            {
+              "start": "B22",
+              "match": "（ 手写）"
+            },
+            {
+              "start": "B23",
+              "end": "B27",
+              "reason": "文末多余空白段，清除以避免生成空白页并保留含分节属性的末段"
+            }
+          ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 7,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 7,
+          "metadata_filled": 6,
           "metadata_total": 7,
-          "metadata_fill_rate": 1,
-          "unfilled_fields": [],
+          "metadata_fill_rate": 0.86,
+          "unfilled_fields": [
+            "college@top_p"
+          ],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
@@ -5286,7 +6273,7 @@
         "sample": "闽 南 师 范 大 学 / 实 验 报 告 / 班 级 学号 姓名 成绩 / 同组人 实验日期 / 课程名称： / 实验题目："
       },
       "ground_truth": {
-        "banner": "",
+        "banner": "闽南师范大学",
         "is_table_form": true,
         "table_ratio": 0.58,
         "sections": 1,
@@ -5333,21 +6320,26 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 6413,
+          "elapsed_ms": 4009,
           "tokens_used": 0,
-          "skeleton_chars": 1054,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B2-B2)"
+          "map_chars": 829,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
+          "audit_violations": [],
+          "banner_preserved": false,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 6,
@@ -5365,58 +6357,107 @@
           "strict_e2e_pass": false,
           "failure_codes": [
             "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
             "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1929,
+          "elapsed_ms": 3967,
           "tokens_used": 0,
-          "skeleton_chars": 1054,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
+          "map_chars": 829,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "total_pages": 6,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": false,
           "form_container_respected": false,
           "metadata_filled": 0,
           "metadata_total": 6,
           "metadata_fill_rate": 0,
-          "unfilled_fields": [],
-          "residue_free": false,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)",
+            "course@table_cell",
+            "title@table_cell",
+            "date@top_p"
+          ],
+          "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": false,
           "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 127141,
-          "tokens_used": 0,
-          "skeleton_chars": 1054,
-          "skeleton_within_budget": true,
-          "slots_detected": [],
-          "remove_ranges": [],
-          "prototypes": [],
-          "error": "表格列数与原型不匹配",
-          "pdf_ok": false,
-          "ooxml_audit_passed": false,
-          "banner_preserved": false,
-          "form_container_respected": false,
-          "metadata_filled": 0,
+          "elapsed_ms": 28705,
+          "tokens_used": 7533,
+          "map_chars": 829,
+          "fields_detected": [
+            "class_name@B2[blank0]",
+            "student_id@B2[blank1]",
+            "student_name@B2[blank2]",
+            "score@B2[blank3]",
+            "group_members@B3[blank0]",
+            "lab_date@B3[blank1]",
+            "course@B4.R0.C0[blank0]",
+            "title@B4.R1.C0[blank0]"
+          ],
+          "content_slots": [
+            "purpose(B4.R2.C1-B4.R2.C1,replace)",
+            "environment(B4.R3.C1-B4.R3.C1,replace)",
+            "content_steps_1(B4.R4.C1-B4.R4.C1,replace)",
+            "content_steps_2(B4.R5.C1-B4.R5.C1,replace)",
+            "results(B4.R6.C1-B4.R6.C1,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B5",
+              "reason": "表下填写附页提示语"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "body"
+          ],
+          "pdf_ok": true,
+          "total_pages": 5,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
+          "ooxml_audit_passed": true,
+          "audit_violations": [],
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 6,
           "metadata_total": 6,
-          "metadata_fill_rate": 0,
+          "metadata_fill_rate": 1,
           "unfilled_fields": [],
-          "residue_free": false,
+          "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F0_PIPELINE_EXCEPTION"
-          ]
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -5515,21 +6556,26 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 6276,
+          "elapsed_ms": 6567,
           "tokens_used": 0,
-          "skeleton_chars": 1129,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B26-B26)"
+          "map_chars": 5023,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 17,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
-          "banner_preserved": true,
+          "audit_violations": [],
+          "banner_preserved": false,
           "form_container_respected": true,
           "metadata_filled": 1,
           "metadata_total": 9,
@@ -5561,16 +6607,17 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2790,
+          "elapsed_ms": 3155,
           "tokens_used": 0,
-          "skeleton_chars": 1129,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "major(B28-B28)",
-            "class_name(B32-B32)",
-            "body(B67-B259)"
+          "map_chars": 5023,
+          "fields_detected": [
+            "major@B28[colon]",
+            "class_name@B32[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B67-B259,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -5579,7 +6626,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -5606,49 +6659,54 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 108770,
-          "tokens_used": 5130,
-          "skeleton_chars": 1129,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B26-B26)",
-            "major(B28-B28)",
-            "grade_assessment(B250-B250)",
-            "date(B259-B259)",
-            "body(B59-B241)"
+          "elapsed_ms": 37285,
+          "tokens_used": 11758,
+          "map_chars": 5023,
+          "fields_detected": [
+            "course@B26[blank0]",
+            "advisor@B26[blank1]",
+            "major@B28[blank0]",
+            "year_from@B28[blank1]",
+            "year_to@B28[blank2]",
+            "term@B28[blank3]",
+            "student_name@B30[blank0]",
+            "student_id@B30[blank1]",
+            "grade@B32[blank0]",
+            "class_name@B32[blank1]",
+            "evaluation@B250[colon]",
+            "teacher_sign@B258[colon]",
+            "sign_date@B259[match]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B59-B247,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "body",
-            "table",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 3,
+          "metadata_filled": 7,
           "metadata_total": 9,
-          "metadata_fill_rate": 0.33,
+          "metadata_fill_rate": 0.78,
           "unfilled_fields": [
-            "student_id@top_p(同行多字段)",
-            "student_name@top_p(同行多字段)",
-            "class_name@top_p",
             "college@top_p",
-            "title@top_p",
-            "advisor@top_p(同行多字段)"
+            "title@top_p"
           ],
-          "residue_free": false,
-          "leaked_residues": [
-            "通过学习，我将掌握软件工程的基本概念和基础理论知"
-          ],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -5679,7 +6737,7 @@
         "sample": "宜春学院人工智能学院本科生毕业设计书写式样 / 一、基本要求 / 1、内容：标题、署名、中英文摘要、正文。其中 / 2、所有数字、字母统一采用Times New / 3、版面： / ·页面设置为：双面打印、上2cm，下2cm，"
       },
       "ground_truth": {
-        "banner": "宜春学院人工智能学院本科生毕业设计书写式样",
+        "banner": "",
         "is_table_form": false,
         "table_ratio": 0.4,
         "sections": 3,
@@ -5723,20 +6781,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4685,
+          "elapsed_ms": 7237,
           "tokens_used": 0,
-          "skeleton_chars": 4926,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B53-B477)"
+          "map_chars": 27273,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 34,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -5765,15 +6828,16 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3473,
+          "elapsed_ms": 6206,
           "tokens_used": 0,
-          "skeleton_chars": 4926,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "college(B6-B6)",
-            "body(B9-B476)"
+          "map_chars": 27273,
+          "fields_detected": [
+            "college@B6[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B9-B476,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -5782,7 +6846,13 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 2,
@@ -5801,31 +6871,45 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 152950,
-          "tokens_used": 8816,
-          "skeleton_chars": 4926,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "title(B0-B0)",
-            "cover_info(B44-B44)",
-            "advisor(B45-B45)",
-            "body(B53-B477)"
+          "elapsed_ms": 102080,
+          "tokens_used": 32813,
+          "map_chars": 27273,
+          "fields_detected": [
+            "title@B43[match]",
+            "major@B44[match]",
+            "student_name@B44[match]",
+            "advisor@B45[colon]",
+            "keywords_cn@B47[colon]",
+            "keywords_en@B49[colon]"
           ],
-          "remove_ranges": [
+          "content_slots": [
+            "abstract_cn(B46-B46,replace)",
+            "abstract_en(B48-B48,replace)",
+            "body(B53-B385,replace)",
+            "appendix(B388-B427,replace)",
+            "references(B429-B440,replace)",
+            "acknowledgements(B472-B476,replace)"
+          ],
+          "remove_targets": [
             {
-              "start": "B1",
+              "start": "B0",
               "end": "B42",
-              "reason": "基本要求与填写说明页"
+              "drop_section": true,
+              "reason": "整节书写规范说明页，不进入最终论文"
             },
             {
               "start": "B43",
-              "end": "B43",
-              "reason": "标题格式说明"
+              "end": "B477",
+              "only_textboxes": true,
+              "reason": "批量剥离排版批注浮动文本框"
             },
             {
-              "start": "B46",
-              "end": "B52",
-              "reason": "摘要格式与示例说明"
+              "start": "B446",
+              "reason": "参考文献格式说明空段"
+            },
+            {
+              "start": "B471",
+              "reason": "致谢示例提示语"
             }
           ],
           "prototypes": [
@@ -5836,26 +6920,25 @@
             "table"
           ],
           "pdf_ok": true,
+          "total_pages": 4,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 14,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 1,
+          "metadata_filled": 3,
           "metadata_total": 4,
-          "metadata_fill_rate": 0.25,
+          "metadata_fill_rate": 0.75,
           "unfilled_fields": [
-            "student_name@top_p(同行多字段)",
-            "college@top_p",
-            "major@top_p(同行多字段)"
+            "college@top_p"
           ],
-          "residue_free": false,
-          "leaked_residues": [
-            "宋体，五号，对齐居中宋体，五号，对齐居中宜春学院"
-          ],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
-          ]
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
         }
       }
     },
@@ -5941,20 +7024,25 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3905,
+          "elapsed_ms": 3603,
           "tokens_used": 0,
-          "skeleton_chars": 1421,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "body(B21-B21)"
+          "map_chars": 1151,
+          "fields_detected": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
           ],
-          "remove_ranges": [],
+          "remove_targets": [],
           "prototypes": [
-            "body",
-            "heading_3"
+            "body"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 0,
@@ -5983,18 +7071,19 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2412,
+          "elapsed_ms": 3087,
           "tokens_used": 0,
-          "skeleton_chars": 1421,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course(B7-B7)",
-            "student_id(B11-B11)",
-            "student_name(B12-B12)",
-            "advisor(B13-B13)",
-            "body(B21-B21)"
+          "map_chars": 1151,
+          "fields_detected": [
+            "course@B7[colon]",
+            "student_id@B11[colon]",
+            "student_name@B12[colon]",
+            "advisor@B13[colon]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B0-B0,replace)"
+          ],
+          "remove_targets": [],
           "prototypes": [
             "body",
             "heading_1",
@@ -6002,7 +7091,13 @@
             "heading_3"
           ],
           "pdf_ok": true,
+          "total_pages": 3,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "skipped",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
+          "audit_violations": [],
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 4,
@@ -6027,40 +7122,56 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 93688,
-          "tokens_used": 5032,
-          "skeleton_chars": 1421,
-          "skeleton_within_budget": true,
-          "slots_detected": [
-            "course_name(B7-B7)",
-            "major_class(B10-B10)",
-            "student_id(B11-B11)",
-            "college(B18-B18)",
-            "body(B21-B34)"
+          "elapsed_ms": 34426,
+          "tokens_used": 9158,
+          "map_chars": 1151,
+          "fields_detected": [
+            "course@B7[blank0]",
+            "class_name@B10[blank0]",
+            "student_id@B11[blank0]",
+            "student_name@B12[blank0]",
+            "advisor@B13[blank0]",
+            "date@B14[blank0]"
           ],
-          "remove_ranges": [],
+          "content_slots": [
+            "body(B21-B38,replace)"
+          ],
+          "remove_targets": [
+            {
+              "start": "B22",
+              "reason": "蓝色括号填写提示语"
+            },
+            {
+              "start": "B33",
+              "reason": "蓝色撰写提示语"
+            }
+          ],
           "prototypes": [
             "heading_1",
-            "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
+          "total_pages": 2,
+          "blank_pages": 0,
+          "toc_pages_valid": true,
+          "vision_status": "issues",
+          "vision_issues_count": 11,
           "ooxml_audit_passed": true,
-          "banner_preserved": false,
+          "audit_violations": [],
+          "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 5,
           "metadata_total": 7,
           "metadata_fill_rate": 0.71,
           "unfilled_fields": [
-            "student_name@top_p",
-            "advisor@top_p"
+            "college@top_p",
+            "major@top_p(同行多字段)"
           ],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
+          "strict_e2e_pass": true,
           "failure_codes": [
-            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ]
         }
       }
