@@ -1,4 +1,4 @@
-import { XMLSerializer, type Element } from "@xmldom/xmldom"
+import { XMLSerializer, type Document, type Element } from "@xmldom/xmldom"
 import { MC_NS, W, children } from "./xml_utils.js"
 
 const XML_SPACE_NS = "http://www.w3.org/XML/1998/namespace"
@@ -10,7 +10,7 @@ export interface TextboxGroup {
 }
 
 export interface ResolvedNode {
-  kind: "block" | "cell" | "para" | "textbox"
+  kind: "block" | "row" | "cell" | "para" | "textbox"
   element: Element
   mirrors: Element[]
 }
@@ -184,11 +184,13 @@ export function resolveCoord(root: Element, coord: string): ResolvedNode | null 
   const rest = bMatch[2]
   if (!rest) return { kind: "block", element: block, mirrors: [] }
 
-  const cellMatch = /^R(\d+)\.C(\d+)(?:\.P(\d+))?$/.exec(rest)
+  const cellMatch = /^R(\d+)(?:\.C(\d+)(?:\.P(\d+))?)?$/.exec(rest)
   if (cellMatch) {
     if (block.localName !== "tbl") return null
     const row = children(block, "tr")[Number(cellMatch[1])]
-    const tc = row && children(row, "tc")[Number(cellMatch[2])]
+    if (!row) return null
+    if (cellMatch[2] === undefined) return { kind: "row", element: row, mirrors: [] }
+    const tc = children(row, "tc")[Number(cellMatch[2])]
     if (!tc) return null
     if (cellMatch[3] === undefined) return { kind: "cell", element: tc, mirrors: [] }
     const p = children(tc, "p")[Number(cellMatch[3])]
@@ -212,6 +214,53 @@ export function resolveCoord(root: Element, coord: string): ResolvedNode | null 
     return { kind: "para", element: primary, mirrors }
   }
   return null
+}
+
+export function readStampedCoord(el: Element): string | undefined {
+  for (const node of Array.from(el.childNodes)) {
+    if (node.nodeType === 8 && (node.nodeValue ?? "").startsWith("@src:")) {
+      return (node.nodeValue ?? "").slice(5)
+    }
+  }
+  return undefined
+}
+
+function stampCoord(d: Document, el: Element, coord: string) {
+  el.insertBefore(d.createComment("@src:" + coord), el.firstChild)
+}
+
+export function stampSourceCoords(d: Document, root: Element) {
+  for (const [di, ps] of nonTocSdtParas(root).entries()) {
+    for (const [pi, p] of ps.entries()) {
+      stampCoord(d, p, `D${di}.P${pi}`)
+    }
+  }
+  for (const [bi, blk] of bodyBlocks(root).entries()) {
+    const bCoord = `B${bi}`
+    stampCoord(d, blk, bCoord)
+    if (blk.localName === "tbl") {
+      for (const [ri, tr] of children(blk, "tr").entries()) {
+        const rCoord = `${bCoord}.R${ri}`
+        stampCoord(d, tr, rCoord)
+        for (const [ci, tc] of children(tr, "tc").entries()) {
+          const cCoord = `${rCoord}.C${ci}`
+          stampCoord(d, tc, cCoord)
+          for (const [pi, p] of children(tc, "p").entries()) {
+            stampCoord(d, p, `${cCoord}.P${pi}`)
+          }
+        }
+      }
+    } else if (blk.localName === "p") {
+      for (const [ti, tg] of logicalTextboxes(blk).entries()) {
+        const txCoord = `${bCoord}.TX${ti}`
+        stampCoord(d, tg.host, txCoord)
+        const ps = children(tg.contents[0], "p")
+        for (const [pi, p] of ps.entries()) {
+          stampCoord(d, p, `${txCoord}.P${pi}`)
+        }
+      }
+    }
+  }
 }
 
 export function runPlainText(r: Element): string {

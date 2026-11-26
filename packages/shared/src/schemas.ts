@@ -2,7 +2,7 @@ import { Type, type Static } from "typebox"
 
 const integer = Type.Integer({ minimum: 0 })
 export const COORD_REGEX =
-  /^(?:B\d+(?:\.R\d+\.C\d+(?:\.P\d+)?|\.TX\d+(?:\.P\d+)?)?|D\d+\.P\d+)$/
+  /^(?:B\d+(?:\.R\d+(?:\.C\d+(?:\.P\d+)?)?|\.TX\d+(?:\.P\d+)?)?|D\d+\.P\d+)$/
 const coord = Type.String({ pattern: COORD_REGEX.source })
 
 export const FontRoleSpec = Type.Object({
@@ -97,6 +97,7 @@ export const RemoveTarget = Type.Object(
     match: Type.Optional(Type.String()),
     only_textboxes: Type.Optional(Type.Boolean()),
     drop_section: Type.Optional(Type.Boolean()),
+    drop_page_break: Type.Optional(Type.Boolean()),
     reason: Type.Optional(Type.String()),
   },
   { additionalProperties: false },

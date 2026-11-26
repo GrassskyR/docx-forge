@@ -30,6 +30,7 @@ import {
   logicalTextboxes,
   resolveCoord,
   runPlainText,
+  stampSourceCoords,
   visualCols,
 } from "./dom_locator.js"
 import { readDraft } from "./draft_ingestor.js"
@@ -57,6 +58,7 @@ export type ComposeInput = {
   generate_cover?: boolean
   cover_subtitle?: string
   generate_toc?: boolean
+  stamp_source_coords?: boolean
 }
 
 function textRunProps(prototype: Element): Element | undefined {
@@ -345,6 +347,77 @@ function applyParagraphFieldEdits(
   p.appendChild(makeTextRunWithRpr(d, donor, cleanVal))
 }
 
+function stripExplicitPageBreaks(target: Element) {
+  const paras =
+    target.localName === "p"
+      ? [target]
+      : Array.from(target.getElementsByTagNameNS(W, "p"))
+  for (const p of paras) {
+    for (const br of Array.from(p.getElementsByTagNameNS(W, "br"))) {
+      if (br.getAttributeNS(W, "type") === "page") {
+        br.parentNode?.removeChild(br)
+      }
+    }
+    const pPr = children(p, "pPr")[0]
+    if (pPr) {
+      for (const pb of children(pPr, "pageBreakBefore")) pPr.removeChild(pb)
+    }
+  }
+}
+
+function cellGridSpan(tc: Element): number {
+  const tcPr = children(tc, "tcPr")[0]
+  const gs = tcPr && children(tcPr, "gridSpan")[0]?.getAttributeNS(W, "val")
+  return Math.max(1, Number(gs || 1))
+}
+
+function findCellAtGridCol(tr: Element, targetCol: number): Element | undefined {
+  let col = 0
+  for (const tc of children(tr, "tc")) {
+    if (col === targetCol) return tc
+    col += cellGridSpan(tc)
+  }
+  return undefined
+}
+
+function removeTableRowSafely(d: Document, tbl: Element, tr: Element) {
+  const rows = children(tbl, "tr")
+  const idx = rows.indexOf(tr)
+  if (idx < 0) return
+  if (rows.length <= 1) {
+    for (const tc of children(tr, "tc")) {
+      for (const node of children(tc)) {
+        if (node.localName !== "tcPr") tc.removeChild(node)
+      }
+      ensureCellEndsWithParagraph(d, tc)
+    }
+    const trPr = children(tr, "trPr")[0]
+    if (trPr) {
+      for (const h of children(trPr, "trHeight")) trPr.removeChild(h)
+    }
+    return
+  }
+
+  const nextTr = rows[idx + 1]
+  if (nextTr) {
+    let col = 0
+    for (const tc of children(tr, "tc")) {
+      const tcPr = children(tc, "tcPr")[0]
+      const vM = tcPr && children(tcPr, "vMerge")[0]
+      if (vM && vM.getAttributeNS(W, "val") === "restart") {
+        const nextTc = findCellAtGridCol(nextTr, col)
+        const nextPr = nextTc && children(nextTc, "tcPr")[0]
+        const nextVm = nextPr && children(nextPr, "vMerge")[0]
+        if (nextVm && !nextVm.getAttributeNS(W, "val")) {
+          nextVm.setAttributeNS(W, "w:val", "restart")
+        }
+      }
+      col += cellGridSpan(tc)
+    }
+  }
+  tbl.removeChild(tr)
+}
+
 function clearOrRemoveBlock(block: Element, allowDropSectPr: boolean): number {
   const sectCount = block.getElementsByTagNameNS(W, "sectPr").length
   if (sectCount > 0 && !allowDropSectPr) {
@@ -511,6 +584,9 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
   const files = unzipSync(await readFile(join(data, "template_assets", asset.id, "base.docx")))
   const d = parseXml(files["word/document.xml"])
   const root = d.documentElement!
+  if (input.stamp_source_coords) {
+    stampSourceCoords(d, root)
+  }
   const initialBlocks = bodyBlocks(root)
   const draft = input.mode === "exact_copy" ? await readDraft(data, input.draft_id ?? "") : []
   const bp = asset.blueprint
@@ -649,11 +725,46 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     if (!st) continue
     if (rm.match && st.element.localName === "p") {
       replaceCrossRunSubstring(d, st.element, rm.match, "")
-      for (const m of st.mirrors) replaceCrossRunSubstring(d, m, rm.match, "")
+      if (rm.drop_page_break) stripExplicitPageBreaks(st.element)
+      for (const m of st.mirrors) {
+        replaceCrossRunSubstring(d, m, rm.match, "")
+        if (rm.drop_page_break) stripExplicitPageBreaks(m)
+      }
+      continue
+    }
+    if (rm.drop_page_break) {
+      if (st.kind === "block" && ed?.kind === "block") {
+        const sIdx = initialBlocks.indexOf(st.element)
+        const eIdx = initialBlocks.indexOf(ed.element)
+        if (sIdx >= 0 && eIdx >= sIdx) {
+          for (const blk of initialBlocks.slice(sIdx, eIdx + 1)) {
+            stripExplicitPageBreaks(blk)
+          }
+        }
+      } else {
+        stripExplicitPageBreaks(st.element)
+      }
       continue
     }
     if (st.kind === "textbox") {
       st.element.parentNode?.removeChild(st.element)
+      continue
+    }
+    if (
+      st.kind === "row" &&
+      ed?.kind === "row" &&
+      st.element.parentNode === ed.element.parentNode
+    ) {
+      const tbl = st.element.parentNode as Element
+      const initialRows = children(tbl, "tr")
+      const sIdx = initialRows.indexOf(st.element)
+      const eIdx = initialRows.indexOf(ed.element)
+      if (sIdx >= 0 && eIdx >= sIdx) {
+        for (const tr of initialRows.slice(sIdx, eIdx + 1)) {
+          if (slotProtectedSet.has(tr)) continue
+          removeTableRowSafely(d, tbl, tr)
+        }
+      }
       continue
     }
     if (rm.only_textboxes && st.kind === "block" && ed?.kind === "block") {

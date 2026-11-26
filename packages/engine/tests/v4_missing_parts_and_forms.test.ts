@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate"
 import {
   auditComposition,
+  bodyBlocks,
   children,
   compose,
   inspectReference,
@@ -346,3 +347,68 @@ test("复杂框表手术：同行多空位宽度守恒填写、跨 Run 子串匹
     await rm(dir, { recursive: true, force: true })
   }
 }, 45_000)
+
+test("纯原子手术原语：表格整行 B{i}.R{r} 安全移除（守恒 vMerge 链）与 drop_page_break 精准摘除分页符保留同段图形", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "docforge-v4-atomic-"))
+  const db = new Store(join(dir, "profiles.db"))
+  try {
+    const base = unzipSync(await readFile("eval/fixtures/01.docx"))
+    const docXml =
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+      `<w:document xmlns:w="${W}"><w:body>` +
+      `<w:tbl><w:tblGrid><w:gridCol w:w="2000"/><w:gridCol w:w="6000"/></w:tblGrid>` +
+      `<w:tr><w:tc><w:tcPr><w:vMerge w:val="restart"/></w:tcPr><w:p><w:r><w:t>合并组</w:t></w:r></w:p></w:tc>` +
+      `<w:tc><w:p><w:r><w:t>待删续页提示行</w:t></w:r></w:p></w:tc></w:tr>` +
+      `<w:tr><w:tc><w:tcPr><w:vMerge/></w:tcPr><w:p/></w:tc>` +
+      `<w:tc><w:p><w:r><w:t>原正文占位</w:t></w:r></w:p></w:tc></w:tr>` +
+      `</w:tbl>` +
+      `<w:p><w:pPr><w:pageBreakBefore/></w:pPr>` +
+      `<w:r><w:br w:type="page"/><w:pict/><w:t>保留尾注图形与说明</w:t></w:r></w:p>` +
+      `<w:sectPr><w:pgSz w:w="11906" w:h="16838"/></w:sectPr>` +
+      `</w:body></w:document>`
+
+    base["word/document.xml"] = strToU8(docXml)
+    const tplPath = join(dir, "atomic_tpl.docx")
+    await writeFile(tplPath, zipSync(base))
+
+    const { inspect_id, doc_map } = await inspectReference(tplPath, dir)
+    const store = new TemplateStore(dir, db)
+    const asset = store.save(
+      inspect_id,
+      "原子手术测试",
+      "general",
+      {
+        template_kind: "form_table",
+        fields: [],
+        content_slots: [{ name: "body", start: "B0.R1.C1", end: "B0.R1.C1", placement: "replace" }],
+        remove_targets: [
+          { start: "B0.R0", reason: "删除第0行且保持下一行 vMerge restart 合法" },
+          { start: "B1", drop_page_break: true, reason: "仅剥离分页符保留同段 pict 与文字" },
+        ],
+        prototypes: { body: "B0.R1.C1.P0" },
+        preserved: doc_map.preserved,
+      },
+      "",
+      true,
+    )
+
+    const out = await compose(dir, asset, {
+      mode: "authored",
+      body_plan: [{ slot: "body", prototype: "body", text: "原子写入正文。" }],
+    })
+    const outDoc = parseXml(unzipSync(await readFile(out.docx_path))["word/document.xml"])
+    const rows = children(outDoc.getElementsByTagNameNS(W, "tbl")[0], "tr")
+    expect(rows.length).toBe(1)
+    const promotedVm = rows[0].getElementsByTagNameNS(W, "vMerge")[0]
+    expect(promotedVm.getAttributeNS(W, "val")).toBe("restart")
+
+    const tailP = bodyBlocks(outDoc.documentElement!)[1]
+    expect(tailP.getElementsByTagNameNS(W, "br").length).toBe(0)
+    expect(tailP.getElementsByTagNameNS(W, "pageBreakBefore").length).toBe(0)
+    expect(tailP.getElementsByTagNameNS(W, "pict").length).toBe(1)
+    expect(tailP.textContent).toContain("保留尾注图形与说明")
+  } finally {
+    db.db.close()
+    await rm(dir, { recursive: true, force: true })
+  }
+}, 30_000)
