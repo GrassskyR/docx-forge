@@ -1,106 +1,129 @@
-# 基于 Pi-Agent 的智能公文格式 Agent
+# DocForge V3 · 基于 Pi-Agent 的低成本通用文档格式与排版系统
 
-项目路径：`/home/missi/project/docs-agent/`。
+DocForge V3 采用**全栈 TypeScript Monorepo（单运行时、单进程、单端口）**架构，面向**党政机关与高校红头公文**、**学术学位论文 / 技术规范**、**技术合同协议 / 科研项目申报表**三大高频真实办公场景，提供确定性留壳克隆排版、零拷贝逐字保真套版、Poppler 版面遥测与按需视觉双轨审计，以及渐进式披露双模式前端工作台。系统同时 100% 向下兼容 V2 公文预设库与全部 `9+2` HTTP 接口契约。
 
-从已有 `.doc/.docx` 或自然语言提取 FormatProfile，保存、继承、微调并设为全局默认；用 DocContentAST 确定性生成 Word，独立解压 OOXML 逐项审计，通过后提供 PNG 预览与下载。支持通知、请示、纪要、函四种按需加载的文种 Skill，以及持久化树状会话分叉。
+## 系统架构
 
 ```mermaid
 flowchart LR
-    Web[单文件 Web 工作台] --> API[FastAPI :8000]
-    Web --> Agent[Pi-Agent :8787 / SSE]
-    Agent --> Hook[每轮 Active Profile 注入与压缩]
-    Agent --> Tools[六个强类型工具 / 文种 Skills]
-    Agent --> Tree[持久化会话树]
-    Tools --> API
-    API --> Extract[DOC → LibreOffice → OOXML 继承提取]
-    API --> NL[LLM 解析 + 字面规则补全 + Pydantic]
-    Extract --> Store[(SQLite 预设库与空白母版)]
-    NL --> Store
-    Store --> Render[AST + FormatProfile → Python 确定性渲染]
-    Render --> Lint[独立 zipfile + lxml 审计]
-    Lint -->|通过| Preview
-    Lint -->|路径与违规项 / 最多3轮| Repair[定向修复磁盘 DOCX]
-    Repair --> Lint
-    Preview[LibreOffice PDF → pdftoppm PNG]
+    Web["packages/web (Vue 3 + Vite + Tailwind)"] -->|同源 HTTP / SSE| Server["packages/server (:8000 单进程)"]
+    Shared["packages/shared (TypeBox 单一真源 Schema)"] -.-> Web
+    Shared -.-> Server
+    Shared -.-> Engine["packages/engine (纯 TS 确定性引擎)"]
+    Server -->|进程内直调| Engine
+    Server --> Agent["Pi-Agent Core + Context Hook (能力卡 ≤1500字 / 历史图阅后即焚)"]
+    Server --> Tree["持久化树状会话 (data/sessions.json)"]
+    Engine --> Inspector["骨架压缩器 (≤6000字) & 原件无损留壳"]
+    Engine --> Composer["原生 XML 原型深拷贝 + 零拷贝保真组装"]
+    Engine --> Store[("node:sqlite (profiles.db) + template_assets")]
+    Engine --> Telemetry["LibreOffice + Poppler 版面遥测 & 自动压页收口"]
+    Engine --> Vision["关键页采样 (≤960px) + 三模式按需视觉终审"]
 ```
 
-## 安装与一键启动
+### Monorepo 模块划分
 
-依赖 Python 3.11+、Node 22+、npm、LibreOffice 和 Poppler（提供 pdftoppm）。本机实测 Python 3.13.13 / Node 22.23.2 / LibreOffice 24.2.7.2 / pdftoppm 24.02.0。
+- `packages/shared`（`@docs-agent/shared`）：前后端、Agent 工具与文档引擎共用的 TypeBox Schema 与跨端类型（V2 预设/AST/审计报告 + V3 骨架/蓝图/套版计划/版面遥测/视觉终审/SSE 事件）。
+- `packages/engine`（`@docs-agent/engine`）：纯 TypeScript 确定性 OOXML 引擎（`fflate` + `@xmldom/xmldom` + WordprocessingML Schema 顺序插入表 + `node:sqlite` + LibreOffice/Poppler 工具链），运行期零 Python 依赖、零 C++ 原生编译插件。
+- `packages/server`（`@docs-agent/server`）：单进程统一 HTTP/SSE 服务，合并 V2 `9+2` 接口、V3 模板与套版接口、`/chat` 流式对话、`/sessions*` 树状分支及 `/` 前端静态托管，工具全部进程内直调引擎。
+- `packages/web`（`@docs-agent/web`）：Vue 3 + Vite + TypeScript + Tailwind CSS 构建的「极简瑞士 · 渐进式披露双模式」工作台，生产构建本地打包至 `packages/web/dist/`，零外网运行时 CDN。
+
+## 环境前置与快速启动
+
+### 运行环境要求
+
+- **Node.js** `22.5+`（内置 `node:sqlite`，本机实测 `v26.3.0`）与 `npm`
+- **LibreOffice**（提供 `soffice`，用于 `.doc` 二进制 OLE 魔数转换与 PDF 导出）
+- **Poppler 工具链**（提供 `pdftoppm`、`pdftohtml`、`pdfinfo`，用于版面几何遥测与 PNG 渲染）
+
+### 安装、构建与一键启动
 
 ```bash
 cd /home/missi/project/docs-agent
-python3 -m venv .venv
-.venv/bin/pip install -r engine/requirements.txt
-(cd agent && npm ci)
-cp .env.example .env  # 已有 .env 时不要覆盖
-# 填入 LLM_API_KEY、LLM_BASE_URL、LLM_MODEL
+npm install && npm run build
+cp .env.example .env  # 若已有 .env 请勿覆盖，按需填入模型配置
 ./start.sh
 ```
 
-打开 **http://localhost:8000**。`Ctrl+C` 停止两个服务；日志在 `data/logs/`。默认端口被占用时脚本明确报错，不会终止其他项目。可以 `ENGINE_PORT=18000 ./start.sh`，访问 http://localhost:18000；Agent 仍为 8787。
-
-无 Key 时可使用导入格式、规则解析、预设管理、直接生成示例与确定性测试；对话需要有效 Key。配置 Key 后以 LLM 解析结果为准，字面规则补充遗漏字段；请求失败会报错，不会冒充成功。`.env` 不提交、不输出密钥。
-
-## 使用
-
-1. 在左侧上传真正的 `.doc/.docx`，或描述格式，例如「标题二号黑体居中；正文三号仿宋_GB2312，行距28磅，首行缩进2字符」。
-2. 选择「设为默认」；之后生成与改写自动使用 Active Profile。不传 profile_id 的渲染请求同样遵循该默认。
-3. 描述起草需求；Agent 按需加载文种规则，生成 AST 并调用确定性工具。右侧显示 PNG、独立审计分数/字段差异及 Word 下载。
-4. 「分叉当前版本」保留父版本的对话与格式；切换分支恢复对应预设和对话。当前工具为单用户、本机会话服务。
-5. 修改已有预设时选择父预设并输入增量要求，原预设不会被覆盖。启用红头时需提供机关名或明确落款单位；未提供时渲染器请求补充，不虚构机关。
-
-中文字号表包含初号到小五的全部 12 个规定值。字体 XML 始终分离 eastAsia 中文与 ascii/hAnsi/cs 西文；两端对齐写入 `both`。首行缩进同时写入字符与 twips，独立审计校验二者。
-
-## 接口与工具
-
-FastAPI 的 `/docs` 提供 OpenAPI。规定九个接口完整实现：health；profiles 列表/详情/extract/from-nl/fork/active；documents/render/lint。另有 `POST /api/documents/repair` 和 `DELETE /api/profiles/{id}`。修复接口接收数据目录内的 DOCX 路径、有效预设与本次违规项，返回修复前后审计和通过后的 PNG。
-
-六个 Agent Tools：`import_doc_format`、`parse_nl_format`、`manage_profiles`、`load_doc_skill`、`render_gongwen_docx`、`lint_and_preview_docx`。`agent/src/engine_client.ts` 与 Pydantic 模型对齐。Agent HTTP 提供 `/health`、`/chat`（SSE）、`/sessions`、`/sessions/fork`、`/sessions/switch`。
+浏览器访问 **`http://localhost:8000`** 即开即用（`GET /` 同源托管工作台，`Ctrl+C` 停止单进程服务）。若默认 `8000` 端口已被其他服务占用，脚本会自动检测并提示改用指定端口启动：
 
 ```bash
-curl -X POST http://localhost:8000/api/documents/render \
-  -H 'Content-Type: application/json' \
-  -d '{"content_ast":{"doc_type":"notice","title":"关于开展培训的通知","blocks":[{"type":"body","text":"请各部门做好培训组织工作。"}],"signature":"综合办公室"}}'
+PORT=18000 ./start.sh
+# 亦向后兼容 V2 环境变量：
+ENGINE_PORT=18000 ./start.sh
 ```
 
-## 实测与复现
+## 核心配置说明（`.env`）
 
-2026-11-24 使用本机和 `deepseek/deepseek-v4.1-flash` 完成 V2 全量实测。逐项记录见 [评测报告](eval/report.md)、[原始结果](eval/results.json) 和 [验收日志](PROGRESS.md)。
+| 环境变量 | 说明 |
+|---|---|
+| `PORT` / `ENGINE_PORT` | 单进程统一监听端口，默认 `8000` |
+| `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | 主对话与骨架内化/段落规划使用的 OpenAI 兼容模型（如 DeepSeek） |
+| `LLM_INPUT_USD_PER_MILLION` / `LLM_OUTPUT_USD_PER_MILLION` | 可选，每百万输入/输出 Token 单价（美元），用于实时计算成本账单 |
+| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL` | 可选，Langfuse v4 OpenTelemetry 链路追踪（覆盖 `/chat` 工具树与独立模型调用；留空自动降级为本地 Pino 日志） |
+| `LOG_LEVEL` | 可选，后端 Pino 结构化日志级别（默认 `info`，同时输出至终端与 `data/logs/server.log`） |
+| `LLM_SUPPORTS_VISION` | 双轨视觉模式 ①：设为 `true` 时直接使用主模型原生多模态进行关键页终审 |
+| `VISION_BASE_URL` / `VISION_API_KEY` / `VISION_MODEL` | 双轨视觉模式 ②：主模型为纯文本模型时，配置廉价多模态侧车模型执行视觉终审 |
+| （均未配置视觉参数） | 双轨视觉模式 ③：自动优雅降级为 `text_only`（Poppler 文本版面遥测 + OOXML 独立审计），零报错运行 |
 
-| 项目 | 实测 |
-|---|---:|
-| 20 份独立合成范本提取 | 2088/2088（100%） |
-| 合成范本重渲染独立审计 | 20/20（100%） |
-| 锁定真实公文提取、空白母版、渲染、审计与 PNG | 16/16（100%） |
-| 30 条唯一指令的 NL 字段断言 | 233/233（100%） |
-| 系统修复前及修复后的金标准审计 | 均为 30/30（100%） |
-| Baseline 总通过率 | 6/30（20.00%） |
-| Baseline 有效响应通过率 | 6/22（27.27%） |
-| Baseline 有效响应代码执行失败率 | 2/22（9.09%） |
-| 独立故障注入修复前后的文档通过率 | 0/10 → 10/10 |
-| Pi-Agent 确定性场景与真实 LLM 对话 | 各 4/4 |
+## 工作台双模式与三大文档场景指南
 
-8 条 Baseline 请求在重试后仍网络超时。有效响应通过率使用实际收到模型输出的 22 条为分母。系统与 Baseline 使用相同正文 AST 和目标预设评分。Baseline 直接获得完整目标预设，系统从自然语言和父预设推断格式。故障注入分别从 10 个磁盘 DOCX 的实际违规开始，每份单轮从 17 项降至 0 项。
+### 渐进式披露双模式界面
 
-真实语料以锁定清单为准。魔数实测为 9 份原生 DOCX、6 份二进制 `.doc` 与 1 份后缀为 `.docx` 的二进制 OLE，全部原件通过 SHA256。完整通知的 PNG 可查看两字符缩进、两端对齐与居中的页码。见 [预览样例](data/visual-check-v2/page-1.png)。
+- **普通模式（默认开启）**：极简两栏布局。顶栏仅保留格式选择器胶囊与右上角「调试模式」开关；左栏提供「原文字套格式」（粘贴或导入 `.docx/.txt` 草稿，一键零改字套版）与「让 AI 写 / 改」（自然语言起草与改稿）；右栏展示点阵画布上的大尺寸 A4 真实页面预览、翻页与 Word 下载。仅当 Poppler 检出末页 1~3 行溢出或孤立落款时，按需浮现浅琥珀「一键压进整页」温柔建议条，收口后自动隐去。
+- **调试模式（右上角开关一键展开）**：无刷新滑出左侧模板资产库与精简能力卡预览（含字数/Token 估算与保留壳清单）、顶栏树状会话分支选择器与实时 Token 账单、中栏零拷贝 `P0..Pn` 段落区间映射表与确定性手术胶囊条，以及右栏缩放控件、三枚技术徽章与底部三标签诊断抽屉（Poppler 页底占空比进度条 / OOXML 审计 / 视觉终审与历史图片阅后即焚计数）。
+
+![普通模式工作台](data/visual-check-v3/ui-normal.png)
+
+![调试模式工作台](data/visual-check-v3/ui-debug.png)
+
+### 三大高频文档场景使用流程
+
+1. **带红头/五角星/版记的公文**：点击顶栏格式胶囊 → `+ 导入新范例` 上传单位真实 `.doc/.docx` 红头文件（自动识别 OLE 魔数 `D0CF11E0A1B11AE1`），系统经骨架压缩内化并无损保留母版红头、横线、版记与 `22×28` 文档网格；在左栏粘贴通知/纪要正文点击「套用格式」，自动完成三级标题首句加粗与标点规范化。
+2. **学术学位论文 / 调研报告**：导入学校官方硕博论文模板（如含校徽图片、10+ 分节与奇偶页眉的 `.docx`），系统原样保留 `word/media/*` 嵌入图片、封面与分节页眉页脚，通过深拷贝原件章节标题、正文、三线表与参考文献悬挂缩进原型组装长文。
+3. **技术合同协议 / 项目申报表格**：导入政府或高校标准合同/申报书 `.doc/.docx`，保留封面编号栏、甲乙方信息表与签章区结构，支持编号条款克隆、重点责任句首句加粗下划线及跨页表格遥测预警。
+
+## 统一接口与 Agent 工具参考
+
+### 单端口 HTTP / SSE 路由
+
+- **健康与静态资源**：`GET /health`、`GET /`、`GET /assets/*`、`GET /files/*`
+- **V3 模板与通用排版**：
+  - `POST /api/v3/templates/inspect`、`POST /api/v3/templates`、`GET /api/v3/templates`、`GET /api/v3/templates/:id`、`PUT /api/v3/templates/active`、`POST /api/v3/templates/:id/fork`、`DELETE /api/v3/templates/:id`
+  - `POST /api/v3/drafts/ingest`、`POST /api/v3/documents/compose`、`POST /api/v3/documents/:id/adjust-layout`、`POST /api/v3/documents/:id/visual-audit`
+- **Pi-Agent 流式对话与树状会话**：`POST /chat`（SSE）、`GET /sessions`、`POST /sessions/fork`、`POST /sessions/switch`
+- **V2 100% 向下兼容接口**：`GET /api/profiles`、`GET /api/profiles/:id`、`POST /api/profiles/extract`、`POST /api/profiles/from-nl`、`POST /api/profiles/:id/fork`、`PUT /api/profiles/active`、`DELETE /api/profiles/:id`、`POST /api/documents/render`、`POST /api/documents/repair`、`POST /api/documents/lint`
+
+### Pi-Agent 工具集
+
+- **V3 7 个通用文档工具**（`packages/server/src/tools_v3.ts`）：`inspect_reference_doc`、`save_template_asset`、`manage_templates`、`ingest_draft`、`compose_document`、`adjust_layout`、`audit_and_inspect`。
+- **V2 6 个兼容公文工具**（`packages/server/src/tools_v2.ts`）：`import_doc_format`、`parse_nl_format`、`manage_profiles`、`load_doc_skill`、`render_gongwen_docx`、`lint_and_preview_docx`。
+
+## 构建、测试与评测命令
 
 ```bash
-.venv/bin/python -m pytest engine/tests/ -v
-(cd agent && npx tsc --noEmit)
-.venv/bin/python eval/check_style.py
-(cd agent && ENGINE_URL=http://127.0.0.1:18000 npm run verify)
-.venv/bin/python eval/build_fixtures.py
-.venv/bin/python eval/run_benchmark.py --verify-inputs
-.venv/bin/python eval/run_benchmark.py --with-llm
-.venv/bin/python eval/run_benchmark.py --reaudit
+npm run typecheck                           # 全 workspace TypeScript 严格类型检查
+npm run stylecheck                          # 检查全部 TS/Vue 源码行宽、单行多语句与 4 份文种 Skills
+npm run build                               # 类型检查 + 打包前端工作台至 packages/web/dist
+npm test                                    # 运行全量 Vitest 回归测试（V2 全量兼容 + V3 全套件）
+npx tsx packages/server/tests/e2e_verify_v3.ts   # 运行单进程真实 LLM 端到端验收
+npx tsx eval/run_benchmark_v3.ts            # 运行 V3 跨领域 30 份语料与 Token 账单基准评测
 ```
 
-运行 LLM 对比需启用 Linux 用户及网络命名空间和 Landlock ABI 3。Baseline 脚本只可写自己的评测目录，读取 Python 运行库，模型网络请求由主进程发出。两类模型请求的单次超时为 180 秒，对暂时性错误最多指数退避重试三次。`--reaudit` 使用刚完成的 V2 运行产物重新核对审计，无需向模型重复请求。
+## 基准评测指标与单文档 Token 账单
 
-## 边界
+完整逐文档原始数据与分项表格详见 [V3 实测报告](eval/report_v3.md)、[V3 原始结果](eval/results_v3.json) 以及 V2 基线历史报告 [eval/report.md](eval/report.md) / [eval/results.json](eval/results.json)。
 
-- 本机未安装仿宋_GB2312、方正小标宋简体与 Times New Roman 的对应字体；LibreOffice PNG 使用字体回退。Word 的 OOXML 字体名与审计正确，但预览外观与安装对应字体的 Word 环境有差异。需要精确视觉验收时安装具有合法授权的目标字体。
-- 提取依赖可编辑文字和可观测段落格式；扫描件 OCR、复杂浮动文本框及所有任意母版布局不在当前数据集验证范围。正文母版剥离保留节属性和样式，正文文字/表格移除，页眉页脚文本清空。
-- 预览是 LibreOffice 的页面渲染，不是 Microsoft Word 像素一致性承诺。GB/T 默认用于缺省补全，自定义预设可以有意偏离国标。
-- 指定的 @mariozechner 两包 0.73.1 上游已 deprecated；遵照任务仍使用这些包。basic-ftp 间接依赖已覆盖至 6.2.6，本次 npm audit 为0漏洞。
+| 评测维度 | 样本规模 | 实测结果 | 实测关键指标 |
+|---|---:|---:|---|
+| 跨领域锁定真实语料 SHA256 校验 | 30 份（16 公文 + 4 论文/规范 + 3 申报表 + 7 合同） | **30/30（100.00%）** | 原件零修改通过 |
+| 骨架压缩器预算门禁（≤ 6,000 字符） | 30 份（最大原 XML 1,048,222 字符） | **30/30（100.00%）** | 平均骨架 **1,707 字符**，峰值 **5,699 字符**，平均压缩比 **1.77%** |
+| 原件无损留壳组装与 PNG 渲染 | 30 份 | **30/30（100.00%）** | `word/media/*`、页眉页脚、分节符与样式表 30/30 字节级一致 |
+| 跨领域长草稿零拷贝保真套版（1,500~5,000 字） | 6 份（公文/论文/申报表/合同） | **6/6（逐字保真率 100.00%）** | 真实 DeepSeek 单文档均值：输入 **390** + 输出 **1,499** = **1,889 tokens**（学术/申报书最低 **474~516 tokens**） |
+| 真实末页溢出 / 孤立落款自动压页收口 | 6 份真实公文预设溢出样本 | **6/6（警报归零率 100.00%）** | 收口前 10 项警报 → 收口后 **0 项**，6/6 页数成功减 1 |
+| 双轨视觉终审与关键页采样（≤ 960px） | 6 份多页/含表真实模板 | **6/6（零报错闭环）** | 实测 `text_only` 优雅降级，每份最多采样 **3 页**，最大宽度 **960px** |
+| V2 历史全量兼容基线（合成/真实公文/NL/修复） | 20 合成 + 16 公文 + 30 NL + 10 故障注入 | **100.00% 通过** | 合成提取 2088/2088，NL 233/233，故障修复违规 17 → 0 |
+
+## 已知边界说明
+
+- 本机 Linux 环境未预装商业授权中文字体（如方正小标宋简体、仿宋_GB2312），LibreOffice 生成预览 PNG 时通过系统字体回退渲染；生成的 `.docx` 底层 OOXML `w:rFonts` 四属性与独立审计均严格写入真实目标字体名称，在安装对应字体的桌面 Word 环境中即按标准字形显示。
+- `@mariozechner/pi-agent-core` 与 `@mariozechner/pi-ai` 固定采用锁定版本 `^0.73.1`，并通过 `overrides.basic-ftp = "6.2.6"` 消除传递依赖漏洞。

@@ -20,12 +20,83 @@ function textOf(element: Element) {
     .trim()
 }
 
-// 表格示例：行列数 + 前 3 个非空单元格，便于区分封面表、三线表与签章表。
 function tableSummary(table: Element) {
   const rows = children(table, "tr")
   const columns = Math.max(0, ...rows.map((r) => children(r, "tc").length))
   const cells = Array.from(table.getElementsByTagNameNS(W, "tc")).map(textOf).filter(Boolean)
   return (rows.length + "行" + columns + "列 " + cells.slice(0, 3).join("|")).slice(0, 48)
+}
+
+function detectSectionRole(index: number, total: number, texts: string[], hasTocSdt: boolean) {
+  const joined = texts.join("\n")
+  if (hasTocSdt && texts.length <= 2) return "toc_preserved"
+  if (/本页可以不打印|本页不打印|图片格式示例|表格格式示例|填写说明|撰写说明/.test(joined)) {
+    return "instruction_guide_removable"
+  }
+  if (
+    index === 0 &&
+    total > 1 &&
+    /学\s*号|学\s*生|姓\s*名|学\s*院|专\s*业|指导教师|报告|论文|申报书|合同编号|委托方/.test(joined)
+  ) {
+    return "cover"
+  }
+  return "body_or_content"
+}
+
+function buildSectionOutline(root: Element, blocks: Element[]) {
+  if (!blocks.length) return []
+  const body = root.getElementsByTagNameNS(W, "body")[0]
+  const bodyKids = children(body)
+  const tocBeforeBlock = new Set<number>()
+  let bIdx = 0
+  for (const node of bodyKids) {
+    if (node.localName === "sdt" && /TOC|Table of Contents/.test(node.textContent ?? "")) {
+      tocBeforeBlock.add(bIdx)
+    }
+    if (node.localName === "p" || node.localName === "tbl") bIdx++
+  }
+  const ranges: [number, number][] = []
+  let start = 0
+  for (const [i, block] of blocks.entries()) {
+    if (block.localName === "p" && block.getElementsByTagNameNS(W, "sectPr").length) {
+      ranges.push([start, i])
+      start = i + 1
+    }
+  }
+  if (start < blocks.length) ranges.push([start, blocks.length - 1])
+  const selected =
+    ranges.length <= 8 ? ranges : [...ranges.slice(0, 5), ...ranges.slice(-3)]
+  return selected.map(([s, e], idx) => {
+    const slice = blocks.slice(s, e + 1)
+    const texts = slice
+      .map((b) => (b.localName === "tbl" ? tableSummary(b) : textOf(b)))
+      .filter(Boolean)
+    const hasToc = Array.from({ length: e - s + 1 }, (_, k) => s + k).some((k) =>
+      tocBeforeBlock.has(k),
+    )
+    const role_hint = detectSectionRole(idx, ranges.length, texts, hasToc)
+    const nonEmpty = slice
+      .map((b, offset) => ({
+        i: s + offset,
+        b,
+        txt: b.localName === "tbl" ? tableSummary(b) : textOf(b),
+      }))
+      .filter((x) => x.txt)
+    const limit = role_hint === "cover" ? 16 : 5
+    const picks =
+      nonEmpty.length <= limit
+        ? nonEmpty
+        : [...nonEmpty.slice(0, limit - 1), nonEmpty[nonEmpty.length - 1]]
+    const samples = picks.map(({ i, b, txt }) => {
+      const p = b.localName === "tbl" ? b.getElementsByTagNameNS(W, "p")[0] : b
+      const style = attr(child(child(p, "pPr"), "pStyle")) ?? ""
+      return { anchor: "B" + i, style: style.slice(0, 16), text: txt.slice(0, 28) }
+    })
+    if (hasToc && !samples.length) {
+      samples.push({ anchor: "B" + s, style: "TOC", text: "[自动目录节]" })
+    }
+    return { index: idx, start: "B" + s, end: "B" + e, role_hint, samples }
+  })
 }
 
 export async function inspectReference(source: string, data: string) {
@@ -47,6 +118,7 @@ export async function inspectReference(source: string, data: string) {
       media: Object.keys(files).filter((k) => /^word\/media\/[^/]+$/.test(k)).length,
       clusters: [],
       preserved: [],
+      section_outline: buildSectionOutline(root, blocks),
     }
     if (skeleton.media) skeleton.preserved.push("嵌入图片")
     if (all("headerReference").length) skeleton.preserved.push("页眉")
@@ -54,6 +126,13 @@ export async function inspectReference(source: string, data: string) {
     if (all("docGrid").length) skeleton.preserved.push("文档网格")
     if (all("pict").length || all("drawing").length) skeleton.preserved.push("图形")
     if (skeleton.sections > 1) skeleton.preserved.push("分节")
+    while (
+      skeleton.section_outline &&
+      skeleton.section_outline.length > 2 &&
+      JSON.stringify(skeleton).length > 2600
+    ) {
+      skeleton.section_outline.splice(1, 1)
+    }
     const groups = new Map<string, Skeleton["clusters"][number]>()
     for (const [index, block] of blocks.entries()) {
       const table = block.localName === "tbl"

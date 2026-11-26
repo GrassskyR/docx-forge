@@ -1,9 +1,29 @@
 import { randomUUID } from "node:crypto"
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { unzipSync } from "fflate"
 import { Assert } from "typebox/value"
 import { Blueprint, type TemplateAsset } from "@docs-agent/shared"
 import { Store } from "./store.js"
+import { bodyBlocks } from "./doc_inspector.js"
+import { W, children, parseXml } from "./xml_utils.js"
+
+function describePrototypes(base: string, prototypes: Record<string, string>) {
+  const xml = unzipSync(readFileSync(base))["word/document.xml"]
+  if (!xml) return Object.keys(prototypes).join("、")
+  const blocks = bodyBlocks(parseXml(xml).documentElement!)
+  return Object.entries(prototypes)
+    .map(([role, anchor]) => {
+      const el = blocks[Number(anchor.slice(1))]
+      if (el?.localName !== "tbl") return role
+      const grid = children(el, "tblGrid")[0]
+      const cols = grid
+        ? children(grid, "gridCol").length
+        : Math.max(0, ...children(el, "tr").map((r) => children(r, "tc").length))
+      return cols > 0 ? `${role}(${cols}列)` : role
+    })
+    .join("、")
+}
 
 export class TemplateStore {
   constructor(
@@ -82,13 +102,18 @@ export class TemplateStore {
     Assert(Blueprint, blueprint)
     const id = randomUUID()
     const folder = join(this.data, "template_assets", id)
+    const removedInfo = blueprint.remove_ranges?.length
+      ? "剔除说明区 " + blueprint.remove_ranges.map((r) => r.start + "-" + r.end).join("、")
+      : ""
     const capability_card = [
       name + " · " + category,
-      "槽位 " + blueprint.slots.map((s) => s.name).join("、"),
-      "原型 " + Object.keys(blueprint.prototypes).join("、"),
+      "槽位 " + blueprint.slots.map((s) => s.name + "(" + s.start + "-" + s.end + ")").join("、"),
+      "原型 " + describePrototypes(base, blueprint.prototypes),
       "保留 " + blueprint.preserved.join("、"),
+      removedInfo,
       rules.split("\n").filter(Boolean).slice(0, 5).join("\n"),
     ]
+      .filter(Boolean)
       .join("\n")
       .slice(0, 1500)
     const asset = { id, name, category, blueprint, parent_id, capability_card }

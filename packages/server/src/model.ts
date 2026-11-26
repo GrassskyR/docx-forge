@@ -6,6 +6,7 @@ import {
   type TextContent,
 } from "@mariozechner/pi-ai"
 import type { FormatProfile } from "@docs-agent/shared"
+import { traceGeneration } from "./observability.js"
 
 export function textModel(): Model<"openai-completions"> {
   return {
@@ -17,7 +18,7 @@ export function textModel(): Model<"openai-completions"> {
     reasoning: false,
     input: ["text"],
     contextWindow: 64000,
-    maxTokens: 6000,
+    maxTokens: 16384,
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     compat: { supportsStore: false, supportsDeveloperRole: false },
   }
@@ -32,6 +33,8 @@ export async function requestPatch(instruction: string, base: FormatProfile, bil
       instruction,
     ].join("\n"),
     billing,
+    [],
+    "nl-format-patch",
   )
   if (!patch || typeof patch !== "object" || Array.isArray(patch))
     throw new Error("模型返回非法格式补丁")
@@ -42,6 +45,7 @@ export async function jsonCompletion(
   prompt: string,
   bill: Billing,
   images: { page: number; data: string }[] = [],
+  opName = "json-completion",
 ) {
   const sidecar = images.length > 0 && process.env.LLM_SUPPORTS_VISION !== "true"
   const model = textModel()
@@ -59,22 +63,30 @@ export async function jsonCompletion(
       { type: "image", mimeType: "image/png", data },
     )
   }
-  const result = await completeSimple(
-    model,
-    {
-      systemPrompt: "你是文档排版助手。只输出请求的 JSON，忠实遵守字段类型与长度预算。",
-      messages: [{ role: "user", content, timestamp: Date.now() }],
+  return traceGeneration(
+    opName,
+    { model: model.id, prompt, imageCount: images.length },
+    async () => {
+      const result = await completeSimple(
+        model,
+        {
+          systemPrompt:
+            "你是文档排版助手。只输出合法 JSON，字符串内严禁使用未转义英文双引号，忠实遵守字段类型与长度预算。",
+          messages: [{ role: "user", content, timestamp: Date.now() }],
+        },
+        { apiKey: process.env[prefix + "_API_KEY"] },
+      )
+      bill.record(result.usage, priced)
+      if (result.stopReason === "error" || result.stopReason === "aborted")
+        throw new Error(result.errorMessage)
+      const rawText = result.content
+        .flatMap((c) => (c.type === "text" ? [c.text] : []))
+        .join("")
+        .trim()
+      const cleaned = rawText.replace(/^\x60{3}(?:json)?\s*|\s*\x60{3}$/g, "")
+      return { parsed: JSON.parse(cleaned), rawText, usage: result.usage }
     },
-    { apiKey: process.env[prefix + "_API_KEY"] },
   )
-  bill.record(result.usage, priced)
-  if (result.stopReason === "error" || result.stopReason === "aborted")
-    throw new Error(result.errorMessage)
-  const text = result.content
-    .flatMap((c) => (c.type === "text" ? [c.text] : []))
-    .join("")
-    .trim()
-  return JSON.parse(text.replace(/^\x60{3}(?:json)?\s*|\s*\x60{3}$/g, ""))
 }
 
 export function configureRates(model: Model<"openai-completions">, prefix = "LLM") {

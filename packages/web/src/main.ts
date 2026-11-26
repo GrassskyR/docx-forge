@@ -1,3 +1,5 @@
-import { createApp, h } from "vue"
+import { createApp } from "vue"
+import App from "./App.vue"
+import "./style.css"
 
-createApp({ render: () => h("h1", "DocForge 文档工作台") }).mount("#app")
+createApp(App).mount("#app")

@@ -1,9 +1,6 @@
 .env
-.venv/
-agent/node_modules/
-agent/dist/
-__pycache__/
-.pytest_cache/
 data/
 node_modules/
 dist/
+packages/web/dist/
+__pycache__/

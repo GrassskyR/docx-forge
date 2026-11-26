@@ -33,8 +33,29 @@ export async function adjustLayout(path: string, operations: Adjustment[]) {
     const before = await telemetry(path, staging)
     const files = unzipSync(await readFile(path))
     const doc = parseXml(files["word/document.xml"])
-    const paragraphs = Array.from(doc.getElementsByTagNameNS(W, "p"))
+    const body = doc.getElementsByTagNameNS(W, "body")[0]
+    const topBlocks = body ? children(body).filter((el) => el.localName !== "sectPr") : []
+    const firstSectIdx = topBlocks.findIndex(
+      (el) => el.localName === "p" && el.getElementsByTagNameNS(W, "sectPr").length > 0,
+    )
+    const coverSet = new Set<Element>()
+    if (firstSectIdx >= 0) {
+      for (const blk of topBlocks.slice(0, firstSectIdx + 1)) {
+        if (blk.localName === "p") coverSet.add(blk)
+        for (const p of Array.from(blk.getElementsByTagNameNS(W, "p"))) coverSet.add(p)
+      }
+    }
+    const allParagraphs = Array.from(doc.getElementsByTagNameNS(W, "p"))
+    const paragraphs = allParagraphs.filter((p) => !coverSet.has(p))
     const candidate = join(staging, "document.docx")
+    function maxHalfPt(p: Element) {
+      let max = 0
+      for (const sz of Array.from(p.getElementsByTagNameNS(W, "sz"))) {
+        const val = Number(sz.getAttributeNS(W, "val") || 0)
+        if (val > max) max = val
+      }
+      return max
+    }
     function props(p: Element) {
       return children(p, "pPr")[0] ?? p.insertBefore(wordElement(doc, "pPr"), p.firstChild)
     }
@@ -47,14 +68,16 @@ export async function adjustLayout(path: string, operations: Adjustment[]) {
     }
     function spacing(key: string, delta: number) {
       for (const p of paragraphs) {
+        const sz = maxHalfPt(p)
         const e = property(p, "spacing")
         const rule = e.getAttributeNS(W, "lineRule")
         const relative = !rule || rule === "auto"
-        const original = Number(
-          e.getAttributeNS(W, key) ?? (key === "after" ? 0 : relative ? 240 : 560),
-        )
+        const raw = e.getAttributeNS(W, key)
+        const fallback = key === "line" ? (relative ? 240 : Math.max(560, sz * 12)) : 0
+        const original = Number(raw || fallback)
         const unit = key === "line" && relative ? 12 : 20
-        const floor = key === "after" ? 0 : relative ? 180 : 200
+        const minLine = relative ? (sz >= 36 ? 240 : 180) : Math.max(200, sz * 11)
+        const floor = key === "line" ? minLine : 0
         e.setAttributeNS(
           W,
           "w:" + key,
@@ -81,10 +104,12 @@ export async function adjustLayout(path: string, operations: Adjustment[]) {
       } else throw new Error("未知版面操作")
     }
     let after = before
-    for (let attempt = 0; attempt < (compact ? 6 : 1); attempt++) {
+    for (let attempt = 0; attempt < (compact ? 8 : 1); attempt++) {
       if (compact) {
+        for (const p of paragraphs) property(p, "snapToGrid").setAttributeNS(W, "w:val", "0")
         spacing("line", -1)
-        spacing("after", -1)
+        spacing("before", -2)
+        spacing("after", -2)
       }
       files["word/document.xml"] = xmlBytes(doc)
       await writeFile(candidate, zipSync(files))

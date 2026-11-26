@@ -42,7 +42,15 @@ export async function telemetry(path: string, directory: string): Promise<Layout
     }
     const story = compact(lines.map((l) => l.text).join(""))
     const matched = tables
-      .map((cells, i) => (cells.some((c) => c.length > 2 && story.includes(c)) ? i : -1))
+      .map((cells, i) => {
+        const longCells = cells.filter((c) => c.length > 2)
+        if (!longCells.length) return -1
+        const hits = longCells.filter((c) => story.includes(c)).length
+        const minHits = Math.min(2, longCells.length)
+        return hits >= minHits && (longCells.length === 1 ? longCells[0].length >= 8 : true)
+          ? i
+          : -1
+      })
       .filter((i) => i >= 0)
     return { lines, matched, height }
   })

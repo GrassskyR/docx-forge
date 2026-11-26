@@ -1,0 +1,6069 @@
+{
+  "generated_at": "2026-11-25T13:27:19.586Z",
+  "corpus_size": 30,
+  "formats": {
+    "ooxml_docx": 15,
+    "ole_doc": 15
+  },
+  "tracks": {
+    "rule_baseline": {
+      "total_docs": 30,
+      "skeleton_budget_pass": 30,
+      "pdf_render_pass": 30,
+      "ooxml_audit_pass": 30,
+      "banner_preserved_pass": 27,
+      "form_container_pass": 19,
+      "residue_free_pass": 12,
+      "metadata_filled_total": "6/183",
+      "metadata_fill_pct": 3.3,
+      "strict_e2e_pass": 0,
+      "strict_e2e_pct": 0,
+      "avg_tokens": 0,
+      "failure_breakdown": {
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 24,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 18,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 18,
+        "F1_TABLE_CELL_UNADDRESSABLE": 11,
+        "F4_MULTI_SLOT_FIXED_SECTIONS": 2
+      },
+      "by_archetype": {
+        "multi_section_flowing": {
+          "total": 5,
+          "pass": 0
+        },
+        "single_section_flowing": {
+          "total": 12,
+          "pass": 0
+        },
+        "table_form_grid": {
+          "total": 6,
+          "pass": 0
+        },
+        "hybrid_table_sections": {
+          "total": 6,
+          "pass": 0
+        },
+        "textbox_heavy_layout": {
+          "total": 1,
+          "pass": 0
+        }
+      }
+    },
+    "rule_enhanced": {
+      "total_docs": 30,
+      "skeleton_budget_pass": 30,
+      "pdf_render_pass": 25,
+      "ooxml_audit_pass": 24,
+      "banner_preserved_pass": 24,
+      "form_container_pass": 18,
+      "residue_free_pass": 11,
+      "metadata_filled_total": "78/183",
+      "metadata_fill_pct": 42.6,
+      "strict_e2e_pass": 4,
+      "strict_e2e_pct": 13.3,
+      "avg_tokens": 0,
+      "failure_breakdown": {
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 14,
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 17,
+        "F1_TABLE_CELL_UNADDRESSABLE": 7,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 5,
+        "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
+        "F0_PIPELINE_EXCEPTION": 5
+      },
+      "by_archetype": {
+        "multi_section_flowing": {
+          "total": 5,
+          "pass": 1
+        },
+        "single_section_flowing": {
+          "total": 12,
+          "pass": 2
+        },
+        "table_form_grid": {
+          "total": 6,
+          "pass": 0
+        },
+        "hybrid_table_sections": {
+          "total": 6,
+          "pass": 0
+        },
+        "textbox_heavy_layout": {
+          "total": 1,
+          "pass": 1
+        }
+      }
+    },
+    "llm_hybrid": {
+      "total_docs": 30,
+      "skeleton_budget_pass": 30,
+      "pdf_render_pass": 24,
+      "ooxml_audit_pass": 23,
+      "banner_preserved_pass": 18,
+      "form_container_pass": 17,
+      "residue_free_pass": 20,
+      "metadata_filled_total": "85/183",
+      "metadata_fill_pct": 46.4,
+      "strict_e2e_pass": 8,
+      "strict_e2e_pct": 26.7,
+      "avg_tokens": 5820,
+      "failure_breakdown": {
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 13,
+        "F1_TABLE_CELL_UNADDRESSABLE": 7,
+        "F0_PIPELINE_EXCEPTION": 6,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 4,
+        "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 4
+      },
+      "by_archetype": {
+        "multi_section_flowing": {
+          "total": 5,
+          "pass": 4
+        },
+        "single_section_flowing": {
+          "total": 12,
+          "pass": 4
+        },
+        "table_form_grid": {
+          "total": 6,
+          "pass": 0
+        },
+        "hybrid_table_sections": {
+          "total": 6,
+          "pass": 0
+        },
+        "textbox_heavy_layout": {
+          "total": 1,
+          "pass": 0
+        }
+      }
+    }
+  },
+  "documents": [
+    {
+      "id": "lab_01",
+      "file": "lab_01_glut_cs_os.docx",
+      "source_org": "桂林理工大学信息科学与工程学院",
+      "course_or_discipline": "计算机/操作系统实习报告",
+      "source_url": "LOCAL_USER_UPLOAD",
+      "size_bytes": 34750,
+      "sha256": "ad3d6017c61b4ef83e385374ae734f80d0ab76ecfb0eb517f871c7b4b8cfe8ac",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "multi_section_flowing",
+      "observed_structure": {
+        "top_p": 84,
+        "top_tbl": 1,
+        "non_empty_p": 74,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 2,
+        "sections": 4,
+        "page_breaks": 0,
+        "sdts": 1,
+        "headers": 2,
+        "footers": 2,
+        "media": 0,
+        "sample": "学 号： 3172052051111 # / 桂林理工大学 / GUILIN UNIVERSITY OF T / 操作系统 / 课程设计与实习报告 / 银行家算法的实现"
+      },
+      "ground_truth": {
+        "banner": "桂林理工大学",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 4,
+        "page_breaks": 0,
+        "textbox_count": 2,
+        "top_p_count": 84,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.7,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "本页可以不打印",
+          "图片格式示例",
+          "表格格式示例",
+          "操作系统安装与操练",
+          "不得少于300字",
+          "正文全文字体统一使用宋体。大标题使用三号字，小标"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 439,
+          "tokens_used": 0,
+          "skeleton_chars": 3944,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B48-B84)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B21",
+              "end": "B46",
+              "reason": "填写说明与格式示例节"
+            }
+          ],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.14,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "class_name@top_p",
+            "college@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2495,
+          "tokens_used": 0,
+          "skeleton_chars": 3944,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_id(B0-B0)",
+            "college(B9-B9)",
+            "major(B10-B10)",
+            "class_name(B11-B11)",
+            "student_name(B12-B12)",
+            "advisor(B13-B13)",
+            "body(B48-B84)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B21",
+              "end": "B46",
+              "reason": "规则检出说明节"
+            }
+          ],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
+          "metadata_total": 7,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 57859,
+          "tokens_used": 4676,
+          "skeleton_chars": 3944,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_id(B0-B0)",
+            "title(B7-B7)",
+            "college(B9-B9)",
+            "major(B10-B10)",
+            "class(B11-B11)",
+            "student_name(B12-B12)",
+            "advisor(B13-B13)",
+            "date(B19-B19)",
+            "body(B48-B84)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B21",
+              "end": "B46",
+              "reason": "填写说明页，本页可不打印"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
+          "metadata_total": 7,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        }
+      }
+    },
+    {
+      "id": "lab_02",
+      "file": "lab_02_buaa_dnc_mv.doc",
+      "source_org": "北京航空航天大学数字导航中心",
+      "course_or_discipline": "人工智能/机器视觉课程实验报告",
+      "source_url": "https://dnc.buaa.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1247319867&wbfileid=B2847E026C206CDC1DE18117C325A048",
+      "size_bytes": 1724416,
+      "sha256": "120bd7e00e030c8628bc8f8677fa8f3f0a6e21a73f5db172a47dba468c6a68d4",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "multi_section_flowing",
+      "observed_structure": {
+        "top_p": 143,
+        "top_tbl": 1,
+        "non_empty_p": 148,
+        "table_inner_p": 21,
+        "table_ratio": 0.14,
+        "txbx": 0,
+        "sections": 3,
+        "page_breaks": 1,
+        "sdts": 1,
+        "headers": 5,
+        "footers": 3,
+        "media": 11,
+        "sample": "北京航空航天大学 / 20 －20 学年 第 学期 / 《机器视觉》 / 课程综合实践报告 / 完善封面信息，报告双面打印，左侧2钉装订，报 / 专 业："
+      },
+      "ground_truth": {
+        "banner": "北京航空航天大学",
+        "is_table_form": false,
+        "table_ratio": 0.14,
+        "sections": 3,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 143,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.69,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "完善封面信息，报告双面打印",
+          "特别注意：在形成报告时，删除所有提示的文字，即文",
+          "特别注意：正文为小四号宋体（中文）+Time N",
+          "同时定位与地图构建（Simultaneous L",
+          "特别注意：由于章节标题已经采用了1、1.1和1.",
+          "按照课程要求对文献或某一技术发展进行综述，重点考"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3879,
+          "tokens_used": 0,
+          "skeleton_chars": 4059,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B13-B13)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "major@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "特别注意：在形成报告时，删除所有提示的文字，即文",
+            "特别注意：正文为小四号宋体（中文）+Time N",
+            "同时定位与地图构建（Simultaneous L",
+            "特别注意：由于章节标题已经采用了1、1.1和1.",
+            "按照课程要求对文献或某一技术发展进行综述，重点考"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4324,
+          "tokens_used": 0,
+          "skeleton_chars": 4059,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "major(B16-B16)",
+            "student_id(B17-B17)",
+            "student_name(B18-B18)",
+            "body(B50-B138)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 3,
+          "metadata_total": 3,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "完善封面信息，报告双面打印",
+            "特别注意：在形成报告时，删除所有提示的文字，即文",
+            "特别注意：正文为小四号宋体（中文）+Time N",
+            "同时定位与地图构建（Simultaneous L",
+            "特别注意：由于章节标题已经采用了1、1.1和1."
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 176935,
+          "tokens_used": 11220,
+          "skeleton_chars": 4059,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B7-B7)",
+            "academic_term(B5-B5)",
+            "major(B16-B16)",
+            "student_id(B17-B17)",
+            "student_name(B18-B18)",
+            "score(B19-B19)",
+            "date(B28-B28)",
+            "body(B36-B143)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B13",
+              "end": "B13",
+              "reason": "封面填写说明"
+            },
+            {
+              "start": "B31",
+              "end": "B31",
+              "reason": "目录更新提示"
+            },
+            {
+              "start": "B34",
+              "end": "B34",
+              "reason": "模板使用说明"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 3,
+          "metadata_total": 3,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        }
+      }
+    },
+    {
+      "id": "lab_03",
+      "file": "lab_03_buaa_dnc_nav.doc",
+      "source_org": "北京航空航天大学数字导航中心",
+      "course_or_discipline": "航空航天/导航系统设计实验报告",
+      "source_url": "https://dnc.buaa.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1247319867&wbfileid=216CDB2ADA21300FB987972A266C4660",
+      "size_bytes": 131072,
+      "sha256": "ede31bcf692cd3ec2a46e1e9af2e91f5bc844cc825cc07d0c59215731c944f90",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "multi_section_flowing",
+      "observed_structure": {
+        "top_p": 67,
+        "top_tbl": 0,
+        "non_empty_p": 25,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 3,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 5,
+        "footers": 5,
+        "media": 1,
+        "sample": "北京航空航天大学 / 20 －20 学年 第 学期期末 / 《导航系统设计》 / 综合设计和仿真验证报告 / 班 级______________学 号 _ / 姓 名______________成 绩 _"
+      },
+      "ground_truth": {
+        "banner": "北京航空航天大学",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 3,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 67,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "导航技术发展概论是一门面向本科的校级公共选修课，",
+          "惯性导航系统（Inertial Navigati"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 2056,
+          "tokens_used": 0,
+          "skeleton_chars": 2977,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B45-B66)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4097,
+          "tokens_used": 0,
+          "skeleton_chars": 2977,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_name(B19-B19)",
+            "body(B50-B64)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "导航技术发展概论是一门面向本科的校级公共选修课，"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 166542,
+          "tokens_used": 10507,
+          "skeleton_chars": 2977,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B8-B8)",
+            "class(B16-B16)",
+            "student_name(B19-B19)",
+            "date(B31-B31)",
+            "body(B45-B66)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_04",
+      "file": "lab_04_buaa_dnc_code.doc",
+      "source_org": "北京航空航天大学数字导航中心",
+      "course_or_discipline": "电子信息/现代导航技术程序实验报告",
+      "source_url": "https://dnc.buaa.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1247319867&wbfileid=CF9BD02493D9ED17B6FE8CB1EBF56AFC",
+      "size_bytes": 133120,
+      "sha256": "111cdbf9f2d622f5fc0aa5d444ae2ad232fcd290c2d7a6c30d091253f500dc57",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "multi_section_flowing",
+      "observed_structure": {
+        "top_p": 78,
+        "top_tbl": 0,
+        "non_empty_p": 31,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 3,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 5,
+        "footers": 5,
+        "media": 1,
+        "sample": "北京航空航天大学 / 20 －20 学年 第 学期期末 / 《计算机视觉与导航技术》 / 综合作业和实验结果分析报告 / 班 级______________学 号 _ / 姓 名______________成 绩 _"
+      },
+      "ground_truth": {
+        "banner": "北京航空航天大学",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 3,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 78,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "导航技术发展概论是一门面向本科的校级公共选修课，",
+          "惯性导航系统（Inertial Navigati"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 1917,
+          "tokens_used": 0,
+          "skeleton_chars": 3359,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B45-B77)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4202,
+          "tokens_used": 0,
+          "skeleton_chars": 3359,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_name(B19-B19)",
+            "body(B51-B75)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "导航技术发展概论是一门面向本科的校级公共选修课，"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 141549,
+          "tokens_used": 6022,
+          "skeleton_chars": 3359,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B10-B10)",
+            "course_name(B8-B8)",
+            "semester(B5-B5)",
+            "class_and_student_id(B16-B16)",
+            "name_and_score(B19-B19)",
+            "date(B31-B31)",
+            "body(B45-B77)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_05",
+      "file": "lab_05_hit_eelab_sim.doc",
+      "source_org": "哈尔滨工业大学电工电子实验教学中心",
+      "course_or_discipline": "电子信息/电工电子仿真实验报告",
+      "source_url": "https://eelab.hit.edu.cn/_upload/article/files/34/ef/b590d94e48228f4cdcfc76bf49f5/83919563-fdfe-4d22-87f6-e7bb8f1e5218.doc",
+      "size_bytes": 986624,
+      "sha256": "9234b7065bc5aa2b5888c6ef1b023ba812bc1d8d67e4e618365e97f2de95365f",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 83,
+        "top_tbl": 0,
+        "non_empty_p": 65,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 2,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 2,
+        "footers": 2,
+        "media": 16,
+        "sample": "242570-114300 / 电工电子实验教学中心实验报告 / 068580 / 姓名 班级 学号 台号 / 日期 节次 成绩 教师签字 / 029845"
+      },
+      "ground_truth": {
+        "banner": "电工电子实验教学中心实验报告",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 2,
+        "top_p_count": 83,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [
+          "五、思考题"
+        ],
+        "residue_probes": [
+          "例：限幅放大器如图1-1所示，输入电压ui（直流",
+          "(1) 执行菜单命令PSpice/New Sim",
+          "·Sweep variable项选中“Volta",
+          "·Sweep type项选中“Linear”，并",
+          "执行菜单命令PSpice/Run，或点击工具按钮",
+          "2、仿真前，须给电容设置初始扰动。设置方法：双击"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 2825,
+          "tokens_used": 0,
+          "skeleton_chars": 3068,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B23-B23)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "例：限幅放大器如图1-1所示，输入电压ui（直流",
+            "(1) 执行菜单命令PSpice/New Sim",
+            "·Sweep variable项选中“Volta",
+            "·Sweep type项选中“Linear”，并",
+            "执行菜单命令PSpice/Run，或点击工具按钮",
+            "2、仿真前，须给电容设置初始扰动。设置方法：双击"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4205,
+          "tokens_used": 0,
+          "skeleton_chars": 3068,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B24-B82)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "例：限幅放大器如图1-1所示，输入电压ui（直流"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 156579,
+          "tokens_used": 6328,
+          "skeleton_chars": 3068,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B6-B6)",
+            "title(B7-B7)",
+            "student_name_class(B3-B3)",
+            "date_period_grade(B4-B4)",
+            "body(B9-B82)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_06",
+      "file": "lab_06_tju_ccet_undergrad.doc",
+      "source_org": "天津大学计算机实验教学中心",
+      "course_or_discipline": "计算机/本科生实验报告专用纸",
+      "source_url": "http://ccet.tju.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1515100435&wbfileid=59E5E5E6C67FE563E77C8BC54AAC73C0",
+      "size_bytes": 27648,
+      "sha256": "bf2ddfde8655fa396ded5b0b4bddf358dfadfb22f79b992f660413bff68d2c11",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 1,
+        "top_tbl": 1,
+        "non_empty_p": 7,
+        "table_inner_p": 7,
+        "table_ratio": 1,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "天津大学本科生实验报告专用纸 / 天津大学本科生实验报告专用纸 / 学院 年级 专业 班级 姓名 学号 / 课程名称 实验日期 成绩 / 同组实验者 / 教师签字："
+      },
+      "ground_truth": {
+        "banner": "天津大学本科生实验报告专用纸",
+        "is_table_form": true,
+        "table_ratio": 1,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 1,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "major",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 1533,
+          "tokens_used": 0,
+          "skeleton_chars": 403,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B0)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell(同行多字段)",
+            "student_name@table_cell(同行多字段)",
+            "class_name@table_cell(同行多字段)",
+            "college@table_cell(同行多字段)",
+            "major@table_cell(同行多字段)",
+            "course@table_cell(同行多字段)",
+            "date@table_cell(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 3614,
+          "tokens_used": 0,
+          "skeleton_chars": 403,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B1-B1)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell(同行多字段)",
+            "student_name@table_cell(同行多字段)",
+            "class_name@table_cell(同行多字段)",
+            "college@table_cell(同行多字段)",
+            "major@table_cell(同行多字段)",
+            "course@table_cell(同行多字段)",
+            "date@table_cell(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 86277,
+          "tokens_used": 3837,
+          "skeleton_chars": 403,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B1-B1)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "table",
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell(同行多字段)",
+            "student_name@table_cell(同行多字段)",
+            "class_name@table_cell(同行多字段)",
+            "college@table_cell(同行多字段)",
+            "major@table_cell(同行多字段)",
+            "course@table_cell(同行多字段)",
+            "date@table_cell(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_07",
+      "file": "lab_07_hust_cs_general.docx",
+      "source_org": "华中科技大学计算机科学与技术学院",
+      "course_or_discipline": "计算机/通用课程实验报告模板",
+      "source_url": "https://raw.githubusercontent.com/zxc479773533/HUST-CS-Report-Template/master/Report-template%28labs%29.docx",
+      "size_bytes": 4108704,
+      "sha256": "e909242d889f8b27b27d270874b2d403eac021cd86138b254f1c57397503c334",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "multi_section_flowing",
+      "observed_structure": {
+        "top_p": 159,
+        "top_tbl": 2,
+        "non_empty_p": 195,
+        "table_inner_p": 66,
+        "table_ratio": 0.34,
+        "txbx": 0,
+        "sections": 2,
+        "page_breaks": 5,
+        "sdts": 1,
+        "headers": 2,
+        "footers": 2,
+        "media": 4,
+        "sample": "课 程 实 验 报 告 / 课程名称： XXXX课程实验 / 专业班级： CS1601 / 学 号： U2016xxxxx / 姓 名： 小明 / 指导教师： 老师"
+      },
+      "ground_truth": {
+        "banner": "计算机科学与技术学院",
+        "is_table_form": false,
+        "table_ratio": 0.34,
+        "sections": 2,
+        "page_breaks": 5,
+        "textbox_count": 0,
+        "top_p_count": 159,
+        "top_tbl_count": 2,
+        "addressable_p_ratio": 0.55,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "XXXX课程",
+          "U2016xxxxx",
+          "CS1601",
+          "方框效果和高亮效果制作：利用网站http://p",
+          "课程设计的报告，无非是在之前加上一个前言写出课题",
+          "在格式的控制和标题的控制上，完全适用本文档所提供"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 6141,
+          "tokens_used": 0,
+          "skeleton_chars": 1970,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B32-B32)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.29,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)",
+            "course@top_p",
+            "advisor@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "XXXX课程",
+            "U2016xxxxx",
+            "CS1601",
+            "方框效果和高亮效果制作：利用网站http://p",
+            "课程设计的报告，无非是在之前加上一个前言写出课题",
+            "在格式的控制和标题的控制上，完全适用本文档所提供"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4332,
+          "tokens_used": 0,
+          "skeleton_chars": 1970,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B8-B8)",
+            "student_id(B20-B20)",
+            "student_name(B21-B21)",
+            "advisor(B22-B22)",
+            "body(B31-B160)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": false,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 6,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.86,
+          "unfilled_fields": [
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "CS1601"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 221519,
+          "tokens_used": 8634,
+          "skeleton_chars": 1970,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B8-B8)",
+            "major_class(B19-B19)",
+            "student_id(B20-B20)",
+            "student_name(B21-B21)",
+            "instructor(B22-B22)",
+            "date(B23-B23)",
+            "college(B28-B28)",
+            "body(B30-B160)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": false,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
+          "metadata_total": 7,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": []
+        }
+      }
+    },
+    {
+      "id": "lab_08",
+      "file": "lab_08_seu_sw_test.docx",
+      "source_org": "东南大学计算机与软件工程学院(课程归档)",
+      "course_or_discipline": "软件工程/软件测试实验报告模板",
+      "source_url": "https://raw.githubusercontent.com/npubird/softwaretesting/master/%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A%E6%A8%A1%E6%9D%BF.docx",
+      "size_bytes": 63092,
+      "sha256": "363119cf3e00f8c8334ce2ec11b5b4105da3583f2e97efd45b2fc9f6ff19ff82",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 44,
+        "top_tbl": 0,
+        "non_empty_p": 27,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 1,
+        "footers": 0,
+        "media": 1,
+        "sample": "软件测试基础与实践 / 实验报告 / 实验名称： / 实验地点： / 实验日期： / 学生姓名："
+      },
+      "ground_truth": {
+        "banner": "实验报告",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 44,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "一、实验目的",
+          "二、实验内容"
+        ],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3574,
+          "tokens_used": 0,
+          "skeleton_chars": 1036,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B18-B18)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "college@top_p",
+            "title@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 3375,
+          "tokens_used": 0,
+          "skeleton_chars": 1036,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B5-B5)",
+            "date(B7-B7)",
+            "student_name(B8-B8)",
+            "body(B17-B39)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 3,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0.6,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "college@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 142105,
+          "tokens_used": 6768,
+          "skeleton_chars": 1036,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B5-B5)",
+            "experiment_location(B6-B6)",
+            "body(B17-B43)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0.2,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "college@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_09",
+      "file": "lab_09_csu_bs_practice.docx",
+      "source_org": "中南大学商学院",
+      "course_or_discipline": "工商管理/专业实践报告模板",
+      "source_url": "https://bs.csu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=2039737675&wbfileid=17814366",
+      "size_bytes": 24247,
+      "sha256": "e463e2644bf772ed009ca977c8bc10064cc8e7938e1c96cce7c360ef044c6f0f",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B03040A000000",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 47,
+        "top_tbl": 1,
+        "non_empty_p": 101,
+        "table_inner_p": 85,
+        "table_ratio": 0.84,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 1,
+        "media": 0,
+        "sample": "中 南 大 学 / 专业学位研究生专业实践报告 / 学 号＿＿＿＿＿＿＿＿＿ / 姓 名＿＿＿＿＿＿＿＿＿ / 二级培养单位＿＿＿＿＿＿＿＿＿ / 专 业 类 别＿＿＿＿＿＿＿＿＿"
+      },
+      "ground_truth": {
+        "banner": "专业学位研究生专业实践报告",
+        "is_table_form": true,
+        "table_ratio": 0.84,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 47,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.16,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "1．研究生在专业实践活动结束后3周内完成该报告（",
+          "4. 实践收获与体会（企业、行业实践或学科竞赛的",
+          "5.取得的主要成果（企业、行业实践或学科竞赛的主",
+          "（1）产品或作品成果（简要介绍实习实践活动所形成",
+          "（5）重大装备以及其他成果（为实践单位解决较复杂",
+          "1.请对研究生的职业素养和工作表现如出勤率、工作"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3525,
+          "tokens_used": 0,
+          "skeleton_chars": 1314,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B7-B7)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "college@top_p",
+            "major@top_p",
+            "title@table_cell",
+            "advisor@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "1．研究生在专业实践活动结束后3周内完成该报告（",
+            "4. 实践收获与体会（企业、行业实践或学科竞赛的",
+            "5.取得的主要成果（企业、行业实践或学科竞赛的主",
+            "（1）产品或作品成果（简要介绍实习实践活动所形成",
+            "（5）重大装备以及其他成果（为实践单位解决较复杂",
+            "1.请对研究生的职业素养和工作表现如出勤率、工作"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 3440,
+          "tokens_used": 0,
+          "skeleton_chars": 1314,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_id(B7-B7)",
+            "student_name(B8-B8)",
+            "college(B9-B9)",
+            "major(B10-B10)",
+            "body(B26-B28)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 4,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "title@table_cell",
+            "advisor@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "1．研究生在专业实践活动结束后3周内完成该报告（",
+            "4. 实践收获与体会（企业、行业实践或学科竞赛的",
+            "5.取得的主要成果（企业、行业实践或学科竞赛的主",
+            "（1）产品或作品成果（简要介绍实习实践活动所形成",
+            "（5）重大装备以及其他成果（为实践单位解决较复杂",
+            "1.请对研究生的职业素养和工作表现如出勤率、工作"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 202362,
+          "tokens_used": 0,
+          "skeleton_chars": 1314,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "模板未声明槽位 body",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_10",
+      "file": "lab_10_gh_os_word.docx",
+      "source_org": "中山大学计算机学院(SYSU课程归档)",
+      "course_or_discipline": "操作系统原理实验报告",
+      "source_url": "https://raw.githubusercontent.com/IntelligentDDS/SYSUOS-labs-i386-2026/main/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A%E6%A8%A1%E6%9D%BF-word.docx",
+      "size_bytes": 219478,
+      "sha256": "d10aa3cd8641d03fe76186e0845c3cd45349b0d05c3fad5f16e6fac52240ba6c",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 107,
+        "top_tbl": 0,
+        "non_empty_p": 93,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 2,
+        "sample": "INCLUDEPICTURE \"https: / 本科生实验报告 / 实验课程: 操作系统原理实验 / 实验名称: 编译内核/利用已有内核创建OS  / 学生姓名: / 学生学号:"
+      },
+      "ground_truth": {
+        "banner": "本科生实验报告",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 107,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "编译内核",
+          "实验任务1：学习C语言的可变参数机制的实现方法，",
+          "------------------------",
+          "命令行与代码块可以通过特殊背景进行区分，或者添加",
+          "上面是深色背景的参考样式（直接从VSCode中复",
+          "实验结果展示：通过执行前述代码，可得下图结果。图"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 4001,
+          "tokens_used": 0,
+          "skeleton_chars": 1961,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B44-B44)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "title@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "编译内核",
+            "实验任务1：学习C语言的可变参数机制的实现方法，",
+            "------------------------",
+            "命令行与代码块可以通过特殊背景进行区分，或者添加",
+            "上面是深色背景的参考样式（直接从VSCode中复",
+            "实验结果展示：通过执行前述代码，可得下图结果。图"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 3549,
+          "tokens_used": 0,
+          "skeleton_chars": 1961,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B11-B11)",
+            "student_name(B13-B13)",
+            "date(B17-B17)",
+            "title(B25-B25)",
+            "body(B44-B44)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 5,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.83,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "编译内核",
+            "实验任务1：学习C语言的可变参数机制的实现方法，",
+            "------------------------",
+            "命令行与代码块可以通过特殊背景进行区分，或者添加",
+            "上面是深色背景的参考样式（直接从VSCode中复",
+            "实验结果展示：通过执行前述代码，可得下图结果。图"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 165195,
+          "tokens_used": 7341,
+          "skeleton_chars": 1961,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B11-B11)",
+            "title(B12-B12)",
+            "student_name(B13-B13)",
+            "body(B19-B105)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 3,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.5,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "major@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_11",
+      "file": "lab_11_ds_course_lab.docx",
+      "source_org": "数据科学高校课程(开源模板)",
+      "course_or_discipline": "数据科学/课程实验报告",
+      "source_url": "https://raw.githubusercontent.com/fanyanpeng/data_science_byFLW/master/%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A.docx",
+      "size_bytes": 1626459,
+      "sha256": "fe950c40976398a4a7aef9d00c79f710cd18718042748ec43dc8e88beac7eadb",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 145,
+        "top_tbl": 0,
+        "non_empty_p": 114,
+        "table_inner_p": 5,
+        "table_ratio": 0.04,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "sdts": 7,
+        "headers": 0,
+        "footers": 1,
+        "media": 8,
+        "sample": "南京大学软件学院 / 新冠肺炎疫情下的网络社会心态分析 / 数据科学大作业实验报告 / 小组组长：樊言鹏 小组成员：王子岑 刘晋元 / 2021-1-24 / 目录"
+      },
+      "ground_truth": {
+        "banner": "南京大学软件学院",
+        "is_table_form": false,
+        "table_ratio": 0.04,
+        "sections": 1,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 145,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 0.79,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "樊言鹏",
+          "新冠肺炎疫情",
+          "中国社会正处在深刻而快速的转型期，其中，在社会变",
+          "目标：在此次新型冠状病毒（COIVD-19）传播",
+          "本次实验的语言数据来源为<新浪微博人民日报账号h",
+          "思路：我们的目标是爬取人民日报官方微博的与疫情相"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 9502,
+          "tokens_used": 0,
+          "skeleton_chars": 1819,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B4-B4)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@table_cell",
+            "college@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "樊言鹏",
+            "新冠肺炎疫情",
+            "中国社会正处在深刻而快速的转型期，其中，在社会变",
+            "目标：在此次新型冠状病毒（COIVD-19）传播",
+            "本次实验的语言数据来源为<新浪微博人民日报账号h",
+            "思路：我们的目标是爬取人民日报官方微博的与疫情相"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 6612,
+          "tokens_used": 0,
+          "skeleton_chars": 1819,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_id(B8-B8)",
+            "body(B4-B4)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_name@table_cell",
+            "college@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "樊言鹏",
+            "新冠肺炎疫情",
+            "中国社会正处在深刻而快速的转型期，其中，在社会变",
+            "目标：在此次新型冠状病毒（COIVD-19）传播",
+            "本次实验的语言数据来源为<新浪微博人民日报账号h",
+            "思路：我们的目标是爬取人民日报官方微博的与疫情相"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 88207,
+          "tokens_used": 3944,
+          "skeleton_chars": 1819,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B144)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 3,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@table_cell",
+            "college@table_cell"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_12",
+      "file": "lab_12_uestc_eemc_std.doc",
+      "source_org": "电子科技大学经管实验与信息中心",
+      "course_or_discipline": "经济管理/标准课程实验报告",
+      "source_url": "https://jgsy.uestc.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=2067497945&wbfileid=15765386",
+      "size_bytes": 45568,
+      "sha256": "8c6b0a796da37a9b4cdf06075759d1fa1f2c54f532e02e130b5166e6dc67cec1",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 42,
+        "top_tbl": 0,
+        "non_empty_p": 22,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "电子科技大学经济与管理学院 / 标 准 实 验 报 告 / （实验）课程名称 / 电子科技大学教务处制表 / 电 子 科 技 大 学 / 实 验 报 告"
+      },
+      "ground_truth": {
+        "banner": "电子科技大学经济与管理学院",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 42,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "四、实验原理：",
+          "五、实验目的：",
+          "六、实验内容：",
+          "八、实验步骤：",
+          "九、实验数据及结果分析："
+        ],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 5178,
+          "tokens_used": 0,
+          "skeleton_chars": 1506,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B23-B23)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "college@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4786,
+          "tokens_used": 0,
+          "skeleton_chars": 1506,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "date(B24-B24)",
+            "title(B27-B27)",
+            "body(B28-B40)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.29,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "college@top_p",
+            "course@top_p",
+            "advisor@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 156806,
+          "tokens_used": 6390,
+          "skeleton_chars": 1506,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B10-B10)",
+            "student_name(B23-B23)",
+            "student_id(B24-B24)",
+            "college(B25-B25)",
+            "major(B26-B26)",
+            "class(B27-B27)",
+            "advisor(B41-B41)",
+            "date(B29-B29)",
+            "body(B30-B36)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 6,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.86,
+          "unfilled_fields": [
+            "course@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F4_MULTI_SLOT_FIXED_SECTIONS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_13",
+      "file": "lab_13_gh_uestc_os.docx",
+      "source_org": "电子科技大学计算机学院(开源归档)",
+      "course_or_discipline": "计算机操作系统实验报告",
+      "source_url": "https://raw.githubusercontent.com/Eternity-Myth/Operating-System-Experiment/master/%E5%85%B3%E6%96%87%E8%81%AA%202016060601008%20%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%20%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A.docx",
+      "size_bytes": 1134253,
+      "sha256": "e7b3322509a6b1ab3d62d623fce25b8d953df84735cceb25cd6bd63d8a0553d9",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 791,
+        "top_tbl": 0,
+        "non_empty_p": 705,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 32,
+        "sample": "电 子 科 技 大 学 / 实 验 报 告 / 学生姓名：关文聪 学号：2016060601 / 实验地点：主楼A2-412 实验时间：201 / 实验室名称：计算机实验室 / 实验项目名称：进程与资源管理实验"
+      },
+      "ground_truth": {
+        "banner": "",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 791,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "关文聪",
+          "系统总体架构如图1所示，最右边部分为进程与资源管",
+          "图1中间绿色部分为驱动程序test shell,",
+          "图1最左端部分为：通过终端（如键盘输入）或者测试",
+          "-cr <name> <priority>(=1",
+          "-req <resource name> <# "
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 5509,
+          "tokens_used": 0,
+          "skeleton_chars": 2711,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B118-B118)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "title@top_p",
+            "advisor@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "关文聪",
+            "系统总体架构如图1所示，最右边部分为进程与资源管",
+            "图1中间绿色部分为驱动程序test shell,",
+            "图1最左端部分为：通过终端（如键盘输入）或者测试",
+            "-cr <name> <priority>(=1",
+            "-req <resource name> <# "
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4614,
+          "tokens_used": 0,
+          "skeleton_chars": 2711,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "date(B3-B3)",
+            "title(B5-B5)",
+            "body(B8-B788)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0.4,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "关文聪"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 178701,
+          "tokens_used": 8529,
+          "skeleton_chars": 2711,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "student_info(B2-B2)",
+            "lab_location(B3-B3)",
+            "lab_name(B4-B4)",
+            "report_score(B664-B664)",
+            "instructor_signature(B665-B665)",
+            "final_instructor_signature(B789-B789)",
+            "body(B8-B373)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 5,
+          "metadata_fill_rate": 0.4,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "title@top_p",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "关文聪"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_14",
+      "file": "lab_14_jnu_jwc_sheet.doc",
+      "source_org": "暨南大学教务处",
+      "course_or_discipline": "全校通用/本科实验报告专用纸",
+      "source_url": "https://jwc.jnu.edu.cn/_upload/article/files/86/e1/4e8d728d439aa333743eafe93937/907221a7-b106-4bad-a695-aa106777e498.doc",
+      "size_bytes": 27136,
+      "sha256": "e0ffabab267e52e4dba12efabb8a6c28b7f5327ccd3aed422a4fd5604f6ca77d",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 69,
+        "top_tbl": 0,
+        "non_empty_p": 4,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "暨南大学本科实验报告专用纸 / 课程名称 实验项目名称 实验项目编号 实验项 / 学生姓名 学号 学院 系 专业 实验时间 年 / 暨南大学本科实验报告专用纸(附页)"
+      },
+      "ground_truth": {
+        "banner": "暨南大学本科实验报告专用纸",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 69,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 5085,
+          "tokens_used": 0,
+          "skeleton_chars": 693,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B0)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "college@top_p(同行多字段)",
+            "major@top_p(同行多字段)",
+            "course@top_p(同行多字段)",
+            "title@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)",
+            "date@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 5914,
+          "tokens_used": 0,
+          "skeleton_chars": 693,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B0)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "college@top_p(同行多字段)",
+            "major@top_p(同行多字段)",
+            "course@top_p(同行多字段)",
+            "title@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)",
+            "date@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 207779,
+          "tokens_used": 9530,
+          "skeleton_chars": 693,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B1-B1)",
+            "student_info(B2-B2)",
+            "body(B41-B68)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0.25,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "college@top_p(同行多字段)",
+            "major@top_p(同行多字段)",
+            "title@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)",
+            "date@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_15",
+      "file": "lab_15_szu_phy_tpl1.doc",
+      "source_org": "深圳大学物理与光电工程学院",
+      "course_or_discipline": "物理学/基础光电物理实验报告1",
+      "source_url": "https://cpoelab.szu.edu.cn/virtual_attach_file.vsb?afc=5U4MCVMRUPUmWRMQRvPnzTkMmGbL7nq2oz-ZLl-sU8CZolC0gihFp2hmCIa0nSysUYysnSy4Uz-DMzU4nzLYLzNsnmL8MRLZL7lYnNl4MzWFMlWRM4vDU4fFM4-YnSbNpDLeo4OeQDn4vsN0qIbtpYyxLYyxLYbw62p8c&oid=1693169170&e=.doc",
+      "size_bytes": 29230,
+      "sha256": "f1c2730d47f70e1bcfb240ba2807a09b34292049717d8361ac622e4e37c1266f",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 26,
+        "top_tbl": 1,
+        "non_empty_p": 45,
+        "table_inner_p": 46,
+        "table_ratio": 1.02,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "深 圳 大 学 实 验 报 告 / 课程名称： / 实验项目名称： / 学院： 光 电 工 程 学 院 / 专业： / 指导教师："
+      },
+      "ground_truth": {
+        "banner": "学院：光电工程学院",
+        "is_table_form": true,
+        "table_ratio": 0.71,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 26,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.29,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "一、实验目的：",
+          "三、实验原理：",
+          "四、实验内容和要求：",
+          "六、实验结果分析及思考题："
+        ],
+        "residue_probes": [
+          "1. 参考实验讲义，同时结合自己的理解，完成本实",
+          "2. 实验过程与结果记录、实验结果分析及思考题两"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 5067,
+          "tokens_used": 0,
+          "skeleton_chars": 1173,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B5-B5)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "college@top_p",
+            "major@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "1. 参考实验讲义，同时结合自己的理解，完成本实",
+            "2. 实验过程与结果记录、实验结果分析及思考题两"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F4_MULTI_SLOT_FIXED_SECTIONS"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 5754,
+          "tokens_used": 0,
+          "skeleton_chars": 1173,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B5-B5)",
+            "title(B7-B7)",
+            "college(B9-B9)",
+            "major(B11-B11)",
+            "advisor(B13-B13)",
+            "student_id(B15-B15)",
+            "date(B17-B17)",
+            "body(B5-B5)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 7,
+          "metadata_total": 7,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [
+            "1. 参考实验讲义，同时结合自己的理解，完成本实",
+            "2. 实验过程与结果记录、实验结果分析及思考题两"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F4_MULTI_SLOT_FIXED_SECTIONS"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 160460,
+          "tokens_used": 5305,
+          "skeleton_chars": 1173,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B2-B2)",
+            "course_name(B5-B5)",
+            "experiment_name(B7-B7)",
+            "college(B9-B9)",
+            "body(B23-B23)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B24",
+              "end": "B26",
+              "reason": "注意事项与填写说明，非报告正文"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "body",
+            "table",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 4,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.57,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_16",
+      "file": "lab_16_szu_phy_tpl2.doc",
+      "source_org": "深圳大学物理与光电工程学院",
+      "course_or_discipline": "物理学/光电实验报告模板2",
+      "source_url": "https://cpoelab.szu.edu.cn/virtual_attach_file.vsb?afc=5nRnCfn7QfL4GaMQm7PozrRnmNiL8CqYLzUDUllZLzn2L8L0gihFp2hmCIa0UYhkUYyDUSyYUmlYoRLYMlL4M8LiU4f7nmL4L7n7Lz-bLRQFLRUPozTVolMFM49aLkbNpDLeo4OeQDn4vsN0qIbtpYyxLYyxLYbw62p8c&oid=1693169170&e=.doc",
+      "size_bytes": 30720,
+      "sha256": "6036c55c385008773c704f38ad9962e1ead9c7bdc753b2b772cfa57bd97e204a",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 28,
+        "top_tbl": 3,
+        "non_empty_p": 23,
+        "table_inner_p": 10,
+        "table_ratio": 0.43,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "深 圳 大 学 实 验 报 告 / 课程名称： / 实验项目名称： / 学院： / 专业： / 指导教师："
+      },
+      "ground_truth": {
+        "banner": "实验报告提交时间：",
+        "is_table_form": false,
+        "table_ratio": 0.43,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 28,
+        "top_tbl_count": 3,
+        "addressable_p_ratio": 0.57,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 7398,
+          "tokens_used": 0,
+          "skeleton_chars": 1494,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B5-B5)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2844,
+          "tokens_used": 0,
+          "skeleton_chars": 1494,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 125419,
+          "tokens_used": 0,
+          "skeleton_chars": 1494,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_17",
+      "file": "lab_17_szu_civil_1.doc",
+      "source_org": "深圳大学土木与交通工程实验中心",
+      "course_or_discipline": "土木工程/万能试验机拉伸实验报告",
+      "source_url": "https://celab.szu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1546240151&wbfileid=0707BFFB5BFC548AFADE556D4D35DEDC",
+      "size_bytes": 86528,
+      "sha256": "8fe2f185aff60e5a35190014c0798a17399251d030e7fb58c1cf1d9a1dcbab8d",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 109,
+        "top_tbl": 2,
+        "non_empty_p": 82,
+        "table_inner_p": 54,
+        "table_ratio": 0.66,
+        "txbx": 0,
+        "sections": 3,
+        "page_breaks": 1,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "深 圳 大 学 实 验 报 告 / 课程名称： 《 材料力学（1） 》 / 实验项目名称： 万能试验机测量材料的拉伸力学 / 学院： / 专业： / 指导教师："
+      },
+      "ground_truth": {
+        "banner": "",
+        "is_table_form": true,
+        "table_ratio": 0.66,
+        "sections": 3,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 109,
+        "top_tbl_count": 2,
+        "addressable_p_ratio": 0.34,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "一、实验目的",
+          "二、实验设备",
+          "三、实验数据及处理",
+          "五、思考题"
+        ],
+        "residue_probes": [
+          "注：铸铁材料的的弹性模量为割线弹性模量。在工程计",
+          "1. 为什么拉伸试验必须采用标准比例的试样？材料"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 9549,
+          "tokens_used": 0,
+          "skeleton_chars": 3324,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B2-B2)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "注：铸铁材料的的弹性模量为割线弹性模量。在工程计",
+            "1. 为什么拉伸试验必须采用标准比例的试样？材料"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F4_MULTI_SLOT_FIXED_SECTIONS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 7180,
+          "tokens_used": 0,
+          "skeleton_chars": 3324,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B2-B2)",
+            "title(B4-B4)",
+            "college(B6-B6)",
+            "major(B8-B8)",
+            "advisor(B10-B10)",
+            "date(B20-B20)",
+            "body(B25-B109)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 6,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 192397,
+          "tokens_used": 9460,
+          "skeleton_chars": 3324,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B4-B4)",
+            "course_name(B2-B2)",
+            "college(B6-B6)",
+            "major(B8-B8)",
+            "advisor(B10-B10)",
+            "student_name(B13-B13)",
+            "class(B14-B14)",
+            "experiment_date(B20-B20)",
+            "submit_date(B22-B22)",
+            "body(B25-B65)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B109",
+              "end": "B109",
+              "reason": "教师批改时间说明，非报告正文"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 8,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0.89,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_18",
+      "file": "lab_18_szu_civil_2.doc",
+      "source_org": "深圳大学土木与交通工程实验中心",
+      "course_or_discipline": "土木工程/土木工程材料实验报告汇总",
+      "source_url": "https://celab.szu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1546240151&wbfileid=67970E8ED21EC778A2FEB22F6DDD5C5F",
+      "size_bytes": 296960,
+      "sha256": "99f6fdd95fe5f75687a56fdd3f0df0b45e105d613bfd74daca64b3159731d975",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 612,
+        "top_tbl": 36,
+        "non_empty_p": 480,
+        "table_inner_p": 352,
+        "table_ratio": 0.73,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 8,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 1,
+        "sample": "深 圳 大 学 实 验 报 告 / 课程名称 / : / 土木工程材料 / 实验项目名称 / :"
+      },
+      "ground_truth": {
+        "banner": "土木与交通工程学院",
+        "is_table_form": true,
+        "table_ratio": 0.73,
+        "sections": 1,
+        "page_breaks": 8,
+        "textbox_count": 0,
+        "top_p_count": 612,
+        "top_tbl_count": 36,
+        "addressable_p_ratio": 0.27,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "一、实验目的",
+          "二、实验仪器设备"
+        ],
+        "residue_probes": [
+          "3．用静水力天平测量材料的表观密度，为何要将材料"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 9430,
+          "tokens_used": 0,
+          "skeleton_chars": 2837,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B10-B10)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "class_name@table_cell",
+            "college@table_cell",
+            "major@table_cell",
+            "course@table_cell",
+            "title@table_cell",
+            "advisor@top_p",
+            "date@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "3．用静水力天平测量材料的表观密度，为何要将材料"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 7138,
+          "tokens_used": 0,
+          "skeleton_chars": 2837,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B14-B645)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "class_name@table_cell",
+            "college@table_cell",
+            "major@table_cell",
+            "course@table_cell",
+            "title@table_cell",
+            "advisor@top_p",
+            "date@table_cell"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 131853,
+          "tokens_used": 5730,
+          "skeleton_chars": 2837,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B0-B0)",
+            "course_name(B2-B2)",
+            "report_info(B4-B4)",
+            "experiment_time(B6-B6)",
+            "body(B14-B645)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body",
+            "table",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 2,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0.25,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "class_name@table_cell",
+            "college@table_cell",
+            "major@table_cell",
+            "advisor@top_p",
+            "date@table_cell"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_19",
+      "file": "lab_19_szu_inno_mid.doc",
+      "source_org": "深圳大学物理与光电工程学院",
+      "course_or_discipline": "光电物理/基础实验项目中期报告模板",
+      "source_url": "https://cpoelab.szu.edu.cn/virtual_attach_file.vsb?afc=5nllCinzTkU87aUQ4-4ozMVnl-PLmlqsnz62L8lYU4GbozU0gihFp2hmCIa0USysLYh7U1hfMmWVM4WfUlCPnlQkM4M2MRVVoRGZoRlbL7WFnmCDU8QRn7MFozGaLkbNpDLeo4OeQDn4vsN0qIbtpYyxLYyxLYbw62p8c&oid=1693169170&e=.doc",
+      "size_bytes": 36864,
+      "sha256": "67911d6209e0b7a2912d653fbe110459841110c7e62dd59a9f8f71ac885ad7e8",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 2,
+        "top_tbl": 1,
+        "non_empty_p": 21,
+        "table_inner_p": 19,
+        "table_ratio": 0.9,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 0,
+        "sample": "深圳大学学生创新发展基金基础实验项目中期报告 / 项目编号 / 项目名称 / 项目负责人 / 负责人学号 / 负责人联系电话"
+      },
+      "ground_truth": {
+        "banner": "深圳大学学生创新发展基金基础实验项目中期报告",
+        "is_table_form": true,
+        "table_ratio": 0.9,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 2,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "项目进度与阶段性成果说明（项目整体安排及目前进度",
+          "项目变更信息（研究名称或内容、实施方案、项目成员"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 5282,
+          "tokens_used": 0,
+          "skeleton_chars": 711,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B0)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "student_name@top_p",
+            "title@table_cell",
+            "advisor@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "项目进度与阶段性成果说明（项目整体安排及目前进度",
+            "项目变更信息（研究名称或内容、实施方案、项目成员"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 1930,
+          "tokens_used": 0,
+          "skeleton_chars": 711,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 66303,
+          "tokens_used": 0,
+          "skeleton_chars": 711,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_20",
+      "file": "lab_20_sztu_phy_b2.docx",
+      "source_org": "深圳技术大学大学物理教学实验中心",
+      "course_or_discipline": "物理学/大学物理实验B2报告模版",
+      "source_url": "https://phytec.sztu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1752247897&wbfileid=10736473",
+      "size_bytes": 51312,
+      "sha256": "811ca144e1e494523c111e34b83350bd097706d7148a28ab43a35765dd7534ff",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 33,
+        "top_tbl": 4,
+        "non_empty_p": 86,
+        "table_inner_p": 84,
+        "table_ratio": 0.98,
+        "txbx": 2,
+        "sections": 4,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 2,
+        "media": 1,
+        "sample": "1143000课程编号 CP00008 00 / 课程编号 CP00008 / 课程编号 CP00008 / 得分 / 教师签名 / 批改日期"
+      },
+      "ground_truth": {
+        "banner": "深圳技术大学实验报告",
+        "is_table_form": true,
+        "table_ratio": 0.72,
+        "sections": 4,
+        "page_breaks": 0,
+        "textbox_count": 2,
+        "top_p_count": 33,
+        "top_tbl_count": 4,
+        "addressable_p_ratio": 0.26,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "总体要求：实验目的明确，对实验原理清晰，对实验仪",
+          "1、有较好的动手能力，能够很好解决实验过程中出现",
+          "2、有一定的动手能力，能够解决实验过程中出现的一",
+          "3、动手能力较差，仪器误差、有效数字无正确概念，",
+          "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
+          "动手能力较好，操作认真，对实验有充分的准备，能自"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3925,
+          "tokens_used": 0,
+          "skeleton_chars": 2514,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B10-B10)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@table_cell",
+            "class_name@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "总体要求：实验目的明确，对实验原理清晰，对实验仪",
+            "1、有较好的动手能力，能够很好解决实验过程中出现",
+            "2、有一定的动手能力，能够解决实验过程中出现的一",
+            "3、动手能力较差，仪器误差、有效数字无正确概念，",
+            "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
+            "动手能力较好，操作认真，对实验有充分的准备，能自"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2919,
+          "tokens_used": 0,
+          "skeleton_chars": 2514,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B10-B10)",
+            "title(B11-B11)",
+            "class_name(B12-B12)",
+            "advisor(B13-B13)",
+            "student_id(B14-B14)",
+            "date(B17-B17)",
+            "body(B10-B10)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 6,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.86,
+          "unfilled_fields": [
+            "student_name@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "总体要求：实验目的明确，对实验原理清晰，对实验仪",
+            "1、有较好的动手能力，能够很好解决实验过程中出现",
+            "2、有一定的动手能力，能够解决实验过程中出现的一",
+            "3、动手能力较差，仪器误差、有效数字无正确概念，",
+            "遵守实验室的规章制度，实验完毕后整理桌面上的实验",
+            "动手能力较好，操作认真，对实验有充分的准备，能自"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 133497,
+          "tokens_used": 6781,
+          "skeleton_chars": 2514,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B10-B10)",
+            "title(B11-B11)",
+            "class(B12-B12)",
+            "instructor(B13-B13)",
+            "student_name(B14-B14)",
+            "co_author(B15-B15)",
+            "location(B16-B16)",
+            "experiment_date(B17-B17)",
+            "submit_date(B18-B18)",
+            "body(B24-B33)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B21",
+              "end": "B23",
+              "reason": "评分标准说明页"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 6,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.86,
+          "unfilled_fields": [
+            "student_id@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "动手能力较好，操作认真，对实验有充分的准备，能自"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_21",
+      "file": "lab_21_ujs_bio_lab.docx",
+      "source_org": "江苏大学生物科学与技术学院",
+      "course_or_discipline": "生命科学/生物实验报告模板",
+      "source_url": "https://smkx.ujs.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1367983581&wbfileid=4BDE4E09671E4C37B6BFA9324D66C4D0",
+      "size_bytes": 21197,
+      "sha256": "0c75f58d8be4666706ed8cb3a97b5a13a8e4d07cf6c4624ff88e8a350ee10912",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B03040A000000",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 12,
+        "top_tbl": 0,
+        "non_empty_p": 7,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 3,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 1,
+        "media": 0,
+        "sample": "江 苏 大 学 / 实 验 报 告 / 系 别 班 级 作 实 验 日 期 年 月  / 姓 名 学 号 交 报 告 日 期 年 月  / 完 成 报 告 所 需 时 间 教 师 评  / 131445143510"
+      },
+      "ground_truth": {
+        "banner": "",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 3,
+        "textbox_count": 0,
+        "top_p_count": 12,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3535,
+          "tokens_used": 0,
+          "skeleton_chars": 888,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B2-B2)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)",
+            "college@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2480,
+          "tokens_used": 0,
+          "skeleton_chars": 888,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B2-B2)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)",
+            "college@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 130260,
+          "tokens_used": 0,
+          "skeleton_chars": 888,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "模板未声明槽位 body",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_22",
+      "file": "lab_22_sicnu_life_sci.docx",
+      "source_org": "四川师范大学生命科学学院",
+      "course_or_discipline": "生物科学/生命科学实验报告模板",
+      "source_url": "https://bio.sicnu.edu.cn/files/635149202830329297/news/639131612806459686.docx",
+      "size_bytes": 114335,
+      "sha256": "25028c4f887a152dd7359ea00f2fea3cc3954af33a1b9c41e28bcb634c8822a0",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 103,
+        "top_tbl": 4,
+        "non_empty_p": 56,
+        "table_inner_p": 42,
+        "table_ratio": 0.75,
+        "txbx": 0,
+        "sections": 3,
+        "page_breaks": 1,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 1,
+        "sample": "1612900324485 / -838200161925 / 生命科学学院 / 实 验 报 告 册 / 课程名称： / 实验学期："
+      },
+      "ground_truth": {
+        "banner": "生命科学学院",
+        "is_table_form": true,
+        "table_ratio": 0.79,
+        "sections": 3,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 103,
+        "top_tbl_count": 4,
+        "addressable_p_ratio": 0.21,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "advisor",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "每份实验报告首页抬头信息须完整、规范填写；根据内",
+          "实验报告内容应完整规范，每份报告一般包括 6 部"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3635,
+          "tokens_used": 0,
+          "skeleton_chars": 1998,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B14-B14)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell(同行多字段)",
+            "student_name@table_cell",
+            "class_name@table_cell",
+            "college@top_p",
+            "major@table_cell",
+            "course@table_cell",
+            "title@top_p(同行多字段)",
+            "advisor@table_cell"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "每份实验报告首页抬头信息须完整、规范填写；根据内",
+            "实验报告内容应完整规范，每份报告一般包括 6 部"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 507,
+          "tokens_used": 0,
+          "skeleton_chars": 1998,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 163036,
+          "tokens_used": 6763,
+          "skeleton_chars": 1998,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "cover_info(B9-B9)",
+            "body(B21-B58)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B11",
+              "end": "B20",
+              "reason": "填写说明页"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "table",
+            "table_2",
+            "table_3",
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell(同行多字段)",
+            "student_name@table_cell",
+            "class_name@table_cell",
+            "college@top_p",
+            "major@table_cell",
+            "course@table_cell",
+            "title@top_p(同行多字段)",
+            "advisor@table_cell"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_23",
+      "file": "lab_23_gzhu_math_info.doc",
+      "source_org": "广州大学数学与信息科学学院",
+      "course_or_discipline": "数学与信息/实验课程报告模版",
+      "source_url": "http://maths.gzhu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1796216595&wbfileid=7FD879144D7D27439CE6C3289F5F4F99",
+      "size_bytes": 38912,
+      "sha256": "7b066fdebd112d8bd447daf1e7b900a82dddacfeb74a4bdbba683e39aacca8a9",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "table_form_grid",
+      "observed_structure": {
+        "top_p": 1,
+        "top_tbl": 1,
+        "non_empty_p": 36,
+        "table_inner_p": 36,
+        "table_ratio": 1,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 1,
+        "media": 0,
+        "sample": "广州大学学生实验报告 / 开课学院及实验室： 理学实验楼509 201 / 学 院 / 数学与信息科学学院 / 年级、专业、班 / 信计161"
+      },
+      "ground_truth": {
+        "banner": "广州大学学生实验报告",
+        "is_table_form": true,
+        "table_ratio": 1,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 1,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "major",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "table_cell",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [
+          "一、实验目的",
+          "二、实验原理",
+          "四、实验步骤"
+        ],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 4688,
+          "tokens_used": 0,
+          "skeleton_chars": 409,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B0-B0)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@table_cell",
+            "student_name@table_cell",
+            "college@table_cell(同行多字段)",
+            "major@table_cell",
+            "course@table_cell",
+            "title@table_cell",
+            "date@table_cell(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2015,
+          "tokens_used": 0,
+          "skeleton_chars": 409,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 105705,
+          "tokens_used": 0,
+          "skeleton_chars": 409,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_24",
+      "file": "lab_24_scuec_soc_lab.docx",
+      "source_org": "中南民族大学民族学与社会学学院",
+      "course_or_discipline": "人文社科/实验课学生报告模板",
+      "source_url": "https://www.scuec.edu.cn/__local/F/6A/B2/8812B3FEB8BEDFDB4EC18F96817_7EA7BDF4_C217.docx?e=.docx",
+      "size_bytes": 49687,
+      "sha256": "41e988b4be999506a85d403b4bb30f559e4f64e73fc57d1f46c64afe7ffc20c5",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 30,
+        "top_tbl": 0,
+        "non_empty_p": 19,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 1,
+        "sample": "民族学与社会学学院 / 本科实验报告 / 学 期：20**-20**学年第 学期 / 实验课程： / 起止时间： / 实验地点：社会工作实验室"
+      },
+      "ground_truth": {
+        "banner": "民族学与社会学学院",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 30,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [
+          "四、实验目的与意义：",
+          "五、实验内容与过程：",
+          "六、实验结果、反思与启示："
+        ],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3094,
+          "tokens_used": 0,
+          "skeleton_chars": 978,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B5-B5)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "college@top_p",
+            "major@top_p",
+            "course@top_p",
+            "title@top_p",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2535,
+          "tokens_used": 0,
+          "skeleton_chars": 978,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B6-B6)",
+            "date(B7-B7)",
+            "major(B9-B9)",
+            "student_id(B10-B10)",
+            "student_name(B11-B11)",
+            "advisor(B12-B12)",
+            "title(B17-B17)",
+            "body(B18-B23)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
+          "metadata_total": 8,
+          "metadata_fill_rate": 0.88,
+          "unfilled_fields": [
+            "college@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 172444,
+          "tokens_used": 7984,
+          "skeleton_chars": 978,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B16-B16)",
+            "term(B5-B5)",
+            "course(B6-B6)",
+            "student_name(B7-B7)",
+            "student_id(B8-B8)",
+            "college(B9-B9)",
+            "major(B10-B10)",
+            "class(B11-B11)",
+            "advisor(B12-B12)",
+            "date(B13-B13)",
+            "body(B17-B23)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 8,
+          "metadata_total": 8,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        }
+      }
+    },
+    {
+      "id": "lab_25",
+      "file": "lab_25_scuec_soc_intern.doc",
+      "source_org": "中南民族大学民族学与社会学学院",
+      "course_or_discipline": "人文社科/学生毕业实习报告模板",
+      "source_url": "https://www.scuec.edu.cn/__local/C/45/F5/925067423BFA717E429BF094F3B_3F7C682D_1FA00.doc?e=.doc",
+      "size_bytes": 129536,
+      "sha256": "587e762699a6da674699df8295b98a9d70cc509b47a83f1161f98fab538da556",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 45,
+        "top_tbl": 1,
+        "non_empty_p": 97,
+        "table_inner_p": 58,
+        "table_ratio": 0.6,
+        "txbx": 0,
+        "sections": 2,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 1,
+        "sample": "民族学与社会学学院 / 本科毕业实习报告 / 学 期：20 —20 学年度第 学期 / 实习单位： / 实习时间：（写明实习持续时间） / 年级专业："
+      },
+      "ground_truth": {
+        "banner": "民族学与社会学学院",
+        "is_table_form": true,
+        "table_ratio": 0.6,
+        "sections": 2,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 45,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.4,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "实习结束后学生应按照指导老师的要求及时提交实习报",
+          "（1）实习报告题目，宋体小二号加粗，要居中书写；",
+          "（2）一级标题，宋体小三号加粗；二级标题，宋体四",
+          "（3）一级标题顶格书写且单独占行，标题末尾不书写",
+          "② 表中的A、B、C、D、E分别对应优、良、中、"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 6715,
+          "tokens_used": 0,
+          "skeleton_chars": 2951,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B18-B18)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "college@top_p",
+            "major@top_p",
+            "title@top_p",
+            "advisor@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "（1）实习报告题目，宋体小二号加粗，要居中书写；",
+            "（2）一级标题，宋体小三号加粗；二级标题，宋体四",
+            "（3）一级标题顶格书写且单独占行，标题末尾不书写",
+            "② 表中的A、B、C、D、E分别对应优、良、中、"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 4654,
+          "tokens_used": 0,
+          "skeleton_chars": 2951,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "major(B9-B9)",
+            "student_id(B10-B10)",
+            "student_name(B11-B11)",
+            "advisor(B12-B12)",
+            "body(B17-B45)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 4,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.67,
+          "unfilled_fields": [
+            "college@top_p",
+            "title@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 184337,
+          "tokens_used": 11304,
+          "skeleton_chars": 2951,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "college(B1-B1)",
+            "term(B6-B6)",
+            "practice_unit(B7-B7)",
+            "practice_time(B8-B8)",
+            "grade_major(B9-B9)",
+            "student_id(B10-B10)",
+            "student_name(B11-B11)",
+            "advisor(B12-B12)",
+            "practice_grade(B13-B13)",
+            "body(B42-B45)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B16",
+              "end": "B41",
+              "reason": "格式规范及打印要求填写说明页，含示例标题与占位文字"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 5,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0.83,
+          "unfilled_fields": [
+            "title@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_26",
+      "file": "lab_26_scuec_prac_tbl.docx",
+      "source_org": "中南民族大学民族学与社会学学院",
+      "course_or_discipline": "人文社科/教学实践报告表格模板",
+      "source_url": "https://www.scuec.edu.cn/__local/1/F8/CD/C5A385EC8DC276431AF2633C49A_003F27E8_C2ED.docx?e=.docx",
+      "size_bytes": 49901,
+      "sha256": "0fbace599a1bd26f62273f25142b9f2953a4948ab950848408f723233fbedcc8",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 29,
+        "top_tbl": 0,
+        "non_empty_p": 17,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 1,
+        "sample": "民族学与社会学学院 / 本科教学实践报告 / 学 期：20 -20 学年第 学期 / 起止时间： / 实践地点： / 年级专业：20**级***专业"
+      },
+      "ground_truth": {
+        "banner": "民族学与社会学学院",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 29,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "一、实践项目名称：（标题四号宋体加粗，后面填写内"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 4387,
+          "tokens_used": 0,
+          "skeleton_chars": 881,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B5-B5)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "college@top_p",
+            "major@top_p",
+            "title@top_p(同行多字段)",
+            "advisor@top_p",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "一、实践项目名称：（标题四号宋体加粗，后面填写内"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2469,
+          "tokens_used": 0,
+          "skeleton_chars": 881,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "date(B6-B6)",
+            "major(B8-B8)",
+            "student_id(B9-B9)",
+            "student_name(B10-B10)",
+            "advisor(B11-B11)",
+            "body(B18-B22)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 5,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.71,
+          "unfilled_fields": [
+            "college@top_p",
+            "title@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "一、实践项目名称：（标题四号宋体加粗，后面填写内"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 168903,
+          "tokens_used": 8560,
+          "skeleton_chars": 881,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B16-B16)",
+            "semester(B5-B5)",
+            "period(B6-B6)",
+            "college(B7-B7)",
+            "major(B8-B8)",
+            "class(B9-B9)",
+            "student_name(B10-B10)",
+            "student_id(B11-B11)",
+            "advisor(B12-B12)",
+            "body(B17-B21)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 7,
+          "metadata_total": 7,
+          "metadata_fill_rate": 1,
+          "unfilled_fields": [],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": []
+        }
+      }
+    },
+    {
+      "id": "lab_27",
+      "file": "lab_27_mnnu_cs_lab.doc",
+      "source_org": "闽南师范大学计算机学院",
+      "course_or_discipline": "计算机/上机实验报告模板",
+      "source_url": "https://cs.mnnu.edu.cn/system/_content/download.jsp?urltype=news.DownloadAttachUrl&owner=1514595479&wbfileid=D04E4A5810D479E1AE5DC43DB1FE6CAB",
+      "size_bytes": 33280,
+      "sha256": "bfd3fb2e30fe006cd9af2a2bd67dc20864fcd77ee6c1ba562ab9e9c7a9e8db17",
+      "actual_format": "ole_doc",
+      "magic_hex": "D0CF11E0A1B11AE1",
+      "archetype": "hybrid_table_sections",
+      "observed_structure": {
+        "top_p": 6,
+        "top_tbl": 1,
+        "non_empty_p": 12,
+        "table_inner_p": 7,
+        "table_ratio": 0.58,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 1,
+        "media": 0,
+        "sample": "闽 南 师 范 大 学 / 实 验 报 告 / 班 级 学号 姓名 成绩 / 同组人 实验日期 / 课程名称： / 实验题目："
+      },
+      "ground_truth": {
+        "banner": "",
+        "is_table_form": true,
+        "table_ratio": 0.58,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 6,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.42,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "title",
+            "where": "table_cell",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": []
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 6413,
+          "tokens_used": 0,
+          "skeleton_chars": 1054,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B2-B2)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p(同行多字段)",
+            "course@table_cell",
+            "title@table_cell",
+            "date@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F1_TABLE_CELL_UNADDRESSABLE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 1929,
+          "tokens_used": 0,
+          "skeleton_chars": 1054,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 127141,
+          "tokens_used": 0,
+          "skeleton_chars": 1054,
+          "skeleton_within_budget": true,
+          "slots_detected": [],
+          "remove_ranges": [],
+          "prototypes": [],
+          "error": "表格列数与原型不匹配",
+          "pdf_ok": false,
+          "ooxml_audit_passed": false,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
+          "metadata_total": 6,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [],
+          "residue_free": false,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_28",
+      "file": "lab_28_gh_se_word.docx",
+      "source_org": "哈尔滨师范大学计算机学院(课程归档)",
+      "course_or_discipline": "软件工程实验报告",
+      "source_url": "https://raw.githubusercontent.com/EOYOHOO/HRBNU_software/main/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A.docx",
+      "size_bytes": 1796108,
+      "sha256": "38c5e076968da0089e2d81226f72599b9c48db26074b5d89b5c553a4b60b4f46",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 262,
+        "top_tbl": 1,
+        "non_empty_p": 100,
+        "table_inner_p": 12,
+        "table_ratio": 0.12,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 0,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 0,
+        "media": 23,
+        "sample": "哈尔滨师范大学计算机科学与信息工程学院 / 实验报告手册 / 13849351460500 / 课程名称： 软件工程 指导教师： 刘月兰 / 专业： 计算机科学与技术 2022 年— 2 / 姓名： 学号："
+      },
+      "ground_truth": {
+        "banner": "哈尔滨师范大学计算机科学与信息工程学院",
+        "is_table_form": false,
+        "table_ratio": 0.12,
+        "sections": 1,
+        "page_breaks": 0,
+        "textbox_count": 0,
+        "top_p_count": 262,
+        "top_tbl_count": 1,
+        "addressable_p_ratio": 0.88,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "title",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "date",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "实验要求： （1）安装UML软件，并对系统进行配",
+          "四、然后我们在左侧浏览器区选择需要的视图，右击选",
+          "通过这次实验，进一步了解和掌握软件工程原理，提高",
+          "测试用例:编程实现下列要求：输入三个正整数a,b",
+          "通过学习，我将掌握软件工程的基本概念和基础理论知"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 6276,
+          "tokens_used": 0,
+          "skeleton_chars": 1129,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B26-B26)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0.11,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p",
+            "college@top_p",
+            "course@top_p(同行多字段)",
+            "title@top_p",
+            "advisor@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "实验要求： （1）安装UML软件，并对系统进行配",
+            "四、然后我们在左侧浏览器区选择需要的视图，右击选",
+            "通过这次实验，进一步了解和掌握软件工程原理，提高",
+            "测试用例:编程实现下列要求：输入三个正整数a,b",
+            "通过学习，我将掌握软件工程的基本概念和基础理论知"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2790,
+          "tokens_used": 0,
+          "skeleton_chars": 1129,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "major(B28-B28)",
+            "class_name(B32-B32)",
+            "body(B67-B259)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0.22,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "college@top_p",
+            "course@top_p(同行多字段)",
+            "title@top_p",
+            "advisor@top_p(同行多字段)",
+            "date@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "实验要求： （1）安装UML软件，并对系统进行配"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 108770,
+          "tokens_used": 5130,
+          "skeleton_chars": 1129,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B26-B26)",
+            "major(B28-B28)",
+            "grade_assessment(B250-B250)",
+            "date(B259-B259)",
+            "body(B59-B241)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body",
+            "table",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 3,
+          "metadata_total": 9,
+          "metadata_fill_rate": 0.33,
+          "unfilled_fields": [
+            "student_id@top_p(同行多字段)",
+            "student_name@top_p(同行多字段)",
+            "class_name@top_p",
+            "college@top_p",
+            "title@top_p",
+            "advisor@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "通过学习，我将掌握软件工程的基本概念和基础理论知"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_29",
+      "file": "lab_29_jxycu_cs_design.docx",
+      "source_org": "宜春学院数学与计算机科学学院",
+      "course_or_discipline": "计算机/课程设计报告模板",
+      "source_url": "https://sjxy.jxycu.edu.cn/_upload/article/files/45/e4/0133d11c4b328b238e4430e3c98a/e9b1cbf3-3759-48f3-983b-14770f82220c.docx",
+      "size_bytes": 875036,
+      "sha256": "2feb30e7ad38e59fae96a1b8afdb394c3f4b59cde6d5fce5ab52ca9a3330b5e1",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B030414000600",
+      "archetype": "textbox_heavy_layout",
+      "observed_structure": {
+        "top_p": 463,
+        "top_tbl": 15,
+        "non_empty_p": 726,
+        "table_inner_p": 289,
+        "table_ratio": 0.4,
+        "txbx": 94,
+        "sections": 3,
+        "page_breaks": 6,
+        "sdts": 1,
+        "headers": 1,
+        "footers": 1,
+        "media": 25,
+        "sample": "宜春学院人工智能学院本科生毕业设计书写式样 / 一、基本要求 / 1、内容：标题、署名、中英文摘要、正文。其中 / 2、所有数字、字母统一采用Times New / 3、版面： / ·页面设置为：双面打印、上2cm，下2cm，"
+      },
+      "ground_truth": {
+        "banner": "宜春学院人工智能学院本科生毕业设计书写式样",
+        "is_table_form": false,
+        "table_ratio": 0.4,
+        "sections": 3,
+        "page_breaks": 6,
+        "textbox_count": 94,
+        "top_p_count": 463,
+        "top_tbl_count": 15,
+        "addressable_p_ratio": 0.39,
+        "fields": [
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": true
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "6、毕业设计（论文）要求使用统一的封面格式，计量",
+          "7、图纸尺寸按国家标准，图面整洁、布局合理、线条",
+          "8、参考文献以引用先后顺序编号（使用“[1]”方",
+          "（8）毕业设计说明书或论文正文：题目、中英文摘要",
+          "三号黑体加粗，居中三号黑体加粗，居中标题：宋体（",
+          "宋体，五号，对齐居中宋体，五号，对齐居中宜春学院"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 4685,
+          "tokens_used": 0,
+          "skeleton_chars": 4926,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B53-B477)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "6、毕业设计（论文）要求使用统一的封面格式，计量",
+            "7、图纸尺寸按国家标准，图面整洁、布局合理、线条",
+            "8、参考文献以引用先后顺序编号（使用“[1]”方",
+            "（8）毕业设计说明书或论文正文：题目、中英文摘要",
+            "三号黑体加粗，居中三号黑体加粗，居中标题：宋体（",
+            "宋体，五号，对齐居中宋体，五号，对齐居中宜春学院"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 3473,
+          "tokens_used": 0,
+          "skeleton_chars": 4926,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "college(B6-B6)",
+            "body(B9-B476)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 2,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0.5,
+          "unfilled_fields": [
+            "student_name@top_p(同行多字段)",
+            "advisor@top_p(同行多字段)"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 152950,
+          "tokens_used": 8816,
+          "skeleton_chars": 4926,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "title(B0-B0)",
+            "cover_info(B44-B44)",
+            "advisor(B45-B45)",
+            "body(B53-B477)"
+          ],
+          "remove_ranges": [
+            {
+              "start": "B1",
+              "end": "B42",
+              "reason": "基本要求与填写说明页"
+            },
+            {
+              "start": "B43",
+              "end": "B43",
+              "reason": "标题格式说明"
+            },
+            {
+              "start": "B46",
+              "end": "B52",
+              "reason": "摘要格式与示例说明"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body",
+            "table"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": true,
+          "metadata_filled": 1,
+          "metadata_total": 4,
+          "metadata_fill_rate": 0.25,
+          "unfilled_fields": [
+            "student_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "宋体，五号，对齐居中宋体，五号，对齐居中宜春学院"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lab_30",
+      "file": "lab_30_sec_reverse_lab.docx",
+      "source_org": "信息安全专业高校课程(开源模板)",
+      "course_or_discipline": "网络安全/逆向工程实验报告模板",
+      "source_url": "https://raw.githubusercontent.com/Wjt1127/Reverse/main/%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A%E6%A8%A1%E6%9D%BF.docx",
+      "size_bytes": 49996,
+      "sha256": "bcb8f41d9e18e16dc24fd1a8b96a2d97b77d94e8637f321e6efdf5acc3f6b39c",
+      "actual_format": "ooxml_docx",
+      "magic_hex": "504B03040A000000",
+      "archetype": "single_section_flowing",
+      "observed_structure": {
+        "top_p": 39,
+        "top_tbl": 0,
+        "non_empty_p": 21,
+        "table_inner_p": 0,
+        "table_ratio": 0,
+        "txbx": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "sdts": 0,
+        "headers": 0,
+        "footers": 1,
+        "media": 2,
+        "sample": "课 程 实 验 报 告 / 课程名称： 逆向工程分析技术 / 专业班级： 信息安全 班 / 学 号： / 姓 名： / 指导教师： 鲁宏伟"
+      },
+      "ground_truth": {
+        "banner": "网络空间安全学院",
+        "is_table_form": false,
+        "table_ratio": 0,
+        "sections": 1,
+        "page_breaks": 1,
+        "textbox_count": 0,
+        "top_p_count": 39,
+        "top_tbl_count": 0,
+        "addressable_p_ratio": 1,
+        "fields": [
+          {
+            "field": "student_id",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "student_name",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "class_name",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "college",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "major",
+            "where": "top_p",
+            "multi_on_one_line": true
+          },
+          {
+            "field": "course",
+            "where": "top_p",
+            "multi_on_one_line": false
+          },
+          {
+            "field": "advisor",
+            "where": "top_p",
+            "multi_on_one_line": false
+          }
+        ],
+        "fixed_section_headings": [],
+        "residue_probes": [
+          "编程（Java、C/C++或Python）分析P",
+          "结合程序实例，分析函数“sub_4A19B0”出"
+        ]
+      },
+      "tracks": {
+        "rule_baseline": {
+          "strategy": "rule_baseline",
+          "elapsed_ms": 3905,
+          "tokens_used": 0,
+          "skeleton_chars": 1421,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "body(B21-B21)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 0,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0,
+          "unfilled_fields": [
+            "student_id@top_p",
+            "student_name@top_p",
+            "class_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p(同行多字段)",
+            "course@top_p",
+            "advisor@top_p"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "编程（Java、C/C++或Python）分析P",
+            "结合程序实例，分析函数“sub_4A19B0”出"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "rule_enhanced": {
+          "strategy": "rule_enhanced",
+          "elapsed_ms": 2412,
+          "tokens_used": 0,
+          "skeleton_chars": 1421,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course(B7-B7)",
+            "student_id(B11-B11)",
+            "student_name(B12-B12)",
+            "advisor(B13-B13)",
+            "body(B21-B21)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "body",
+            "heading_1",
+            "heading_2",
+            "heading_3"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": true,
+          "form_container_respected": true,
+          "metadata_filled": 4,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.57,
+          "unfilled_fields": [
+            "class_name@top_p(同行多字段)",
+            "college@top_p",
+            "major@top_p(同行多字段)"
+          ],
+          "residue_free": false,
+          "leaked_residues": [
+            "编程（Java、C/C++或Python）分析P",
+            "结合程序实例，分析函数“sub_4A19B0”出"
+          ],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS",
+            "F3_PREFILLED_OR_GUIDE_RESIDUE",
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ]
+        },
+        "llm_hybrid": {
+          "strategy": "llm_hybrid",
+          "elapsed_ms": 93688,
+          "tokens_used": 5032,
+          "skeleton_chars": 1421,
+          "skeleton_within_budget": true,
+          "slots_detected": [
+            "course_name(B7-B7)",
+            "major_class(B10-B10)",
+            "student_id(B11-B11)",
+            "college(B18-B18)",
+            "body(B21-B34)"
+          ],
+          "remove_ranges": [],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "heading_3",
+            "body"
+          ],
+          "pdf_ok": true,
+          "ooxml_audit_passed": true,
+          "banner_preserved": false,
+          "form_container_respected": true,
+          "metadata_filled": 5,
+          "metadata_total": 7,
+          "metadata_fill_rate": 0.71,
+          "unfilled_fields": [
+            "student_name@top_p",
+            "advisor@top_p"
+          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+          ]
+        }
+      }
+    }
+  ]
+}

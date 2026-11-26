@@ -143,3 +143,30 @@
 字符。E2E 以真实 DeepSeek 贯通公文/论文/合同三类模板的 inspect → 内化 → 套版 → 审计 →
 遥测 → 视觉降级 → 版面调整，SSE 含 tool、usage、done 且无 error；累计消耗 15,753 tokens。
 `.env` 未配置单价与视觉模型，实测 `cost_usd` 为 null、视觉全程 text_only 优雅降级。
+
+
+## V3-M4 · 极简瑞士双模式前端工作台与真实浏览器视觉验收
+
+- 采用 Vue 3 + Vite 7 + TypeScript + Tailwind CSS v4 构建 `packages/web/`（含 `TopBar.vue`、`DebugSidebar.vue`、`ContentColumn.vue`、`PreviewStage.vue`、`ImportModal.vue`、`workbench.ts`、`api.ts`），直接复用 `@docs-agent/shared` 类型，`npm run build` 与 `npm run stylecheck` 均退出 0，产物输出至 `packages/web/dist/` 且零外部运行期 CDN，`GET /` 返回 200。
+- 启动单进程服务并使用无头 Chromium（`1440×900` 及移动端 `390×844`）全链路实测通过：全程零 `console.error`、零 `pageerror`、零 HTTP 异常响应；默认普通模式保持极简两栏（无任何 Token/OOXML/Poppler/能力卡噪音），验证格式选择器浮层、导入真实红头 `.docx` 范例并内化、真实触发末页 2 行孤立落款并弹出浅琥珀「一键压进 1 页」建议条（点击压页后建议条自动消失）、零拷贝套版、SSE 流式对话、A4 翻页与 Word 下载；开启右上角「调试模式」后，平滑展开左侧模板资产与能力卡侧栏、零拷贝段落 ID 映射表、实时 Token 计量、会话分叉与切换恢复、缩放控件及底部三标签双轨诊断抽屉，窄屏自动纵向堆叠无横向溢出。
+- 截取并亲自读图核验 `data/visual-check-v3/ui-normal.png` 与 `data/visual-check-v3/ui-debug.png`：初次读图发现调试态预览顶栏三枚徽章窄屏折行，补充 `whitespace-nowrap shrink-0` 并微调中栏宽度比例后重新构建截屏复验，普通模式安静克制、A4 纸张红头与版式清晰自然，调试模式三栏布局与单行状态徽章整齐有序，对齐 `design/swiss_workbench_reference.html` 视觉水准。
+
+## V3-M5 · 跨领域与低成本双维基准评测、遗产清理与全量零回归交付
+
+- 编写并执行 `npx tsx eval/run_benchmark_v3.ts`（退出 0），生成真实 `eval/results_v3.json` 与 `eval/report_v3.md`：
+  1. 30/30 锁定真实跨领域文档（16 公文 + 4 论文/规范 + 3 申报表 + 7 合同）SHA256 全部匹配，骨架压缩 30/30 ≤ 6,000 字符（均值 1,707 字符、峰值 5,699 字符、平均压缩比 1.77%），原件留壳保真（`word/media`、页眉页脚、分节、样式表字节一致）与组装渲染及 PNG 生成 30/30（100.00%）；期间定位并修正 `<w:pPr><w:tabs><w:tab>` 制表位标尺节点与正文 `\t` 的区分问题。
+  2. 6 份跨领域长草稿（1,677~2,394 字）真实调用 `cmd/deepseek/deepseek-v4.1-flash` 执行零拷贝保真套版，正文逐字保真率 6/6 = 100.00%，单文档平均消耗 Prompt 390 + Completion 1,499 = **1,889 tokens**（论文与申报表样本低至 474~516 tokens）。
+  3. 6 份真实溢出与孤立落款样本自动压页收口（补全 `snapToGrid=0` 与段前距 `w:before` 协同收缩），收口前共 10 项警报 → 收口后 6/6 归零且全部成功减页收敛。
+  4. 双轨视觉终审实测运行模式 `text_only`（优雅降级零报错），6 份多页/含表模板最多采样 3 页（首/末/表页），最大采样宽度 960px。
+- 彻底清理旧双服务遗留目录（旧 Python `engine/`、独立 `agent/`、旧单页 `web/`、`eval/check_style.py` 与 `.venv`），保留全部锁定评测语料、测试夹具与 V2 历史报告 `eval/report.md`、`eval/results.json` 原封不动。
+- 更新单进程纯 Node `start.sh`（支持 `PORT` 与兼容 `ENGINE_PORT`，内置端口冲突检测与 `packages/web/dist` 构建检测，运行期零 Python 依赖）、`.env.example` 与 `README.md`。
+- 全量门禁复验全部退出 0：`npm run typecheck`、`npm run stylecheck`、`npm run build`、`npm test`（9 个测试文件共 111 项用例 100% PASS）、`npx tsx packages/server/tests/e2e_verify_v3.ts`（公文/论文/合同三类真实 LLM 内化套版 + SSE `/chat` 通过）、30/30 语料 SHA256 校验通过；实测 `./start.sh` 正确拦截 8000 端口冲突，`PORT=18000 ./start.sh` 与 `ENGINE_PORT=18000 ./start.sh` 单进程健康启动且 `GET /` 与 `GET /health` 均返回 200；核验 `data/profiles.db`（仅保留内置国标预设，模板库为空）、`data/template_assets/` 与 `data/sessions.json`（空根节点）处于干净交付状态。
+
+## V3-M6 · 用户实测五项体验与多节实验报告解析升级 — PASS
+
+- **问题 1（上传弹窗防误触关闭）**：移除 `packages/web/src/components/ImportModal.vue` 遮罩层 `@click.self="emit('close')"`，仅允许点击右上角 `✕` 或「取消」按钮关闭（上传内化进行中自动禁用关闭），Chromium 真实派发遮罩外侧 `(20, 20)` 鼠标点击断言弹窗不关闭。
+- **问题 2（后端 Pino 结构化日志 + Langfuse v4 遥测）**：新增 `packages/server/src/logger.ts`（`pino` + `pino-pretty` 终端彩色输出与 `data/logs/server.log` JSONL 双写，覆盖 HTTP 请求耗时、骨架解剖、模板内化、Pi-Agent 工具调用与模型 Token 用量）及 `packages/server/src/observability.ts`（接入官方 `@langfuse/tracing` + `@langfuse/otel` v4 SDK，自动追踪 `/chat` 会话工具树与独立模型调用；`.env.example` 预留 `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL` / `LOG_LEVEL`，未配置密钥时零报错降级至本地 Pino 日志，顶栏调试态展示 `Langfuse 追踪` / `Pino 日志` 状态胶囊）。
+- **问题 3（修复 AI 助手无法感知新导入模板）**：升级 `packages/server/src/context_hook.ts`（将历史轮次中的旧 `manage_templates` / `manage_profiles` 空快照显式标记为历史快照，并以最新激活模板能力卡为准，同时在能力卡中自动透出表格原型列数如 `table(4列)`）、`tools_v2.ts`（`manage_profiles` 同步返回 `v3_templates` 与 `active_template_id`）及 `agent.ts` 系统提示词。实测同一会话先在空库状态提问、随后导入桂工实验报告模板再切回对话起草报告，AI 立即识别新激活模板并一次调通 `compose_document` 生成 5 页 Word 文档。
+- **问题 4（双侧角色气泡 + Markdown 渲染对话组件）**：重构 `packages/web/src/components/ChatThread.vue`、`ContentColumn.vue` 与 `style.css`（集成 `markdown-it` + `dompurify` 本地打包零外网 CDN），用户消息采用右侧蓝底气泡与「我」头像，助手消息采用左侧白底卡片气泡、头部标识、一键复制、调试态折叠工具轨迹、安全排版 Markdown 与内联 `.docx` 下载卡片，并支持流式与新消息自动滚动到底部。
+- **问题 5（多节高校实验报告模板智能解析与防重叠保护）**：升级 `doc_inspector.ts`（在 `<= 6,000` 字符预算内构建 `section_outline`，自动标注 `cover` 全字段采样、`instruction_guide_removable` 不打印说明页、`toc_preserved` 自动目录节与正文区）、`workspace.ts`（多节内化提示词与 `sanitizeBlueprint` 护栏）、`composer.ts`（支持 `remove_ranges` 整节剥离说明页与图表格式示例、封面键值原位填槽保留下划线长度并剔除白色 `###` 占位符、`B48..B84` 整段正文占位替换及 `<w:sdt>` 目录条目同步刷新）、`composition_audit.ts`（适配说明节合法移除审计）与 `layout_adjuster.ts`（多节封面保护与大字号行距下限防重叠）。以真实《桂林理工大学操作系统实习报告模板》端到端实测通过：精准提取 8 个封面槽位 + 正文槽位，完整剥离 `B21-B46` 不打印说明页与旧示例章节，原样保留封面版式、目录罗马页码 `I` 与后续页「课程设计与实习报告」页眉。
+- **全量回归门禁**：`npm run stylecheck`、`npm run typecheck`、`npm run build`、`npm test`（10 个测试文件共 112 项用例，含新增 `v3_multi_section_report.test.ts` 与 30 份跨领域真实语料测试）及真实 Chromium 五项联动验收脚本全部退出 0，`npm audit --omit=dev` 生产依赖保持 0 漏洞。

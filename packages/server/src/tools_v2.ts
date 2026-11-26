@@ -1,6 +1,7 @@
 import { Type } from "@mariozechner/pi-ai"
 import type { AgentTool } from "@mariozechner/pi-agent-core"
 import { Documents, HttpError } from "./documents.js"
+import type { Workspace } from "./workspace.js"
 import { DocContentAST, type LintReport } from "@docs-agent/shared"
 
 type RenderResult = Awaited<ReturnType<Documents["render"]>> & {
@@ -46,7 +47,7 @@ export async function repairAfterAudit(
   }
 }
 
-export function createTools(client: Documents): AgentTool[] {
+export function createTools(client: Documents, work?: Workspace): AgentTool[] {
   const str = () => Type.String()
   const opt = () => Type.Optional(str())
   const tool = (
@@ -108,7 +109,22 @@ export function createTools(client: Documents): AgentTool[] {
         patch_json: Type.Optional(Type.Any()),
       }),
       async (p) => {
-        if (p.action === "list") return client.profiles()
+        if (p.action === "list") {
+          const base = client.profiles()
+          if (!work) return base
+          const v3List = work.templates.list()
+          return {
+            ...base,
+            active_v3_template_id: work.templates.activeId,
+            v3_templates: v3List.map((t) => ({
+              id: t.id,
+              name: t.name,
+              category: t.category,
+              slots: t.blueprint.slots.map((s) => s.name),
+              prototypes: Object.keys(t.blueprint.prototypes),
+            })),
+          }
+        }
         if (!p.profile_id) throw Error("需要 profile_id")
         if (p.action === "get") return client.get(p.profile_id)
         if (p.action === "set_active") return client.setActive(p.profile_id)

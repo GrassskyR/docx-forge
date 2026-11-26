@@ -6,6 +6,7 @@ import { visionMode } from "@docs-agent/engine"
 import { Documents } from "./documents.js"
 import { SessionTree, type SessionNode } from "./session_tree.js"
 import { makeAgent } from "./agent.js"
+import { runTracedAgentPrompt } from "./observability.js"
 
 export function chatHandler(client: Documents, work: Workspace) {
   const tree = new SessionTree(join(client.directory, "sessions.json"))
@@ -129,7 +130,11 @@ export function chatHandler(client: Documents, work: Workspace) {
     })
     const timer = setTimeout(() => agent.abort(), 180000)
     try {
-      await agent.prompt(body.prompt)
+      await runTracedAgentPrompt(agent, {
+        sessionId: tree.current,
+        prompt: body.prompt,
+        activeTemplate: work.templates.activeId,
+      })
       if (agent.state.errorMessage) event({ type: "error", error: agent.state.errorMessage })
       tree.node.template_id = work.templates.activeId
       const history = clearReviewedImages(agent.state.messages)

@@ -1,7 +1,7 @@
 import { Billing } from "./billing.js"
 import { randomUUID } from "node:crypto"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
-import { realpath } from "node:fs/promises"
+import { realpath, writeFile } from "node:fs/promises"
 import { isDeepStrictEqual } from "node:util"
 import { Assert } from "typebox/value"
 import {
@@ -10,6 +10,7 @@ import {
   render,
   repairDocx,
   preview,
+  telemetry,
   parseFormat,
   merge,
   lint,
@@ -104,18 +105,23 @@ export class Documents {
 
   async result(path: string, profile: FormatProfile, before?: LintReport) {
     const report = await lint(path, profile)
-    const id = basename(dirname(path))
+    const dir = dirname(path)
+    const id = basename(dir)
     const prefix = "/files/documents/" + id + "/"
-    const pages = report.passed ? await preview(path, dirname(path)) : []
-    return {
+    const pages = report.passed ? await preview(path, dir) : []
+    const layout = report.passed ? await telemetry(path, dir) : undefined
+    const payload = {
       doc_id: id,
       docx_path: resolve(path),
       docx_url: prefix + "document.docx",
       lint_report: report,
       effective_profile: profile,
+      ...(layout ? { layout } : {}),
       preview_urls: pages.map((p) => prefix + basename(p)),
       ...(before ? { lint_before: before } : {}),
     }
+    if (layout) await writeFile(join(dir, "result.json"), JSON.stringify(payload))
+    return payload
   }
 
   async render(ast: DocContentAST, id?: string, overrides: Record<string, unknown> = {}) {

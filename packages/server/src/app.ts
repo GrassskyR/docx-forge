@@ -1,5 +1,5 @@
 import { Workspace } from "./workspace.js"
-import { visionMode } from "@docs-agent/engine"
+import { readDraft, visionMode } from "@docs-agent/engine"
 import { Assert } from "typebox/value"
 import { toolSchemas, adjustments } from "@docs-agent/shared"
 import { createServer, type IncomingMessage } from "node:http"
@@ -11,6 +11,8 @@ import { Readable } from "node:stream"
 import { fileURLToPath } from "node:url"
 import { Documents, HttpError, dataFile } from "./documents.js"
 import { chatHandler } from "./chat.js"
+import { logger } from "./logger.js"
+import { langfuseEnabled } from "./observability.js"
 
 export const root = fileURLToPath(new URL("../../../", import.meta.url))
 const types: Record<string, string> = {
@@ -65,12 +67,22 @@ export function createApp(
   const work = new Workspace(docs)
   const chat = chatHandler(docs, work)
   const server = createServer(async (req, res) => {
+    const started = Date.now()
+    const reqPath = decodeURIComponent(new URL(req.url!, "http://localhost").pathname)
+    res.on("finish", () => {
+      if (!reqPath.startsWith("/assets/") && !reqPath.startsWith("/files/")) {
+        logger.info(
+          { method: req.method, path: reqPath, status: res.statusCode, ms: Date.now() - started },
+          "HTTP 请求完成",
+        )
+      }
+    })
     function send(code: number, value: unknown) {
       res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" })
       res.end(JSON.stringify(value))
     }
     try {
-      const path = decodeURIComponent(new URL(req.url!, "http://localhost").pathname)
+      const path = reqPath
       const method = req.method
       if (path === "/chat" || path.startsWith("/sessions")) return await chat(req, res, send)
       if (method === "GET") {
@@ -83,6 +95,7 @@ export function createApp(
             pdftoppm: available("pdftoppm"),
             llm_configured: Boolean(process.env.LLM_API_KEY),
             vision_mode: visionMode(),
+            langfuse_enabled: langfuseEnabled(),
           })
         }
         if (path === "/api/v3/templates")
@@ -119,8 +132,11 @@ export function createApp(
           path === "/api/v3/drafts/ingest",
         )
         if (path === "/api/v3/templates/inspect") return send(200, await work.inspect(source))
-        if (path === "/api/v3/drafts/ingest")
-          return send(200, await work.ingest({ file_path: source }))
+        if (path === "/api/v3/drafts/ingest") {
+          const index = await work.ingest({ file_path: source })
+          const paragraphs = await readDraft(directory, index.draft_id)
+          return send(200, { ...index, paragraphs })
+        }
         if (path === "/api/profiles/extract")
           return send(200, await docs.extract(source, String(form.get("name"))))
         if (path === "/api/documents/lint")
@@ -146,7 +162,8 @@ export function createApp(
           return send(200, asset)
         }
         if (path === "/api/v3/templates/active" && method === "PUT") {
-          work.templates.activate(payload.template_id)
+          if (payload.template_id) work.templates.activate(payload.template_id)
+          else docs.store.db.prepare("DELETE FROM settings WHERE key='active_template'").run()
           return send(200, { active_template_id: work.templates.activeId })
         }
         if (path === "/api/v3/templates/" + id + "/fork" && method === "POST")
@@ -156,7 +173,9 @@ export function createApp(
           return send(200, { deleted: id })
         }
         if (path === "/api/v3/drafts/ingest" && method === "POST") {
-          return send(200, await work.ingest({ text: payload.text }))
+          const index = await work.ingest({ text: payload.text })
+          const paragraphs = await readDraft(directory, index.draft_id)
+          return send(200, { ...index, paragraphs })
         }
         if (path === "/api/v3/documents/compose" && method === "POST") {
           if (payload.body_plan) Assert(toolSchemas.compose_document, payload)
@@ -224,6 +243,7 @@ export function createApp(
           : (e as NodeJS.ErrnoException).code === "ENOENT"
             ? 404
             : 422
+      logger.error({ method: req.method, path: reqPath, status, err: e }, "HTTP 请求异常")
       send(status, { detail: e instanceof HttpError ? e.detail : String(e) })
     }
   })

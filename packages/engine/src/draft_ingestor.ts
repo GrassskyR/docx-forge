@@ -1,3 +1,4 @@
+import type { Element } from "@xmldom/xmldom"
 import { randomUUID } from "node:crypto"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { extname, join } from "node:path"
@@ -16,7 +17,8 @@ export async function ingestDraft(data: string, input: { text?: string; file_pat
           Array.from(p.getElementsByTagNameNS(W, "*"))
             .flatMap((n) => {
               if (n.localName === "t") return [n.textContent ?? ""]
-              if (n.localName === "tab") return ["\t"]
+              if (n.localName === "tab" && (n.parentNode as Element | null)?.localName !== "tabs")
+                return ["\t"]
               if (n.localName === "br") return ["\n"]
               return []
             })

@@ -19,12 +19,30 @@ export const Skeleton = Type.Object({
     }),
   ),
   preserved: Type.Array(Type.String()),
+  section_outline: Type.Optional(
+    Type.Array(
+      Type.Object({
+        index: integer,
+        start: anchor,
+        end: anchor,
+        role_hint: Type.String(),
+        samples: Type.Array(
+          Type.Object({ anchor, style: Type.String(), text: Type.String() }),
+        ),
+      }),
+    ),
+  ),
 })
 export type Skeleton = Static<typeof Skeleton>
 export const Blueprint = Type.Object(
   {
     grid: Type.Optional(Type.Object({ lines: Type.Literal(22), characters: Type.Literal(28) })),
     slots: Type.Array(Type.Object({ name: Type.String(), start: anchor, end: anchor })),
+    remove_ranges: Type.Optional(
+      Type.Array(
+        Type.Object({ start: anchor, end: anchor, reason: Type.Optional(Type.String()) }),
+      ),
+    ),
     prototypes: Type.Record(Type.String(), anchor),
     preserved: Type.Array(Type.String()),
   },
