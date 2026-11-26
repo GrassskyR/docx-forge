@@ -345,167 +345,6 @@ function applyParagraphFieldEdits(
   p.appendChild(makeTextRunWithRpr(d, donor, cleanVal))
 }
 
-function stripPageBreaksFromEmptyPara(p: Element) {
-  if ((p.textContent ?? "").trim().length > 0) return
-  for (const br of Array.from(p.getElementsByTagNameNS(W, "br"))) {
-    if (br.getAttributeNS(W, "type") === "page") {
-      br.parentNode?.removeChild(br)
-    }
-  }
-  const pPr = children(p, "pPr")[0]
-  if (pPr) {
-    for (const pb of children(pPr, "pageBreakBefore")) pPr.removeChild(pb)
-  }
-}
-
-function ancestorTableRow(node: Element | null): Element | null {
-  for (let cur = node?.parentNode; cur?.nodeType === 1; cur = cur.parentNode) {
-    const el = cur as Element
-    if (el.namespaceURI === W && el.localName === "tr") return el
-  }
-  return null
-}
-
-function isPureEmptyPara(el: Element): boolean {
-  if (el.localName !== "p") return false
-  if ((el.textContent ?? "").trim().length > 0) return false
-  if (el.getElementsByTagNameNS(W, "sectPr").length > 0) return false
-  if (el.getElementsByTagNameNS(W, "drawing").length > 0) return false
-  if (el.getElementsByTagNameNS(W, "pict").length > 0) return false
-  if (el.getElementsByTagNameNS(W, "sdt").length > 0) return false
-  if (Array.from(el.getElementsByTagNameNS(W, "br")).some((b) => b.getAttributeNS(W, "type") === "page")) {
-    return false
-  }
-  return true
-}
-
-function hasVisibleNodeContent(el: Element): boolean {
-  if (el.localName === "tbl" || el.localName === "sdt") return true
-  if ((el.textContent ?? "").trim().length > 0) return true
-  const hasGraphic =
-    (el.getElementsByTagNameNS(W, "drawing").length > 0 ||
-      el.getElementsByTagNameNS(W, "pict").length > 0) &&
-    el.getElementsByTagNameNS(W, "txbxContent").length === 0
-  return hasGraphic
-}
-
-function sanitizePostComposePagination(bodyEl: Element, touchedTrs: Set<Element>): number {
-  let droppedSections = 0
-
-  // 1. Collapse fixed trHeight on table rows whose content was emptied during assembly
-  for (const tr of touchedTrs) {
-    if (!tr.parentNode) continue
-    const tcs = children(tr, "tc")
-    const allEmpty = tcs.every(
-      (tc) =>
-        !(tc.textContent ?? "").trim() &&
-        children(tc, "tbl").length === 0 &&
-        tc.getElementsByTagNameNS(W, "drawing").length === 0 &&
-        tc.getElementsByTagNameNS(W, "pict").length === 0,
-    )
-    if (allEmpty) {
-      const trPr = children(tr, "trPr")[0]
-      if (trPr) {
-        for (const h of children(trPr, "trHeight")) trPr.removeChild(h)
-      }
-    }
-  }
-
-  // 2. Partition body children into physical sections (excluding final body sectPr)
-  const buildSections = () => {
-    const secs: { nodes: Element[]; hasSectBreak: boolean }[] = []
-    let cur: Element[] = []
-    for (const el of children(bodyEl)) {
-      if (el.localName === "sectPr") continue
-      cur.push(el)
-      const isBreak =
-        (el.localName === "p" && el.getElementsByTagNameNS(W, "sectPr").length > 0) ||
-        (el.localName === "sdt" && el.getElementsByTagNameNS(W, "sectPr").length > 0)
-      if (isBreak) {
-        secs.push({ nodes: cur, hasSectBreak: true })
-        cur = []
-      }
-    }
-    if (cur.length > 0) secs.push({ nodes: cur, hasSectBreak: false })
-    return secs
-  }
-
-  // 3. Remove orphan explicit page breaks (<w:br w:type="page"/>) inside sections
-  for (const sec of buildSections()) {
-    const pageBreakParas = sec.nodes.filter(
-      (el) =>
-        el.localName === "p" &&
-        Array.from(el.getElementsByTagNameNS(W, "br")).some(
-          (b) => b.getAttributeNS(W, "type") === "page",
-        ),
-    )
-    for (const p of pageBreakParas) {
-      const idx = sec.nodes.indexOf(p)
-      if (idx < 0) continue
-      const ownText = (p.textContent ?? "").trim()
-      const hasTextBefore = sec.nodes.slice(0, idx).some((n) => (n.textContent ?? "").trim().length > 0)
-      const hasTextAfter = sec.nodes.slice(idx + 1).some((n) => (n.textContent ?? "").trim().length > 0)
-      let prevNonEmpty: Element | undefined
-      for (let k = idx - 1; k >= 0; k--) {
-        if (!isPureEmptyPara(sec.nodes[k])) {
-          prevNonEmpty = sec.nodes[k]
-          break
-        }
-      }
-      const prevAlsoPageBreakOnly =
-        prevNonEmpty?.localName === "p" &&
-        !(prevNonEmpty.textContent ?? "").trim() &&
-        Array.from(prevNonEmpty.getElementsByTagNameNS(W, "br")).some(
-          (b) => b.getAttributeNS(W, "type") === "page",
-        )
-      if (
-        (!ownText && !hasTextBefore) ||
-        (!ownText && !hasTextAfter) ||
-        (!ownText && prevAlsoPageBreakOnly)
-      ) {
-        stripPageBreaksFromEmptyPara(p)
-      }
-    }
-  }
-
-  // 4. Prune trailing pure-empty paragraphs at the tail of each section & document
-  for (const sec of buildSections()) {
-    let tailAnchor =
-      sec.hasSectBreak && sec.nodes.at(-1)?.getElementsByTagNameNS(W, "sectPr").length
-        ? sec.nodes.length - 2
-        : sec.nodes.length - 1
-    while (
-      tailAnchor >= 0 &&
-      sec.nodes[tailAnchor].localName === "p" &&
-      !(sec.nodes[tailAnchor].textContent ?? "").trim() &&
-      !isPureEmptyPara(sec.nodes[tailAnchor])
-    ) {
-      tailAnchor--
-    }
-    for (let k = tailAnchor; k >= 0; k--) {
-      const node = sec.nodes[k]
-      if (!isPureEmptyPara(node)) break
-      const remainingParas = bodyBlocks(bodyEl.ownerDocument!.documentElement!).length
-      if (remainingParas <= 1) break
-      bodyEl.removeChild(node)
-    }
-  }
-
-  // 5. Drop completely empty non-final sections left behind after removals
-  const finalSecs = buildSections()
-  for (let s = 0; s < finalSecs.length - 1; s++) {
-    const sec = finalSecs[s]
-    if (sec.nodes.every((n) => !hasVisibleNodeContent(n))) {
-      for (const n of sec.nodes) {
-        droppedSections += n.getElementsByTagNameNS(W, "sectPr").length
-        bodyEl.removeChild(n)
-      }
-    }
-  }
-
-  return droppedSections
-}
-
 function clearOrRemoveBlock(block: Element, allowDropSectPr: boolean): number {
   const sectCount = block.getElementsByTagNameNS(W, "sectPr").length
   if (sectCount > 0 && !allowDropSectPr) {
@@ -517,7 +356,6 @@ function clearOrRemoveBlock(block: Element, allowDropSectPr: boolean): number {
       if (pPr) {
         const numPr = children(pPr, "numPr")[0]
         if (numPr) pPr.removeChild(numPr)
-        for (const pb of children(pPr, "pageBreakBefore")) pPr.removeChild(pb)
       }
       return 0
     }
@@ -798,7 +636,6 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
 
   // 3. Execute remove_targets strictly on declared ranges
   let removedSections = 0
-  const touchedTrs = new Set<Element>()
   const slotProtectedSet = new Set<Element>()
   for (const rs of resolvedSlots) {
     slotProtectedSet.add(rs.startNode.element)
@@ -810,15 +647,9 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
 
   for (const { rm, st, ed } of resolvedRemovals) {
     if (!st) continue
-    const row = ancestorTableRow(st.element)
-    if (row) touchedTrs.add(row)
     if (rm.match && st.element.localName === "p") {
       replaceCrossRunSubstring(d, st.element, rm.match, "")
-      stripPageBreaksFromEmptyPara(st.element)
-      for (const m of st.mirrors) {
-        replaceCrossRunSubstring(d, m, rm.match, "")
-        stripPageBreaksFromEmptyPara(m)
-      }
+      for (const m of st.mirrors) replaceCrossRunSubstring(d, m, rm.match, "")
       continue
     }
     if (st.kind === "textbox") {
@@ -864,7 +695,6 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
             for (const c of Array.from(p.childNodes)) {
               if ((c as Element).localName !== "pPr") p.removeChild(c)
             }
-            stripPageBreaksFromEmptyPara(p)
           } else {
             clearOrRemoveBlock(p, false)
           }
@@ -917,10 +747,6 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
 
     if (startNode.kind === "cell") {
       const tc = startNode.element
-      if (!items.length) {
-        const tr = ancestorTableRow(tc)
-        if (tr) touchedTrs.add(tr)
-      }
       if (placement === "replace") {
         for (const node of children(tc)) {
           if (node.localName !== "tcPr") tc.removeChild(node)
@@ -959,18 +785,7 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
         clearOrRemoveBlock(old, false)
       }
     }
-    if (parent.localName === "tc") {
-      if (!items.length) {
-        const tr = ancestorTableRow(parent)
-        if (tr) touchedTrs.add(tr)
-      }
-      ensureCellEndsWithParagraph(d, parent)
-    }
-  }
-
-  const bodyEl = root.getElementsByTagNameNS(W, "body")[0]
-  if (input.mode === "authored") {
-    removedSections += sanitizePostComposePagination(bodyEl, touchedTrs)
+    if (parent.localName === "tc") ensureCellEndsWithParagraph(d, parent)
   }
 
   // 6. Optional Cover Builder & Native TOC Builder / Refresher
@@ -981,6 +796,7 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
       return lvl !== undefined ? [{ level: lvl + 1, text: i.text!.trim() }] : []
     })
 
+  const bodyEl = root.getElementsByTagNameNS(W, "body")[0]
   let addedSections = 0
   const wantCover = input.generate_cover ?? bp.cover_builder?.enabled ?? false
   const existingTocSdts = findTocSdts(root)
