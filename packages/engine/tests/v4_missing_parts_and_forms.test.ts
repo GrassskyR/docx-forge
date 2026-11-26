@@ -359,7 +359,8 @@ test("纯原子手术原语：表格整行 B{i}.R{r} 安全移除（守恒 vMerg
       `<w:tbl><w:tblGrid><w:gridCol w:w="2000"/><w:gridCol w:w="6000"/></w:tblGrid>` +
       `<w:tr><w:tc><w:tcPr><w:vMerge w:val="restart"/></w:tcPr><w:p><w:r><w:t>合并组</w:t></w:r></w:p></w:tc>` +
       `<w:tc><w:p><w:r><w:t>待删续页提示行</w:t></w:r></w:p></w:tc></w:tr>` +
-      `<w:tr><w:tc><w:tcPr><w:vMerge/></w:tcPr><w:p/></w:tc>` +
+      `<w:tr><w:tc><w:tcPr><w:vMerge/></w:tcPr><w:p><w:r><w:t>固定栏目（请删除此括号提示）：</w:t></w:r>` +
+      `<w:r><w:rPr><w:u w:val="single"/></w:rPr><w:t>    </w:t></w:r></w:p></w:tc>` +
       `<w:tc><w:p><w:r><w:t>原正文占位</w:t></w:r></w:p></w:tc></w:tr>` +
       `</w:tbl>` +
       `<w:p><w:pPr><w:pageBreakBefore/></w:pPr>` +
@@ -379,10 +380,11 @@ test("纯原子手术原语：表格整行 B{i}.R{r} 安全移除（守恒 vMerg
       "general",
       {
         template_kind: "form_table",
-        fields: [],
+        fields: [{ name: "sub_val", coord: "B0.R1.C0", mode: "blank", blank_index: 0 }],
         content_slots: [{ name: "body", start: "B0.R1.C1", end: "B0.R1.C1", placement: "replace" }],
         remove_targets: [
           { start: "B0.R0", reason: "删除第0行且保持下一行 vMerge restart 合法" },
+          { start: "B0.R1.C0", match: "（请删除此括号提示）", reason: "单元格级 match 精准剥离" },
           { start: "B1", drop_page_break: true, reason: "仅剥离分页符保留同段 pict 与文字" },
         ],
         prototypes: { body: "B0.R1.C1.P0" },
@@ -394,6 +396,7 @@ test("纯原子手术原语：表格整行 B{i}.R{r} 安全移除（守恒 vMerg
 
     const out = await compose(dir, asset, {
       mode: "authored",
+      slot_values: { sub_val: "子项A" },
       body_plan: [{ slot: "body", prototype: "body", text: "原子写入正文。" }],
     })
     const outDoc = parseXml(unzipSync(await readFile(out.docx_path))["word/document.xml"])
@@ -401,6 +404,9 @@ test("纯原子手术原语：表格整行 B{i}.R{r} 安全移除（守恒 vMerg
     expect(rows.length).toBe(1)
     const promotedVm = rows[0].getElementsByTagNameNS(W, "vMerge")[0]
     expect(promotedVm.getAttributeNS(W, "val")).toBe("restart")
+    expect(rows[0].textContent).toContain("固定栏目：")
+    expect(rows[0].textContent).toContain("子项A")
+    expect(rows[0].textContent).not.toContain("请删除此括号提示")
 
     const tailP = bodyBlocks(outDoc.documentElement!)[1]
     expect(tailP.getElementsByTagNameNS(W, "br").length).toBe(0)

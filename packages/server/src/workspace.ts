@@ -294,7 +294,7 @@ function describeResidualPara(p: Element): {
   const txSummary: string[] = []
   for (const tg of txs) {
     const tCoord = readStampedCoord(tg.host) ?? (src ? `${src}.TX` : "TX")
-    const txt = normSpace(tg.contents[0]?.textContent ?? "").slice(0, 64)
+    const txt = normSpace(tg.contents[0]?.textContent ?? "").slice(0, 120)
     if (txt) txSummary.push(`  [${tCoord} 浮动框]: ${JSON.stringify(txt)}`)
   }
   return { src, text: normSpace(paraPlainText(p)), flags, txSummary }
@@ -307,7 +307,7 @@ function buildResidualMapText(outRoot: Element): string {
       const info = describeResidualPara(p)
       if (info.text || info.flags.length) {
         const tag = info.flags.length ? `[${info.flags.join(",")}]` : ""
-        out.push(`[原${info.src ?? "SDT"}]${tag}: ${JSON.stringify(info.text.slice(0, 100))}`)
+        out.push(`[原${info.src ?? "SDT"}]${tag}: ${JSON.stringify(info.text.slice(0, 220))}`)
       }
     }
   }
@@ -354,14 +354,14 @@ function buildResidualMapText(outRoot: Element): string {
             const sample = normSpace(tc.textContent ?? "").slice(0, 36)
             cellDescs.push(`${cLabel}=[已写入探针:${JSON.stringify(sample)}]`)
           } else if (ps.length <= 1 && survivingOrig.length <= 1) {
-            const txt = normSpace(tc.textContent ?? "").slice(0, 48)
+            const txt = normSpace(tc.textContent ?? "").slice(0, 180)
             cellDescs.push(`${cLabel}=${JSON.stringify(txt)}`)
           } else {
             cellDescs.push(`${cLabel}(原残留${survivingOrig.length}段,新写入${insertedCount}段)`)
-            for (const sp of survivingOrig.slice(0, 10)) {
+            for (const sp of survivingOrig.slice(0, 16)) {
               const fStr = sp.flags.length ? `[${sp.flags.join(",")}]` : ""
               subLines.push(
-                `    [原${sp.src}]${fStr}: ${JSON.stringify(sp.text.slice(0, 90))}`,
+                `    [原${sp.src}]${fStr}: ${JSON.stringify(sp.text.slice(0, 220))}`,
               )
               for (const tl of sp.txSummary) subLines.push("    " + tl)
             }
@@ -392,7 +392,7 @@ function buildResidualMapText(outRoot: Element): string {
     }
 
     const fStr = info.flags.length ? ` [${info.flags.join(",")}]` : ""
-    out.push(`[原${src}]${fStr}: ${JSON.stringify(info.text.slice(0, 110))}`)
+    out.push(`[原${src}]${fStr}: ${JSON.stringify(info.text.slice(0, 240))}`)
     for (const tl of info.txSummary) out.push(tl)
     i++
   }
@@ -500,11 +500,12 @@ async function observeDryRun(
 
     const residualMap = buildResidualMapText(outRoot)
     const dryImages: { page: number; data: string }[] = []
-    if (visionMode() !== "text_only") {
+    if (visionMode() !== "text_only" && layout.total_pages > 0) {
       const warnPages = layout.warnings.map((w) => w.page)
-      const pickPages = [...new Set([1, ...warnPages, layout.total_pages])]
+      const midPage = Math.max(1, Math.ceil(layout.total_pages / 2))
+      const pickPages = [...new Set([1, ...warnPages, midPage, layout.total_pages])]
         .filter((p) => p >= 1 && p <= layout.total_pages)
-        .slice(0, 3)
+        .slice(0, 4)
       const pdfPath = join(outDir, "document.pdf")
       for (const page of pickPages) {
         const prefix = join(work, `dry-page-${page}`)
@@ -577,24 +578,33 @@ function buildInitialBlueprintPrompt(
     "2. 【元数据槽位 (fields)】：",
     "   - 识别封面、表头或签署区的可变元数据项，语义化命名（如 title, author, student_name, student_id, " +
       "course, college, major, class_name, advisor, date, party_a, party_b, contract_no 等）。",
+    "   - label 须如实保留槽位紧邻的固定前后缀语境（如填空处前后已印有固定字词或单位时在 label 中标明），" +
+      "供上层调用方传入不重复的纯值。",
     "   - 原文档正文（B/D节点）中固定的机构横幅或文种总抬头可放入 must_preserve 保护（切勿填页眉页脚或图形描述），" +
-      "绝不能设为可覆盖的 field 或 content_slot！只有专门填写具体文档题目的位置才设为 title。",
+      "绝不能设为可覆盖的 field 或 content_slot！只有专门填写具体文档标题的位置才设为 title。",
     "   - mode 取值：'blank'（带 [空k:...] 的段落，按 blank_index=0,1,2... 逐个声明）、" +
       "'match'（直接写死旧示例文本的段落，match 精确填原件子串）、" +
       "'cell'（独立值单元格或独占整段的值行）、'colon'（单冒号后替换）。",
     "3. 【正文槽位 (content_slots)】：",
     "   - start 与 end 必须位于同一父容器且不能是整行 B{i}.R{r}。",
     "   - 若主体是外框表格，设 template_kind='form_table'，将 content_slots 指向表内承载正文的单元格或格内段落区间。",
-    "   - 若印有多个固定分栏标题，为各栏分别声明命名 content_slot（填好 label，有示例段用 replace，紧邻无空段用 insert_after）。",
-    "   - 若是连续流式示例正文，用单个 body 槽位完整覆盖旧示例章节与正文首尾块，仅保留文末固定签章/评阅区。",
+    "   - 导引与容器分离原则：若文档先有独立的填写指南/格式规范/提纲罗列页，后接实际承载正文的书写容器或大框表格，" +
+      "前导指南/提纲区必须放入 remove_targets 清理，content_slots 仅绑定实际书写容器，" +
+      "严禁在框外与框内重复建槽或遗留未绑定的空白续页大框行（闲置续页空行可用 B{i}.R{r} 整行移除）。",
+    "   - 母版跨主题自洽原则：除用户补充要求明确保留原卷具体考题外，若已将文档题目/项目名称抽为可变 field" +
+      "（代表提炼跨主题可复用母版），则正文中依附于原件旧特定主题的具体问题题干、专业附注、细目示例及空白作答区" +
+      "必须整体并入 content_slots（replace）或 remove_targets，仅保留与具体主题无关的通用栏目框架及文末评阅/签署区。",
+    "   - 若印有多个通用固定分栏标题，为各栏分别声明命名 content_slot（填好 label，有示例或提示段用 replace，" +
+      "紧邻无空段用 insert_after）；若是连续流式旧正文，用单个 body 槽位完整覆盖。",
     "4. 【原子清理指令 (remove_targets)】：",
     "   - 删除普通块/段区间：{\"start\":\"B{s}\",\"end\":\"B{e}\"}；删除表格多余提示整行：{\"start\":\"B{i}.R{r}\"}；",
     "   - 删除整节不打印说明页并连同移除其分节符：{\"start\":\"B{s}\",\"end\":\"B{e}\",\"drop_section\":true}；",
     "   - 仅剥离某节点上的显式分页符而保留其图形/文字：{\"start\":\"B{k}\",\"drop_page_break\":true}；",
     "   - 局部剥离固定标题同行的括号填写提示：{\"start\":\"...\",\"match\":\"原括号提示子串\"}；",
     "   - 批量剥离段落挂载的排版批注浮动框：{\"start\":\"B{s}\",\"end\":\"B{e}\",\"only_textboxes\":true}。",
-    "5. 【样式原型与补件】：prototypes 段落角色指向段落，table 仅指向无合并格的均匀数据表；" +
-      "已有封面/表头时 cover_builder.enabled 必须为 false；已有目录控件设 toc.mode='refresh_existing'。",
+    "5. 【样式原型与补件】：prototypes 段落角色应指向正常正文段（勿指向带红蓝提示色 color=... 的说明段），" +
+      "table 仅指向无合并格的均匀数据表；已有封面/表头时 cover_builder.enabled 必须为 false；" +
+      "已有目录控件设 toc.mode='refresh_existing'。",
     ...(coordErrors?.length
       ? [
           "",
@@ -647,15 +657,18 @@ function buildReActReviewPrompt(
     "1. 【硬性错误必改】：若【硬性校验结果】非空（如 FieldProbe 未命中、SlotProbe 未写入、" +
       "OOXML 分节异常、保护横幅丢失），必须 verdict='revise' 修正！",
     "2. 【残留废话与旧示例检查】：检查【试填后残余节点地图】中带 [原...] 标记的存活节点：",
-    "   - 是否仍残留了本该删除的旧范文正文、旧题目/旧姓名、填写要求说明、文末注意事项，" +
-      "或固定栏目标题同行紧跟的括号填写提示？" +
-      "（注意区分：教师评阅栏/签章栏的固定抬头和客观评分等级表属于模板固定结构应保留；" +
-      "但给学生看的写作字数/格式提示或旧答案示例必须放入 remove_targets 清理，" +
-      "同行括号提示可用 match 精准剥离！）",
+    "   - 逐条核查是否仍残留：(a) 独立的填表说明/撰写规范/提纲罗列页或文末注意事项；" +
+      "(b) 固定栏目标题同行紧跟的括号填写提示或下方细目说明（同行括号提示可用 " +
+      "{\"start\":\"...\",\"match\":\"原括号提示子串\"} 精准剥离）；" +
+      "(c) 当文档题目已抽为可变字段时，原件旧特定主题专属的问题题干、专业注释或旧填写答案残留。",
+    "   - 注意保护边界：教师/单位评阅签署栏的固定抬头、考核评价维度说明、客观分值等级表及表底等级符号图例" +
+      "属于模板固有制度结构，必须保留，切勿误删！",
     "3. 【空白页与异常断页检查】：若【PDF 每页物理遥测】出现 blank_page（0行空白页）或异常空框页：",
-    "   - 请结合【试填后残余节点地图】判断成因：若是原模板故意设计的扉页背面白页或留白手绘区则合理保留；",
+    "   - 请结合【试填后残余节点地图】与渲染图判断成因：若是原模板故意设计的扉页背面白页、" +
+      "独立装饰图形封底页（含 [GRAPHIC]）或留白手绘区则合理保留；",
     "   - 若是意外空白页——例如：(a) 删光了某节说明内容但未加 drop_section=true 留下空分节；" +
-      "(b) 表格里闲置的续页提示大高行（如 [原B{i}.R{r}][h=13850]）未按整行删除；" +
+      "(b) 表格里闲置的续页大高空行（如 [原B{i}.R{r}][h=13850]）未按整行删除，" +
+      "或在框外与框内重复声明槽位导致大框闲置；" +
       "(c) 节末/文末残留一串纯空白段（如 [原B24..B29]: 连续空白段）把页面顶出空白尾页；" +
       "(d) 残留了孤立的 [PAGE_BREAK]（可用 {\"start\":\"B{k}\",\"drop_page_break\":true} " +
       "摘除分页符或删除该空段）——必须 verdict='revise' 在蓝图中精准修补！" +
@@ -664,7 +677,8 @@ function buildReActReviewPrompt(
     "=== 输出格式（严格合法 JSON，禁含未转义英文双引号） ===",
     '- 若全部干净无误：{"thought":"简明核验结论","verdict":"accept"}',
     '- 若需修正任何问题：{"thought":"定位具体问题与原文档门牌号","verdict":"revise",' +
-      '"blueprint":{...完整修正后的Blueprint...},"rules_md":"..."}',
+      '"blueprint":{"template_kind":"...","fields":[...],"content_slots":[...],' +
+      '"remove_targets":[{"start":"..."}],"prototypes":{...},"preserved":[...]},"rules_md":"..."}',
     "",
     `=== 1. 硬性校验结果 (${obs.hardIssues.length ? "存在错误" : "通过"}) ===`,
     obs.hardIssues.length ? obs.hardIssues.map((e, i) => `${i + 1}. ${e}`).join("\n") : "无硬性错误",
@@ -674,7 +688,7 @@ function buildReActReviewPrompt(
     ...(warnLines.length ? ["告警：", ...warnLines] : ["告警：无"]),
     "",
     "=== 3. 试填后残余节点地图（[原...] 即原文档 base.docx 精确坐标） ===",
-    obs.residualMap.slice(0, 18000),
+    obs.residualMap.slice(0, 24000),
     "",
     "=== 4. 当前候选 Blueprint ===",
     JSON.stringify(candidate),
@@ -758,59 +772,56 @@ export class Workspace {
       }
     }
 
+    let lastError = ""
+    const resolveCandidate = async (
+      raw: Record<string, unknown> | undefined,
+      tag: string,
+    ): Promise<{ blueprint: Blueprint; rulesMd?: string }> => {
+      let cur = raw
+      for (let fix = 0; fix < 2; fix++) {
+        try {
+          const inner = (cur?.blueprint ?? cur) as Record<string, unknown> | undefined
+          const merged =
+            inner && cur?.remove_targets && inner.remove_targets === undefined
+              ? { ...inner, remove_targets: cur.remove_targets }
+              : inner
+          const bp = validateBlueprint(merged as Partial<Blueprint> | undefined, docMap, baseBytes)
+          const rMd = typeof cur?.rules_md === "string" && cur.rules_md ? cur.rules_md : undefined
+          return { blueprint: bp, rulesMd: rMd }
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : String(err)
+          logger.warn({ inspectId: id, tag, fix: fix + 1, err: lastError }, "蓝图语法/坐标校验未过")
+          if (fix === 0) {
+            cur = await jsonCompletion(
+              buildInitialBlueprintPrompt(docMap, category, rules, refImages.length > 0, [
+                lastError,
+              ]),
+              this.docs.bill,
+              refImages,
+              `internalize-v4-coord-fix-${tag}`,
+            )
+          }
+        }
+      }
+      throw new Error("模型未能生成有效模板蓝图: " + lastError)
+    }
+
     // Step 0: Initial blueprint proposal from reference DocumentMap + reference images
     const initPrompt = buildInitialBlueprintPrompt(docMap, category, rules, refImages.length > 0)
-    let rawResult = await jsonCompletion(
+    const initRaw = await jsonCompletion(
       initPrompt,
       this.docs.bill,
       refImages,
       "internalize-v4-propose",
     )
+    const initResolved = await resolveCandidate(initRaw, "init")
+    let validBlueprint: Blueprint = initResolved.blueprint
+    let bestRules = initResolved.rulesMd ?? rules ?? ""
 
-    let validBlueprint: Blueprint | undefined
-    let bestRules = String(rawResult?.rules_md ?? rules ?? "")
-    let lastError = ""
-
-    // ReAct Loop: Validate -> Dry-Run Render & Observe -> LLM Critic/Revise (up to 3 rounds)
+    // ReAct Loop: Dry-Run Render & Observe -> LLM Critic/Revise (up to 3 full critique rounds)
     for (let round = 0; round < MAX_REACT_ROUNDS; round++) {
-      let candidate: Blueprint
-      try {
-        candidate = validateBlueprint(rawResult?.blueprint ?? rawResult, docMap, baseBytes)
-      } catch (err) {
-        lastError = err instanceof Error ? err.message : String(err)
-        logger.warn({ inspectId: id, round: round + 1, err: lastError }, "蓝图语法/坐标校验未过")
-        if (round + 1 < MAX_REACT_ROUNDS) {
-          const fixPrompt = buildInitialBlueprintPrompt(
-            docMap,
-            category,
-            rules,
-            refImages.length > 0,
-            [lastError],
-          )
-          rawResult = await jsonCompletion(
-            fixPrompt,
-            this.docs.bill,
-            refImages,
-            `internalize-v4-coord-fix-${round + 1}`,
-          )
-          if (typeof rawResult?.rules_md === "string") bestRules = rawResult.rules_md
-        }
-        continue
-      }
-
-      validBlueprint = candidate
-      if (typeof rawResult?.rules_md === "string" && rawResult.rules_md) {
-        bestRules = rawResult.rules_md
-      }
-
-      const obs = await observeDryRun(baseBytes, docMap, candidate)
-      // On the final round, if all hard checks already pass, avoid an unnecessary extra call
-      if (round === MAX_REACT_ROUNDS - 1 && obs.hardIssues.length === 0) {
-        logger.info({ inspectId: id, round: round + 1 }, "最终轮硬校验通过，完成收敛")
-        break
-      }
-
-      const reviewPrompt = buildReActReviewPrompt(docMap, candidate, bestRules, obs)
+      const obs = await observeDryRun(baseBytes, docMap, validBlueprint)
+      const reviewPrompt = buildReActReviewPrompt(docMap, validBlueprint, bestRules, obs)
       const review = await jsonCompletion(
         reviewPrompt,
         this.docs.bill,
@@ -835,15 +846,37 @@ export class Workspace {
       if (verdict === "accept" && obs.hardIssues.length === 0) {
         break
       }
+
       if (review?.blueprint) {
-        rawResult = review
-      } else if (obs.hardIssues.length === 0) {
+        const nextResolved = await resolveCandidate(review, `r${round + 1}`)
+        if (round < MAX_REACT_ROUNDS - 1) {
+          validBlueprint = nextResolved.blueprint
+          if (nextResolved.rulesMd) bestRules = nextResolved.rulesMd
+        } else {
+          const finalObs = await observeDryRun(baseBytes, docMap, nextResolved.blueprint)
+          if (finalObs.hardIssues.length <= obs.hardIssues.length) {
+            validBlueprint = nextResolved.blueprint
+            if (nextResolved.rulesMd) bestRules = nextResolved.rulesMd
+            logger.info({ inspectId: id }, "采纳末轮 ReAct 修订蓝图")
+          }
+        }
+        continue
+      }
+
+      if (obs.hardIssues.length === 0) {
         break
       }
-    }
-
-    if (!validBlueprint) {
-      throw new Error("模型未能生成有效模板蓝图: " + lastError)
+      if (round < MAX_REACT_ROUNDS - 1) {
+        const retryRaw = await jsonCompletion(
+          buildInitialBlueprintPrompt(docMap, category, rules, refImages.length > 0, obs.hardIssues),
+          this.docs.bill,
+          refImages,
+          `internalize-v4-hard-fix-${round + 1}`,
+        )
+        const retryResolved = await resolveCandidate(retryRaw, `h${round + 1}`)
+        validBlueprint = retryResolved.blueprint
+        if (retryResolved.rulesMd) bestRules = retryResolved.rulesMd
+      }
     }
 
     const saved = this.templates.save(

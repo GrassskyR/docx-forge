@@ -443,8 +443,13 @@ export function refreshExistingToc(
       (s) => d.importNode(s, true) as Element,
     )
 
-    const titlePara = paras.find(
-      (p) => !p.getElementsByTagNameNS(W, "fldChar").length && (p.textContent ?? "").trim(),
+    const firstFldIdx = paras.findIndex((p) => p.getElementsByTagNameNS(W, "fldChar").length > 0)
+    const preFieldParas = firstFldIdx >= 0 ? paras.slice(0, firstFldIdx) : paras
+    const titlePara = preFieldParas.find(
+      (p) =>
+        !p.getElementsByTagNameNS(W, "hyperlink").length &&
+        !p.getElementsByTagNameNS(W, "tab").length &&
+        (p.textContent ?? "").trim().length > 0,
     )
     const samplePpr =
       paras

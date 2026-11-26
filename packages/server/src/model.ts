@@ -91,7 +91,16 @@ export async function jsonCompletion(
           .flatMap((c) => (c.type === "text" ? [c.text] : []))
           .join("")
           .trim()
-        return { parsed: parseLooseJson(rawText), rawText, usage: result.usage }
+        try {
+          return { parsed: parseLooseJson(rawText), rawText, usage: result.usage }
+        } catch (err) {
+          lastErr = err instanceof Error ? err.message : String(err)
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 1500))
+            continue
+          }
+          throw new Error(lastErr)
+        }
       }
       throw new Error(lastErr)
     },

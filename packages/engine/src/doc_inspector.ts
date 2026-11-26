@@ -214,7 +214,7 @@ function describeParaLine(coord: string, p: Element): {
   if (maxSz >= 28) tags.push(maxSz / 2 + "pt")
   if (colors.size) tags.push("color=" + [...colors].join(","))
 
-  let contentRepr = JSON.stringify(rawText.slice(0, 120))
+  let contentRepr = JSON.stringify(rawText.slice(0, 240))
   if (blanks.length > 0) {
     const runs = children(p, "r")
     const blankStartMap = new Map<number, (typeof blanks)[number]>()
@@ -254,7 +254,7 @@ function describeParaLine(coord: string, p: Element): {
         const tt = normSpace(paraPlainText(tp))
         if (!tt && !tb.length) return ""
         const bInfo = tb.length ? ` [含${tb.length}个空]` : ""
-        return `P${pi}:${JSON.stringify(tt.slice(0, 56))}${bInfo}`
+        return `P${pi}:${JSON.stringify(tt.slice(0, 120))}${bInfo}`
       })
       .filter(Boolean)
       .join(" ; ")
@@ -353,7 +353,7 @@ function describeTable(coord: string, tbl: Element): string {
           cellParts.push(`C${c}${fStr}=${d.line.split(": ").slice(1).join(": ")}`)
         } else {
           const txt = p0 ? normSpace(paraPlainText(p0)) : ""
-          cellParts.push(`C${c}${fStr}=${JSON.stringify(txt.slice(0, 48))}`)
+          cellParts.push(`C${c}${fStr}=${JSON.stringify(txt.slice(0, 180))}`)
         }
       } else {
         const nonEmptyPs = ps

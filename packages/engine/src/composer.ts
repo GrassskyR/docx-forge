@@ -723,12 +723,27 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
 
   for (const { rm, st, ed } of resolvedRemovals) {
     if (!st) continue
-    if (rm.match && st.element.localName === "p") {
-      replaceCrossRunSubstring(d, st.element, rm.match, "")
-      if (rm.drop_page_break) stripExplicitPageBreaks(st.element)
-      for (const m of st.mirrors) {
-        replaceCrossRunSubstring(d, m, rm.match, "")
-        if (rm.drop_page_break) stripExplicitPageBreaks(m)
+    if (rm.match) {
+      let containers: Element[] = [st.element, ...st.mirrors]
+      if (
+        ed &&
+        ed.element !== st.element &&
+        ed.element.parentNode === st.element.parentNode &&
+        st.element.parentNode
+      ) {
+        const kids = children(st.element.parentNode as Element).filter(
+          (n) => n.localName === st.element.localName,
+        )
+        const sIdx = kids.indexOf(st.element)
+        const eIdx = kids.indexOf(ed.element)
+        if (sIdx >= 0 && eIdx >= sIdx) containers = kids.slice(sIdx, eIdx + 1)
+      }
+      const paras = containers.flatMap((el) =>
+        el.localName === "p" ? [el] : Array.from(el.getElementsByTagNameNS(W, "p")),
+      )
+      for (const p of paras) {
+        replaceCrossRunSubstring(d, p, rm.match, "")
+        if (rm.drop_page_break) stripExplicitPageBreaks(p)
       }
       continue
     }
@@ -748,6 +763,15 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     }
     if (st.kind === "textbox") {
       st.element.parentNode?.removeChild(st.element)
+      continue
+    }
+    if (st.kind === "cell") {
+      if (!slotProtectedSet.has(st.element)) {
+        for (const node of children(st.element)) {
+          if (node.localName !== "tcPr") st.element.removeChild(node)
+        }
+        ensureCellEndsWithParagraph(d, st.element)
+      }
       continue
     }
     if (
@@ -823,7 +847,7 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
   for (const { field, target } of resolvedFields) {
     const val = slotVals[field.name]
     if (val === undefined || !target) continue
-    if (target.kind === "cell") {
+    if (target.kind === "cell" && (!field.mode || field.mode === "cell")) {
       const tc = target.element
       const sampleP = children(tc, "p")[0]
       const cleanVal = stripLeadingFieldLabel(val, field.label)
@@ -834,13 +858,16 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
         if (node.localName !== "tcPr") tc.removeChild(node)
       }
       tc.appendChild(newP)
-    } else if (target.element.localName === "p") {
-      const group = paraEditGroups.get(target.element) ?? {
+    } else {
+      const pEl =
+        target.element.localName === "p" ? target.element : children(target.element, "p")[0]
+      if (!pEl) continue
+      const group = paraEditGroups.get(pEl) ?? {
         mirrors: target.mirrors,
         edits: [],
       }
       group.edits.push({ field, value: val })
-      paraEditGroups.set(target.element, group)
+      paraEditGroups.set(pEl, group)
     }
   }
   for (const [pEl, group] of paraEditGroups.entries()) {

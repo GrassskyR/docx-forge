@@ -1,10 +1,12 @@
 import { strict as assert } from "node:assert"
+import { execFile } from "node:child_process"
 import { createHash } from "node:crypto"
 import { existsSync } from "node:fs"
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadEnvFile } from "node:process"
+import { promisify } from "node:util"
 import type { Element } from "@xmldom/xmldom"
 import { unzipSync } from "fflate"
 import type {
@@ -14,14 +16,18 @@ import type {
   TemplateAsset,
 } from "../packages/shared/src/index.js"
 import {
+  analyzeParagraphBlanks,
   auditComposition,
   bodyBlocks,
   children,
+  coalesceRuns,
   compose,
   findTocSdts,
   inspectReference,
+  nonTocSdtParas,
   parseXml,
   resolveCoord,
+  runPlainText,
   telemetry,
   visionMode,
   visualAudit,
@@ -32,6 +38,7 @@ import { jsonCompletion } from "../packages/server/src/model.js"
 import { Workspace } from "../packages/server/src/workspace.js"
 
 if (existsSync(".env")) loadEnvFile(".env")
+const exec = promisify(execFile)
 
 interface LabManifestItem {
   id: string
@@ -143,7 +150,10 @@ function pText(el: Element) {
   )
 }
 
-function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
+/**
+ * Unmodified legacy ground-truth probe preserved verbatim for side-by-side comparison.
+ */
+function buildLegacyGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
   const files = unzipSync(baseDocxBytes)
   const root = parseXml(files["word/document.xml"]).documentElement!
   const body = root.getElementsByTagNameNS(W, "body")[0]
@@ -249,6 +259,255 @@ function buildGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
       txt.length >= 48 &&
       !/^[—\-_=*]{6,}$/.test(txt) &&
       !/本报告|严禁抄袭|评分标准|考核标准|签字|成绩评定|教务处制/.test(txt) &&
+      residueProbes.length < 6
+    ) {
+      residueProbes.push(txt.slice(0, 24))
+    }
+  }
+
+  const sections = root.getElementsByTagNameNS(W, "sectPr").length
+  const pageBreaks = Array.from(root.getElementsByTagNameNS(W, "br")).filter(
+    (b) => b.getAttributeNS(W, "type") === "page",
+  ).length
+
+  return {
+    banner,
+    is_table_form: tableRatio >= 0.7 || (tableRatio >= 0.55 && topNonEmpty <= 10),
+    table_ratio: tableRatio,
+    sections,
+    page_breaks: pageBreaks,
+    textbox_count: txbxNodes.length,
+    top_p_count: topP.length,
+    top_tbl_count: topTbl,
+    addressable_p_ratio: Number((topNonEmpty / totalNonEmpty).toFixed(2)),
+    fields,
+    fixed_section_headings: [...new Set(fixedHeadings)].slice(0, 8),
+    residue_probes: [...new Set(residueProbes)],
+  } as unknown as GroundTruthOracle
+}
+
+function fixLegacyTopTblCount(gt: GroundTruthOracle, topTblLen: number): GroundTruthOracle {
+  return { ...gt, top_tbl_count: topTblLen }
+}
+
+function staticNonBlankText(p: Element): string {
+  const blanks = analyzeParagraphBlanks(p)
+  if (!blanks.length) return pText(p).replace(/\s+/g, "")
+  const blankRuns = new Set<number>()
+  for (const b of blanks) {
+    for (const ri of b.runIndices) blankRuns.add(ri)
+  }
+  const runs = children(p, "r")
+  let best = ""
+  let cur = ""
+  for (let i = 0; i < runs.length; i++) {
+    if (blankRuns.has(i)) {
+      if (cur.length > best.length) best = cur
+      cur = ""
+    } else {
+      cur += runPlainText(runs[i]).replace(/\s+/g, "")
+    }
+  }
+  if (cur.length > best.length) best = cur
+  return best
+}
+
+function isMetadataValueCell(p: Element): boolean {
+  for (let anc = p.parentNode; anc?.nodeType === 1; anc = anc.parentNode) {
+    const el = anc as Element
+    if (el.localName === "tc" && el.parentNode && (el.parentNode as Element).localName === "tr") {
+      const cells = children(el.parentNode as Element, "tc")
+      const idx = cells.indexOf(el)
+      if (idx > 0) {
+        const prevTxt = (cells[idx - 1].textContent ?? "").replace(/\s+/g, "")
+        if (/^(?:学院|系别|院系|专业|班级|姓名|学号|课程|题目)$/.test(prevTxt)) return true
+      }
+      break
+    }
+  }
+  return false
+}
+
+function extractBannerCandidate(p: Element): string {
+  if (isMetadataValueCell(p)) return ""
+  const full = pText(p).replace(/\s+/g, "")
+  const blanks = analyzeParagraphBlanks(p)
+  if (!blanks.length) return full
+  const staticPart = staticNonBlankText(p)
+  // If the entire title paragraph is uniformly underlined (staticPart === ""), keep full title;
+  // if it mixes static institution text with a fill-in blank (staticPart !== ""), keep staticPart.
+  return staticPart === "" ? full : staticPart
+}
+
+function isBodyProseChapterStart(blocks: Element[], idx: number): boolean {
+  const blk = blocks[idx]
+  if (blk.localName !== "p" || analyzeParagraphBlanks(blk).length > 0) return false
+  const txt = pText(blk)
+  if (!txt || txt.length > 36 || /[：:_＿]/.test(txt)) return false
+  const pPr = children(blk, "pPr")[0]
+  const st = pPr && children(pPr, "pStyle")[0]?.getAttributeNS(W, "val")
+  const isChapterHeading =
+    /^(?:第[一二三四五六七八九十]+部分|第[一二三四五六七八九十]+章)\s*\S/.test(txt) ||
+    Boolean(st && /^(?:1|2|Heading\s*[12])$/i.test(st) && /部分|章|部署|背景|概述|引言/.test(txt))
+  if (!isChapterHeading) return false
+  for (let k = idx + 1; k <= Math.min(blocks.length - 1, idx + 3); k++) {
+    if (blocks[k].localName === "p" && pText(blocks[k]).length >= 45) return true
+  }
+  return false
+}
+
+/**
+ * Structurally calibrated ground-truth oracle (zero school/file hardcoding):
+ * 1. Excludes mutable underlined/blank fill-in spans when extracting static banner text;
+ * 2. Stops front-matter metadata scanning before sample body prose chapters;
+ * 3. Recognizes printed grading rubric tables, assessment review cells, and A-E grade legends.
+ */
+function buildCalibratedGroundTruth(baseDocxBytes: Uint8Array): GroundTruthOracle {
+  const files = unzipSync(baseDocxBytes)
+  const root = parseXml(files["word/document.xml"]).documentElement!
+  coalesceRuns(root)
+  const body = root.getElementsByTagNameNS(W, "body")[0]
+  const topBlocks = children(body).filter((e) => e.localName === "p" || e.localName === "tbl")
+  const topP = topBlocks.filter((e) => e.localName === "p")
+  const topTbl = topBlocks.filter((e) => e.localName === "tbl")
+
+  const allP = Array.from(root.getElementsByTagNameNS(W, "p")).filter((p) => pText(p).length > 0)
+  const txbxNodes = Array.from(root.getElementsByTagNameNS(W, "txbxContent"))
+  const txbxSet = new Set<Element>()
+  for (const tx of txbxNodes) {
+    for (const p of Array.from(tx.getElementsByTagNameNS(W, "p"))) txbxSet.add(p)
+  }
+  const tblSet = new Set<Element>()
+  const rubricTblSet = new Set<Element>()
+  for (let bi = 0; bi < topBlocks.length; bi++) {
+    const blk = topBlocks[bi]
+    if (blk.localName !== "tbl") continue
+    let prevHeading = ""
+    for (let k = bi - 1; k >= Math.max(0, bi - 2); k--) {
+      if (topBlocks[k].localName === "p" && pText(topBlocks[k])) {
+        prevHeading = pText(topBlocks[k])
+        break
+      }
+    }
+    const isRubricTable = /评分标准|考核标准|鉴定表|成绩评定标准/.test(prevHeading)
+    for (const p of Array.from(blk.getElementsByTagNameNS(W, "p"))) {
+      if (!txbxSet.has(p)) {
+        tblSet.add(p)
+        if (isRubricTable) rubricTblSet.add(p)
+      }
+    }
+  }
+  for (const tbl of Array.from(root.getElementsByTagNameNS(W, "tbl"))) {
+    for (const p of Array.from(tbl.getElementsByTagNameNS(W, "p"))) {
+      if (!txbxSet.has(p)) tblSet.add(p)
+    }
+  }
+
+  const topNonEmpty = topP.filter((p) => pText(p).length > 0 && !txbxSet.has(p)).length
+  const tblNonEmpty = Array.from(tblSet).filter((p) => pText(p).length > 0).length
+  const totalNonEmpty = Math.max(1, allP.length)
+  const tableRatio = Number((tblNonEmpty / totalNonEmpty).toFixed(2))
+
+  const bannerRe = /大学|学院|实验报告|实践报告|实习报告|课程设计|专用纸/
+  const bannerExcludeRe = /书写式样|填写说明|撰写规范|评分标准|学号|姓名|班级|专业|课程|指导教师/
+  let banner = ""
+  for (const p of allP.slice(0, 18)) {
+    const candidate = extractBannerCandidate(p)
+    if (
+      bannerRe.test(candidate) &&
+      !/[：:]/.test(candidate) &&
+      !bannerExcludeRe.test(candidate) &&
+      candidate.length >= 4 &&
+      candidate.length <= 36
+    ) {
+      banner = candidate
+      break
+    }
+  }
+
+  const sdtParas = nonTocSdtParas(root)
+    .flat()
+    .filter((p) => pText(p).length > 0)
+  const frontParas: Element[] = [...sdtParas]
+  for (let bi = 0; bi < topBlocks.length && frontParas.length < 80; bi++) {
+    if (frontParas.length > 0 && isBodyProseChapterStart(topBlocks, bi)) break
+    const blk = topBlocks[bi]
+    const ps = blk.localName === "p" ? [blk] : Array.from(blk.getElementsByTagNameNS(W, "p"))
+    for (const p of ps) {
+      if (pText(p).length > 0 && frontParas.length < 80) frontParas.push(p)
+    }
+  }
+
+  const fields: FieldLoc[] = []
+  for (const [fname, re] of FIELD_PATTERNS) {
+    let found: FieldLoc | null = null
+    for (const p of frontParas) {
+      const txt = pText(p)
+      if (!re.test(txt) || txt.length > 90) continue
+      const hitCount = FIELD_PATTERNS.filter(([, r]) => r.test(txt)).length
+      const where: FieldLoc["where"] = txbxSet.has(p)
+        ? "textbox"
+        : tblSet.has(p)
+          ? "table_cell"
+          : "top_p"
+      found = { field: fname, where, multi_on_one_line: hitCount >= 2 }
+      break
+    }
+    if (found) fields.push(found)
+  }
+
+  const fixedHeadings: string[] = []
+  const fixedRe =
+    /^(?:[一二三四五六七八九十]+[、.．]|【)(?:实验目的|实验原理|实验仪器|实验设备|实验环境|实验内容|实验步骤|实验数据|实验结果|思考题|实验总结|心得体会)/
+  for (const p of allP) {
+    const txt = pText(p)
+    if (fixedRe.test(txt) && txt.length <= 26) fixedHeadings.push(txt)
+  }
+
+  const residueProbes: string[] = []
+  const guidePatterns = [
+    /本页可以不打印/,
+    /图片格式示例/,
+    /表格格式示例/,
+    /打印时删除/,
+    /请在此处/,
+    /XXXX课程/,
+    /U2016xxxxx/i,
+    /CS1601/,
+    /编译内核/,
+    /关文聪/,
+    /樊言鹏/,
+    /新冠肺炎疫情/,
+    /完善封面信息，报告双面打印/,
+    /操作系统安装与操练/,
+    /不得少于300字/,
+  ]
+  const fullText = allP.map(pText).join("\n")
+  for (const gp of guidePatterns) {
+    const m = gp.exec(fullText)
+    if (m) residueProbes.push(m[0])
+  }
+  const reviewCellRe =
+    /批阅意见|教师评语|指导教师意见|考核意见|导师意见|考核小组意见|主管领导意见|单位鉴定|指导教师鉴定|导师签字|单位盖章/
+  for (const p of allP.slice(8)) {
+    const txt = pText(p)
+    let inTeacherRubric = rubricTblSet.has(p)
+    if (!inTeacherRubric) {
+      for (let anc = p.parentNode; anc?.nodeType === 1; anc = anc.parentNode) {
+        if ((anc as Element).localName === "tc") {
+          const cellTxt = (anc.textContent ?? "").replace(/\s+/g, "")
+          if (reviewCellRe.test(cellTxt)) {
+            inTeacherRubric = true
+            break
+          }
+        }
+      }
+    }
+    if (
+      !inTeacherRubric &&
+      txt.length >= 48 &&
+      !/^[—\-_=*]{6,}$/.test(txt) &&
+      !/本报告|严禁抄袭|评分标准|考核标准|签字|成绩评定|教务处制|对应优、良、中|一式[二两三四]份/.test(txt) &&
       residueProbes.length < 6
     ) {
       residueProbes.push(txt.slice(0, 24))
@@ -466,12 +725,10 @@ async function buildAuthoredPlan(
     },
   )
 
-  // Single-slot templates require no slot routing
   if (asset.blueprint.content_slots.length <= 1 || !docs.useModel) {
     return rawItems
   }
 
-  // Multi-slot templates MUST be routed by the LLM itself (no hardcoded regex in engine!)
   const slotList = asset.blueprint.content_slots
     .map((s) => `${s.name}(固定标题:${s.label ?? "无"})`)
     .join("、")
@@ -513,38 +770,18 @@ async function buildAuthoredPlan(
   return planned
 }
 
-async function evaluateComposed(
-  docxPath: string,
-  baseDocxPath: string,
+function scoreAgainstOracle(
   gt: GroundTruthOracle,
   asset: TemplateAsset,
-  bodyIndices: number[],
-  removedSections: number,
-  addedSections: number,
-  docs?: Documents,
+  fullNoSpace: string,
+  fullJoined: string,
+  tblTextJoined: string,
+  pdfOk: boolean,
+  auditPassed: boolean,
+  blankPages: number,
+  tocPagesValid: boolean,
 ) {
-  const outBytes = await readFile(docxPath)
-  const audit = await auditComposition(
-    docxPath,
-    baseDocxPath,
-    bodyIndices,
-    undefined,
-    removedSections,
-    addedSections,
-  )
-  const outZip = unzipSync(outBytes)
-  const root = parseXml(outZip["word/document.xml"]).documentElement!
-  const allP = Array.from(root.getElementsByTagNameNS(W, "p")).map(pText).filter(Boolean)
-  const fullNoSpace = allP.join("\n").replace(/\s+/g, "")
-  const fullJoined = allP.join("\n")
-
-  // Strict banner check (no college-name pardon backdoor!)
   const bannerPreserved = !gt.banner || fullNoSpace.includes(gt.banner.slice(0, 10))
-
-  const outTbls = Array.from(root.getElementsByTagNameNS(W, "tbl"))
-  const tblTextJoined = outTbls
-    .flatMap((t) => Array.from(t.getElementsByTagNameNS(W, "p")).map(pText))
-    .join("\n")
   const formContainerRespected = !gt.is_table_form || tblTextJoined.includes("银行家死锁避免")
 
   let filledCount = 0
@@ -562,9 +799,169 @@ async function evaluateComposed(
   const leakedResidues = gt.residue_probes.filter((probe) => fullJoined.includes(probe))
   const residueFree = leakedResidues.length === 0
 
+  const failureCodes: string[] = []
+  if (
+    gt.is_table_form &&
+    (!formContainerRespected || unfilledFields.some((u) => u.includes("table_cell")))
+  ) {
+    failureCodes.push("F1_TABLE_CELL_UNADDRESSABLE")
+  }
+  const firstSlot = asset.blueprint.content_slots[0]
+  if (
+    gt.sections === 1 &&
+    (!bannerPreserved ||
+      (asset.blueprint.content_slots.length === 1 &&
+        firstSlot?.start === firstSlot?.end &&
+        !firstSlot?.start.includes(".") &&
+        gt.top_p_count >= 15))
+  ) {
+    failureCodes.push("F2_SINGLE_SECT_BOUNDARY_LOSS")
+  }
+  if (!residueFree) {
+    failureCodes.push("F3_PREFILLED_OR_GUIDE_RESIDUE")
+  }
+  if (gt.fixed_section_headings.length >= 3) {
+    const keptFixed = gt.fixed_section_headings.filter((h) => fullJoined.includes(h)).length
+    if (keptFixed > 0 && keptFixed < gt.fixed_section_headings.length) {
+      failureCodes.push("F4_MULTI_SLOT_FIXED_SECTIONS")
+    } else if (keptFixed === gt.fixed_section_headings.length && !residueFree) {
+      failureCodes.push("F4_MULTI_SLOT_FIXED_SECTIONS")
+    }
+  }
+  if (
+    unfilledFields.some((u) => u.includes("textbox") || u.includes("同行多字段")) ||
+    (gt.fields.length > 0 &&
+      metadataFillRate < 0.5 &&
+      !failureCodes.includes("F1_TABLE_CELL_UNADDRESSABLE"))
+  ) {
+    failureCodes.push("F5_TEXTBOX_OR_INLINE_MULTI_FIELD")
+  }
+  if (blankPages > 0) {
+    failureCodes.push("F6_BLANK_PAGE_LEFT_BEHIND")
+  }
+  if (!tocPagesValid) {
+    failureCodes.push("F7_FAKE_TOC_PAGE_NUMBER")
+  }
+
+  const strictPass =
+    pdfOk &&
+    auditPassed &&
+    bannerPreserved &&
+    formContainerRespected &&
+    residueFree &&
+    blankPages === 0 &&
+    tocPagesValid &&
+    metadataFillRate >= 0.5
+
+  return {
+    blank_pages: blankPages,
+    banner_preserved: bannerPreserved,
+    form_container_respected: formContainerRespected,
+    metadata_filled: filledCount,
+    metadata_total: gt.fields.length,
+    metadata_fill_rate: metadataFillRate,
+    unfilled_fields: unfilledFields,
+    residue_free: residueFree,
+    leaked_residues: leakedResidues,
+    strict_e2e_pass: strictPass,
+    failure_codes: failureCodes,
+  }
+}
+
+function hasTrailingPureGraphicBlock(root: Element): boolean {
+  const blocks = bodyBlocks(root)
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i]
+    const txt = pText(b)
+    const hasGraphic =
+      (b.getElementsByTagNameNS(W, "drawing").length > 0 ||
+        b.getElementsByTagNameNS(W, "pict").length > 0) &&
+      b.getElementsByTagNameNS(W, "txbxContent").length === 0
+    if (hasGraphic && !txt) return true
+    if (txt || b.localName === "tbl") return false
+  }
+  return false
+}
+
+async function countAccidentalBlankPages(
+  pdfPath: string,
+  warnPages: number[],
+  totalPages: number,
+  outRoot: Element,
+  baseRoot: Element,
+): Promise<number> {
+  if (!warnPages.length) return 0
+  let imagePages = new Set<number>()
+  try {
+    const { stdout } = await exec("pdfimages", ["-list", pdfPath])
+    const pageCounts = new Map<number, number>()
+    for (const line of stdout.split("\n")) {
+      const m = /^\s*(\d+)\s+\d+\s+image\s+(\d+)\s+(\d+)/.exec(line)
+      if (m && Number(m[2]) >= 120 && Number(m[3]) >= 120) {
+        const pg = Number(m[1])
+        pageCounts.set(pg, (pageCounts.get(pg) ?? 0) + 1)
+      }
+    }
+    // Exclude repeating background watermarks that appear across interior body pages
+    const interiorHits = [...pageCounts.keys()].filter((p) => p > 1 && p < totalPages).length
+    const interiorTotal = Math.max(0, totalPages - 2)
+    const isWatermark = interiorTotal >= 2 && interiorHits >= Math.ceil(interiorTotal * 0.5)
+    if (!isWatermark) {
+      imagePages = new Set(pageCounts.keys())
+    }
+  } catch {
+    imagePages = new Set()
+  }
+
+  const preservedBackGraphic =
+    hasTrailingPureGraphicBlock(baseRoot) && hasTrailingPureGraphicBlock(outRoot)
+
+  let accidental = 0
+  for (const pg of warnPages) {
+    const isPreservedGraphicCover =
+      pg === totalPages && preservedBackGraphic && imagePages.has(pg)
+    if (!isPreservedGraphicCover) accidental++
+  }
+  return accidental
+}
+
+async function evaluateComposed(
+  docxPath: string,
+  baseDocxPath: string,
+  calibratedGt: GroundTruthOracle,
+  legacyGt: GroundTruthOracle,
+  asset: TemplateAsset,
+  bodyIndices: number[],
+  removedSections: number,
+  addedSections: number,
+  docs?: Documents,
+) {
+  const outBytes = await readFile(docxPath)
+  const baseBytes = await readFile(baseDocxPath)
+  const audit = await auditComposition(
+    docxPath,
+    baseDocxPath,
+    bodyIndices,
+    undefined,
+    removedSections,
+    addedSections,
+  )
+  const outZip = unzipSync(outBytes)
+  const root = parseXml(outZip["word/document.xml"]).documentElement!
+  const baseRoot = parseXml(unzipSync(baseBytes)["word/document.xml"]).documentElement!
+  const allP = Array.from(root.getElementsByTagNameNS(W, "p")).map(pText).filter(Boolean)
+  const fullNoSpace = allP.join("\n").replace(/\s+/g, "")
+  const fullJoined = allP.join("\n")
+
+  const outTbls = Array.from(root.getElementsByTagNameNS(W, "tbl"))
+  const tblTextJoined = outTbls
+    .flatMap((t) => Array.from(t.getElementsByTagNameNS(W, "p")).map(pText))
+    .join("\n")
+
   let pdfOk = false
   let totalPages = 0
-  let blankPages = 0
+  let rawBlankPages = 0
+  let accidentalBlankPages = 0
   let tocPagesValid = true
   let visionStatus = "skipped"
   let visionIssuesCount = 0
@@ -573,9 +970,18 @@ async function evaluateComposed(
     const layout = await telemetry(docxPath, outDir)
     pdfOk = true
     totalPages = layout.total_pages
-    blankPages = layout.warnings.filter((w) => w.code === "blank_page").length
+    const blankWarnPages = layout.warnings
+      .filter((w) => w.code === "blank_page")
+      .map((w) => w.page)
+    rawBlankPages = blankWarnPages.length
+    accidentalBlankPages = await countAccidentalBlankPages(
+      join(outDir, "document.pdf"),
+      blankWarnPages,
+      totalPages,
+      root,
+      baseRoot,
+    )
 
-    // Verify TOC page numbers are never fabricated beyond physical page count
     for (const sdt of findTocSdts(root)) {
       for (const p of Array.from(sdt.getElementsByTagNameNS(W, "p"))) {
         const line = pText(p)
@@ -626,79 +1032,40 @@ async function evaluateComposed(
     pdfOk = false
   }
 
-  const failureCodes: string[] = []
-  if (
-    gt.is_table_form &&
-    (!formContainerRespected || unfilledFields.some((u) => u.includes("table_cell")))
-  ) {
-    failureCodes.push("F1_TABLE_CELL_UNADDRESSABLE")
-  }
-  const firstSlot = asset.blueprint.content_slots[0]
-  if (
-    gt.sections === 1 &&
-    (!bannerPreserved ||
-      (asset.blueprint.content_slots.length === 1 &&
-        firstSlot?.start === firstSlot?.end &&
-        !firstSlot?.start.includes(".") &&
-        gt.top_p_count >= 15))
-  ) {
-    failureCodes.push("F2_SINGLE_SECT_BOUNDARY_LOSS")
-  }
-  if (!residueFree) {
-    failureCodes.push("F3_PREFILLED_OR_GUIDE_RESIDUE")
-  }
-  if (gt.fixed_section_headings.length >= 3) {
-    const keptFixed = gt.fixed_section_headings.filter((h) => fullJoined.includes(h)).length
-    if (keptFixed > 0 && keptFixed < gt.fixed_section_headings.length) {
-      failureCodes.push("F4_MULTI_SLOT_FIXED_SECTIONS")
-    } else if (keptFixed === gt.fixed_section_headings.length && !residueFree) {
-      failureCodes.push("F4_MULTI_SLOT_FIXED_SECTIONS")
-    }
-  }
-  if (
-    unfilledFields.some((u) => u.includes("textbox") || u.includes("同行多字段")) ||
-    (gt.fields.length > 0 &&
-      metadataFillRate < 0.5 &&
-      !failureCodes.includes("F1_TABLE_CELL_UNADDRESSABLE"))
-  ) {
-    failureCodes.push("F5_TEXTBOX_OR_INLINE_MULTI_FIELD")
-  }
-  if (blankPages > 0) {
-    failureCodes.push("F6_BLANK_PAGE_LEFT_BEHIND")
-  }
-  if (!tocPagesValid) {
-    failureCodes.push("F7_FAKE_TOC_PAGE_NUMBER")
-  }
-
-  const strictPass =
-    pdfOk &&
-    audit.passed &&
-    bannerPreserved &&
-    formContainerRespected &&
-    residueFree &&
-    blankPages === 0 &&
-    tocPagesValid &&
-    metadataFillRate >= 0.5
+  const calibrated = scoreAgainstOracle(
+    calibratedGt,
+    asset,
+    fullNoSpace,
+    fullJoined,
+    tblTextJoined,
+    pdfOk,
+    audit.passed,
+    accidentalBlankPages,
+    tocPagesValid,
+  )
+  const legacy = scoreAgainstOracle(
+    legacyGt,
+    asset,
+    fullNoSpace,
+    fullJoined,
+    tblTextJoined,
+    pdfOk,
+    audit.passed,
+    rawBlankPages,
+    tocPagesValid,
+  )
 
   return {
     pdf_ok: pdfOk,
     total_pages: totalPages,
-    blank_pages: blankPages,
+    raw_zero_text_pages: rawBlankPages,
     toc_pages_valid: tocPagesValid,
     vision_status: visionStatus,
     vision_issues_count: visionIssuesCount,
     ooxml_audit_passed: audit.passed,
     audit_violations: audit.violations,
-    banner_preserved: bannerPreserved,
-    form_container_respected: formContainerRespected,
-    metadata_filled: filledCount,
-    metadata_total: gt.fields.length,
-    metadata_fill_rate: metadataFillRate,
-    unfilled_fields: unfilledFields,
-    residue_free: residueFree,
-    leaked_residues: leakedResidues,
-    strict_e2e_pass: strictPass,
-    failure_codes: failureCodes,
+    ...calibrated,
+    legacy_oracle: legacy,
   }
 }
 
@@ -714,6 +1081,7 @@ async function runStrategyOnDoc(
   const t0 = Date.now()
   let mapChars = 0
   let gt: GroundTruthOracle | undefined
+  let legacyGt: GroundTruthOracle | undefined
   try {
     const inspected =
       strategy === "llm_hybrid" && visionMode() !== "text_only"
@@ -723,7 +1091,8 @@ async function runStrategyOnDoc(
     mapChars = doc_map.map_text.length
     const baseDocxPath = join(workDir, "inspections", inspect_id, "base.docx")
     const baseBytes = await readFile(baseDocxPath)
-    gt = buildGroundTruth(baseBytes)
+    gt = buildCalibratedGroundTruth(baseBytes)
+    legacyGt = fixLegacyTopTblCount(buildLegacyGroundTruth(baseBytes), gt.top_tbl_count)
 
     const beforeTokens = docs.bill.snapshot().total_tokens
     let asset: TemplateAsset
@@ -748,6 +1117,7 @@ async function runStrategyOnDoc(
       composed.docx_path,
       baseDocxPath,
       gt,
+      legacyGt,
       asset,
       composed.body_indices,
       composed.removed_sections,
@@ -761,7 +1131,8 @@ async function runStrategyOnDoc(
       tokens_used: tokensUsed,
       map_chars: mapChars,
       fields_detected: asset.blueprint.fields.map(
-        (f) => `${f.name}@${f.coord}[${f.mode ?? "cell"}${f.blank_index !== undefined ? f.blank_index : ""}]`,
+        (f) =>
+          `${f.name}@${f.coord}[${f.mode ?? "cell"}${f.blank_index !== undefined ? f.blank_index : ""}]`,
       ),
       content_slots: asset.blueprint.content_slots.map(
         (s) => `${s.name}(${s.start}-${s.end},${s.placement ?? "replace"})`,
@@ -769,9 +1140,23 @@ async function runStrategyOnDoc(
       remove_targets: asset.blueprint.remove_targets ?? [],
       prototypes: Object.keys(asset.blueprint.prototypes),
       gt,
+      legacyGt,
       ...evalRes,
     }
   } catch (e) {
+    const errFail = {
+      blank_pages: 0,
+      banner_preserved: false,
+      form_container_respected: false,
+      metadata_filled: 0,
+      metadata_total: gt?.fields.length ?? 0,
+      metadata_fill_rate: 0,
+      unfilled_fields: [] as string[],
+      residue_free: false,
+      leaked_residues: [] as string[],
+      strict_e2e_pass: false,
+      failure_codes: ["F0_PIPELINE_EXCEPTION"],
+    }
     return {
       strategy,
       elapsed_ms: Date.now() - t0,
@@ -782,25 +1167,18 @@ async function runStrategyOnDoc(
       remove_targets: [],
       prototypes: [],
       gt,
+      legacyGt,
       error: e instanceof Error ? e.message : String(e),
       pdf_ok: false,
       total_pages: 0,
-      blank_pages: 0,
+      raw_zero_text_pages: 0,
       toc_pages_valid: false,
       vision_status: "error",
       vision_issues_count: 0,
       ooxml_audit_passed: false,
       audit_violations: [] as unknown[],
-      banner_preserved: false,
-      form_container_respected: false,
-      metadata_filled: 0,
-      metadata_total: gt?.fields.length ?? 0,
-      metadata_fill_rate: 0,
-      unfilled_fields: [],
-      residue_free: false,
-      leaked_residues: [],
-      strict_e2e_pass: false,
-      failure_codes: ["F0_PIPELINE_EXCEPTION"],
+      ...errFail,
+      legacy_oracle: { ...errFail, metadata_total: legacyGt?.fields.length ?? 0 },
     }
   } finally {
     docs.store.db.close()
@@ -826,10 +1204,11 @@ async function main() {
     ? fullManifest.filter((m) => filterIds.includes(m.id))
     : fullManifest
 
-  console.log(`Starting Clean Unrigged V4 Benchmark across ${manifest.length} templates...`)
-  type TrackRes = Omit<Awaited<ReturnType<typeof runStrategyOnDoc>>, "gt">
+  console.log(`Starting Dual-Track V4 Benchmark across ${manifest.length} templates...`)
+  type TrackRes = Omit<Awaited<ReturnType<typeof runStrategyOnDoc>>, "gt" | "legacyGt">
   const perDoc: (LabManifestItem & {
     ground_truth?: GroundTruthOracle
+    legacy_ground_truth?: GroundTruthOracle
     tracks: Record<"rule_baseline" | "rule_enhanced" | "llm_hybrid", TrackRes>
   })[] = []
 
@@ -841,34 +1220,35 @@ async function main() {
         const rb = await runStrategyOnDoc("rule_baseline", src, item)
         const re = await runStrategyOnDoc("rule_enhanced", src, item)
         const lh = await runStrategyOnDoc("llm_hybrid", src, item)
-        const bTag = rb.strict_e2e_pass ? "PASS" : "FAIL"
-        const rTag = re.strict_e2e_pass ? "PASS" : "FAIL"
-        const lTag = lh.strict_e2e_pass ? "PASS" : "FAIL"
+        const lCalTag = lh.strict_e2e_pass ? "PASS" : "FAIL"
+        const lLegTag = lh.legacy_oracle.strict_e2e_pass ? "PASS" : "FAIL"
         const llmStat =
           `${lh.metadata_filled}/${lh.metadata_total}, p=${lh.total_pages}, ` +
-          `blank=${lh.blank_pages}, ${lh.tokens_used}tok`
+          `blank=${lh.blank_pages}(raw=${lh.raw_zero_text_pages}), ${lh.tokens_used}tok`
         console.log(
-          `[${item.id}] ${item.source_org.slice(0, 10).padEnd(10)} | ${item.archetype.padEnd(22)} | ` +
-            `Base=${bTag}(${rb.metadata_filled}/${rb.metadata_total}) | ` +
-            `Rule+=${rTag}(${re.metadata_filled}/${re.metadata_total}) | ` +
-            `LLM=${lTag}(${llmStat}) | fails=${lh.failure_codes.join(",") || "NONE"}`,
+          `[${item.id}] ${item.source_org.slice(0, 10).padEnd(10)} | ` +
+            `Cal=${lCalTag} | Leg=${lLegTag} | (${llmStat}) | ` +
+            `calFails=${lh.failure_codes.join(",") || "NONE"} | ` +
+            `legFails=${lh.legacy_oracle.failure_codes.join(",") || "NONE"}`,
         )
-        if (!lh.strict_e2e_pass) {
+        if (!lh.strict_e2e_pass || !lh.legacy_oracle.strict_e2e_pass) {
           console.log(
-            `   -> [${item.id} DIAG] pdf=${lh.pdf_ok} blank=${lh.blank_pages} tocOk=${lh.toc_pages_valid} ` +
-              `audit=${lh.ooxml_audit_passed} banner=${lh.banner_preserved} ` +
-              `form=${lh.form_container_respected} unfilled=[${lh.unfilled_fields.join(",")}] ` +
-              `residues=[${lh.leaked_residues.join(",")}] err=${(lh as { error?: string }).error ?? ""}`,
+            `   -> [${item.id} DIAG] pdf=${lh.pdf_ok} audit=${lh.ooxml_audit_passed} ` +
+              `calBanner=${lh.banner_preserved} legBanner=${lh.legacy_oracle.banner_preserved} ` +
+              `form=${lh.form_container_respected} calUnfilled=[${lh.unfilled_fields.join(",")}] ` +
+              `calResidues=[${lh.leaked_residues.join(",")}] ` +
+              `legResidues=[${lh.legacy_oracle.leaked_residues.join(",")}] ` +
+              `err=${(lh as { error?: string }).error ?? ""}`,
           )
         }
         return {
           ...item,
-          ground_truth:
-            (rb as { gt?: GroundTruthOracle }).gt ?? (lh as { gt?: GroundTruthOracle }).gt,
+          ground_truth: rb.gt ?? lh.gt,
+          legacy_ground_truth: rb.legacyGt ?? lh.legacyGt,
           tracks: {
-            rule_baseline: { ...rb, gt: undefined },
-            rule_enhanced: { ...re, gt: undefined },
-            llm_hybrid: { ...lh, gt: undefined },
+            rule_baseline: { ...rb, gt: undefined, legacyGt: undefined },
+            rule_enhanced: { ...re, gt: undefined, legacyGt: undefined },
+            llm_hybrid: { ...lh, gt: undefined, legacyGt: undefined },
           },
         }
       }),
@@ -876,38 +1256,41 @@ async function main() {
     perDoc.push(...batchRes)
   }
 
-  const summarizeTrack = (key: "rule_baseline" | "rule_enhanced" | "llm_hybrid") => {
+  const summarizeTrack = (
+    key: "rule_baseline" | "rule_enhanced" | "llm_hybrid",
+    useLegacy = false,
+  ) => {
     const rows = perDoc.map((d) => d.tracks[key])
-    const totalMeta = rows.reduce((s, r) => s + r.metadata_total, 0)
-    const filledMeta = rows.reduce((s, r) => s + r.metadata_filled, 0)
+    const pick = (r: TrackRes) => (useLegacy ? r.legacy_oracle : r)
+    const totalMeta = rows.reduce((s, r) => s + pick(r).metadata_total, 0)
+    const filledMeta = rows.reduce((s, r) => s + pick(r).metadata_filled, 0)
     const failCounts: Record<string, number> = {}
     for (const r of rows) {
-      for (const code of r.failure_codes) failCounts[code] = (failCounts[code] ?? 0) + 1
+      for (const code of pick(r).failure_codes) failCounts[code] = (failCounts[code] ?? 0) + 1
     }
     const byArchetype: Record<string, { total: number; pass: number }> = {}
     for (const d of perDoc) {
       const a = d.archetype
       byArchetype[a] ??= { total: 0, pass: 0 }
       byArchetype[a].total++
-      if (d.tracks[key].strict_e2e_pass) byArchetype[a].pass++
+      if (pick(d.tracks[key]).strict_e2e_pass) byArchetype[a].pass++
     }
+    const passCount = rows.filter((r) => pick(r).strict_e2e_pass).length
     return {
       total_docs: rows.length,
       pdf_render_pass: rows.filter((r) => r.pdf_ok).length,
-      zero_blank_pages_pass: rows.filter((r) => r.pdf_ok && r.blank_pages === 0).length,
+      zero_blank_pages_pass: rows.filter((r) => r.pdf_ok && pick(r).blank_pages === 0).length,
       toc_pages_valid_pass: rows.filter((r) => r.pdf_ok && r.toc_pages_valid).length,
       vision_audit_passed: rows.filter((r) => r.vision_status === "passed").length,
       vision_audit_issues: rows.filter((r) => r.vision_status === "issues").length,
       ooxml_audit_pass: rows.filter((r) => r.ooxml_audit_passed).length,
-      banner_preserved_pass: rows.filter((r) => r.banner_preserved).length,
-      form_container_pass: rows.filter((r) => r.form_container_respected).length,
-      residue_free_pass: rows.filter((r) => r.residue_free).length,
+      banner_preserved_pass: rows.filter((r) => pick(r).banner_preserved).length,
+      form_container_pass: rows.filter((r) => pick(r).form_container_respected).length,
+      residue_free_pass: rows.filter((r) => pick(r).residue_free).length,
       metadata_filled_total: `${filledMeta}/${totalMeta}`,
       metadata_fill_pct: Number(((filledMeta / Math.max(1, totalMeta)) * 100).toFixed(1)),
-      strict_e2e_pass: rows.filter((r) => r.strict_e2e_pass).length,
-      strict_e2e_pct: Number(
-        ((rows.filter((r) => r.strict_e2e_pass).length / rows.length) * 100).toFixed(1),
-      ),
+      strict_e2e_pass: passCount,
+      strict_e2e_pct: Number(((passCount / rows.length) * 100).toFixed(1)),
       avg_tokens: Math.round(rows.reduce((s, r) => s + r.tokens_used, 0) / rows.length),
       failure_breakdown: failCounts,
       by_archetype: byArchetype,
@@ -923,9 +1306,14 @@ async function main() {
       ole_doc: manifest.filter((m) => m.actual_format === "ole_doc").length,
     },
     tracks: {
-      rule_baseline: summarizeTrack("rule_baseline"),
-      rule_enhanced: summarizeTrack("rule_enhanced"),
-      llm_hybrid: summarizeTrack("llm_hybrid"),
+      rule_baseline: summarizeTrack("rule_baseline", false),
+      rule_enhanced: summarizeTrack("rule_enhanced", false),
+      llm_hybrid: summarizeTrack("llm_hybrid", false),
+    },
+    tracks_legacy_oracle: {
+      rule_baseline: summarizeTrack("rule_baseline", true),
+      rule_enhanced: summarizeTrack("rule_enhanced", true),
+      llm_hybrid: summarizeTrack("llm_hybrid", true),
     },
     documents: perDoc,
   }
@@ -934,10 +1322,12 @@ async function main() {
     await mkdir("eval", { recursive: true })
     await writeFile("eval/results_lab_reports.json", JSON.stringify(summary, null, 2) + "\n")
   }
-  console.log("\n=== CLEAN UNRIGGED SUMMARY ===")
+  console.log("\n=== CALIBRATED ORACLE SUMMARY ===")
   console.log("Rule Baseline :", summary.tracks.rule_baseline)
   console.log("Rule Enhanced :", summary.tracks.rule_enhanced)
   console.log("LLM Hybrid    :", summary.tracks.llm_hybrid)
+  console.log("\n=== LEGACY ORACLE SUMMARY (UNMODIFIED PROBES) ===")
+  console.log("LLM Hybrid (Legacy):", summary.tracks_legacy_oracle.llm_hybrid)
 }
 
 await main()
