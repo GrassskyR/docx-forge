@@ -2,6 +2,7 @@ import { join, relative, resolve, sep } from "node:path"
 import { realpath } from "node:fs/promises"
 import { Store } from "@docs-agent/engine"
 import { Billing } from "./billing.js"
+import { ConfigStore, type SecretCipher } from "./config_store.js"
 
 export class HttpError extends Error {
   constructor(
@@ -26,11 +27,22 @@ export async function dataFile(root: string, path: string) {
 export class Documents {
   readonly bill = new Billing()
   readonly store: Store
+  readonly config: ConfigStore
+  private readonly modelOverride?: boolean
 
   constructor(
     readonly directory: string,
-    readonly useModel = Boolean(process.env.LLM_API_KEY),
+    useModel?: boolean,
+    opts?: { secretCipher?: SecretCipher; syncToolchain?: boolean },
   ) {
     this.store = new Store(join(directory, "docforge.db"))
+    this.config = new ConfigStore(this.store, opts?.secretCipher, opts?.syncToolchain ?? true)
+    this.modelOverride = useModel
+  }
+
+  get useModel(): boolean {
+    if (this.modelOverride === false) return false
+    const cfg = this.config.current()
+    return Boolean(cfg.llm_api_key)
   }
 }

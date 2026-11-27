@@ -1,13 +1,23 @@
-import { execFile } from "node:child_process"
 import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
-import { promisify } from "node:util"
 import { Assert } from "typebox/value"
 import { VisionAudit, type LayoutTelemetry } from "@docs-agent/shared"
+import { execPoppler } from "./toolchain.js"
 
-const run = promisify(execFile)
-export function visionMode(): VisionAudit["mode"] {
+export interface VisionEnv {
+  llm_supports_vision?: boolean
+  vision_model?: string
+  vision_api_key?: string
+  vision_base_url?: string
+}
+
+export function visionMode(env?: VisionEnv): VisionAudit["mode"] {
+  if (env) {
+    if (env.llm_supports_vision) return "native"
+    if (env.vision_model && env.vision_api_key && env.vision_base_url) return "sidecar"
+    return "text_only"
+  }
   if (process.env.LLM_SUPPORTS_VISION === "true") return "native"
   if (process.env.VISION_MODEL && process.env.VISION_API_KEY && process.env.VISION_BASE_URL)
     return "sidecar"
@@ -20,8 +30,9 @@ export async function visualAudit(
   passed: boolean,
   review: (images: { page: number; data: string }[]) => Promise<unknown>,
   enabled = true,
+  env?: VisionEnv,
 ): Promise<VisionAudit> {
-  const mode = enabled ? visionMode() : "text_only"
+  const mode = enabled ? visionMode(env) : "text_only"
   const skipped = { mode, pages: [], issues: [] }
   if (mode === "text_only") return { ...skipped, status: "skipped_no_vision_model" }
   if (!passed || layout.warnings.length) return { ...skipped, status: "skipped_pending_layout" }
@@ -37,7 +48,7 @@ export async function visualAudit(
     const images = []
     for (const page of pages) {
       const prefix = join(temp, "page-" + page)
-      await run(
+      await execPoppler(
         "pdftoppm",
         [
           "-f",

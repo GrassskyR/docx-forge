@@ -20,6 +20,7 @@ const props = defineProps<{
   suggestedDocxName: string
   purgedImages: number
   isolatedPages: number
+  isDesktop?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -30,6 +31,8 @@ const emit = defineEmits<{
   surgery: [kind: "compact" | "orphan" | "tighten" | "vision"]
   reapplyFormat: []
   download: []
+  openInApp: []
+  revealInFolder: []
 }>()
 
 const activeImages = computed(() =>
@@ -250,12 +253,44 @@ function toggleLayoutMenu() {
           </button>
         </div>
 
+        <!-- 桌面端本地联动：用本机 Word/WPS 打开 & 打开所在文件夹 -->
+        <template v-if="isDesktop">
+          <button
+            id="openLocalWordBtn"
+            type="button"
+            :disabled="!currentDoc?.docx_url || busy"
+            :title="currentDoc ? '用本机默认 Word / WPS 打开' : '生成文档后可用本机应用打开'"
+            class="h-8 px-2.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] disabled:opacity-45 disabled:cursor-not-allowed text-[12px] font-medium text-[#334155] cursor-pointer"
+            @click="emit('openInApp')"
+          >
+            本地打开
+          </button>
+          <button
+            id="revealFolderBtn"
+            type="button"
+            :disabled="!currentDoc?.docx_url || busy"
+            title="在文件管理器中定位该文档"
+            class="h-8 w-8 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] disabled:opacity-45 disabled:cursor-not-allowed text-[#475569] flex items-center justify-center cursor-pointer"
+            @click="emit('revealInFolder')"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+        </template>
+
         <!-- 下载按钮（未生成成品前严格禁用，生成后按文档标题命名） -->
         <button
           id="downloadBtn"
           type="button"
           :disabled="!currentDoc?.docx_url || busy"
-          :title="currentDoc ? '下载 ' + suggestedDocxName : '请先套用格式或通过 AI 生成文档后再下载'"
+          :title="currentDoc ? '保存 ' + suggestedDocxName : '请先套用格式或通过 AI 生成文档后再下载'"
           class="h-8 px-3.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-45 disabled:cursor-not-allowed text-white text-[12px] font-medium flex items-center gap-1.5 shadow-xs transition cursor-pointer"
           @click="emit('download')"
         >
@@ -270,7 +305,7 @@ function toggleLayoutMenu() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span>下载 Word</span>
+          <span>{{ isDesktop ? "另存为" : "下载 Word" }}</span>
         </button>
       </div>
     </div>

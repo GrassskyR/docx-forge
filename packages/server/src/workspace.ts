@@ -1,9 +1,7 @@
-import { execFile } from "node:child_process"
 import { existsSync } from "node:fs"
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { basename, dirname, join } from "node:path"
-import { promisify } from "node:util"
 import type { Element } from "@xmldom/xmldom"
 import { unzipSync } from "fflate"
 import { Assert } from "typebox/value"
@@ -31,6 +29,7 @@ import {
   children,
   compose,
   convert,
+  execPoppler,
   ingestDraft,
   inspectReference,
   inspectTemplateDocx,
@@ -49,12 +48,12 @@ import {
   W,
   type Adjustment,
   type ComposeInput,
+  type VisionEnv,
 } from "@docs-agent/engine"
 import { Documents } from "./documents.js"
 import { logger } from "./logger.js"
 import { jsonCompletion } from "./model.js"
 
-const run = promisify(execFile)
 const MAX_REACT_ROUNDS = 3
 
 export interface TaskProgressOpts {
@@ -418,6 +417,7 @@ async function observeDryRun(
   docMap: DocumentMap,
   blueprint: Blueprint,
   renderImages = true,
+  visionEnv?: VisionEnv,
 ): Promise<DryRunObservation> {
   const hardIssues: string[] = []
   const work = await mkdtemp(join(tmpdir(), "docforge-dryrun-"))
@@ -515,7 +515,7 @@ async function observeDryRun(
 
     const residualMap = buildResidualMapText(outRoot)
     const dryImages: { page: number; data: string }[] = []
-    if (renderImages && visionMode() !== "text_only" && layout.total_pages > 0) {
+    if (renderImages && visionMode(visionEnv) !== "text_only" && layout.total_pages > 0) {
       const warnPages = layout.warnings.map((w) => w.page)
       const midPage = Math.max(1, Math.ceil(layout.total_pages / 2))
       const pickPages = [...new Set([1, ...warnPages, midPage, layout.total_pages])]
@@ -524,7 +524,7 @@ async function observeDryRun(
       const pdfPath = join(outDir, "document.pdf")
       for (const page of pickPages) {
         const prefix = join(work, `dry-page-${page}`)
-        await run("pdftoppm", [
+        await execPoppler("pdftoppm", [
           "-f",
           String(page),
           "-l",
@@ -727,11 +727,11 @@ export class Workspace {
     const urls: string[] = []
     if (sample_pages.length) {
       const pdf = await convert(join(dir, "base.docx"), dir, "pdf")
-      const infoOut = await run("pdfinfo", [pdf], { env: { ...process.env, LC_ALL: "C" } })
+      const infoOut = await execPoppler("pdfinfo", [pdf])
       const maxPage = Number(/^Pages:\s*(\d+)/m.exec(infoOut.stdout)?.[1] ?? 1)
       for (const page of [...new Set(sample_pages)].filter((p) => p >= 1 && p <= maxPage).slice(0, 3)) {
         const name = "sample-" + page
-        await run("pdftoppm", [
+        await execPoppler("pdftoppm", [
           "-f",
           String(page),
           "-l",
@@ -786,8 +786,9 @@ export class Workspace {
       )
     }
 
+    const cfg = this.docs.config.current()
     const refImages: { page: number; data: string }[] = []
-    if (visionMode() !== "text_only") {
+    if (visionMode(cfg) !== "text_only") {
       for (const p of [1, 2, 3]) {
         const imgPath = join(dir, `sample-${p}.png`)
         if (existsSync(imgPath)) {
@@ -825,6 +826,7 @@ export class Workspace {
               refImages,
               `internalize-v4-coord-fix-${tag}`,
               opts?.signal,
+              cfg,
             )
           }
         }
@@ -841,6 +843,7 @@ export class Workspace {
       refImages,
       "internalize-v4-propose",
       opts?.signal,
+      cfg,
     )
     const initResolved = await resolveCandidate(initRaw, "init")
     let validBlueprint: Blueprint = initResolved.blueprint
@@ -850,7 +853,7 @@ export class Workspace {
     for (let round = 0; round < MAX_REACT_ROUNDS; round++) {
       ensureAlive(opts?.signal)
       opts?.onPhase?.(`正在执行第 ${round + 1}/${MAX_REACT_ROUNDS} 轮试填排版自检…`)
-      const obs = await observeDryRun(baseBytes, docMap, validBlueprint)
+      const obs = await observeDryRun(baseBytes, docMap, validBlueprint, true, cfg)
       ensureAlive(opts?.signal)
       const reviewPrompt = buildReActReviewPrompt(docMap, validBlueprint, bestRules, obs)
       const review = await jsonCompletion(
@@ -859,6 +862,7 @@ export class Workspace {
         obs.dryImages,
         `internalize-v4-react-${round + 1}`,
         opts?.signal,
+        cfg,
       )
 
       const verdict = review?.verdict === "accept" ? "accept" : "revise"
@@ -885,7 +889,7 @@ export class Workspace {
           validBlueprint = nextResolved.blueprint
           if (nextResolved.rulesMd) bestRules = nextResolved.rulesMd
         } else {
-          const finalObs = await observeDryRun(baseBytes, docMap, nextResolved.blueprint)
+          const finalObs = await observeDryRun(baseBytes, docMap, nextResolved.blueprint, true, cfg)
           if (finalObs.hardIssues.length <= obs.hardIssues.length) {
             validBlueprint = nextResolved.blueprint
             if (nextResolved.rulesMd) bestRules = nextResolved.rulesMd
@@ -905,6 +909,7 @@ export class Workspace {
           refImages,
           `internalize-v4-hard-fix-${round + 1}`,
           opts?.signal,
+          cfg,
         )
         const retryResolved = await resolveCandidate(retryRaw, `h${round + 1}`)
         validBlueprint = retryResolved.blueprint
@@ -1145,6 +1150,7 @@ export class Workspace {
         [],
         "plan-zero-copy-v4",
         signal,
+        this.docs.config.current(),
       )
       const obj = (raw ?? {}) as Record<string, unknown>
       const rawList = Array.isArray(raw)
@@ -1289,6 +1295,7 @@ export class Workspace {
       layout: LayoutTelemetry
       lint_report: LintReport
     }
+    const cfg = this.docs.config.current()
     const vision = await visualAudit(
       join(dir, "document.pdf"),
       result.layout,
@@ -1301,6 +1308,7 @@ export class Workspace {
           images,
           "visual-audit",
           signal,
+          cfg,
         )
         const rawIssues = Array.isArray(output?.issues) ? output.issues : []
         return rawIssues
@@ -1317,6 +1325,7 @@ export class Workspace {
           }))
       },
       runVision,
+      cfg,
     )
     return { ...result, vision }
   }

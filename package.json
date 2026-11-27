@@ -10,13 +10,17 @@
     "test": "vitest run",
     "stylecheck": "tsx scripts/check_style.ts",
     "build": "npm run typecheck && npm run build -w @docs-agent/web",
-    "start": "tsx packages/server/src/main.ts"
+    "start": "tsx packages/server/src/main.ts",
+    "dev:desktop": "npm run dev -w @docs-agent/desktop",
+    "build:desktop": "npm run build && npm run build -w @docs-agent/desktop",
+    "pack:desktop": "npm run build:desktop && npm run pack -w @docs-agent/desktop",
+    "dist:desktop": "npm run build:desktop && npm run dist -w @docs-agent/desktop"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
     "@types/node": "^22",
     "tsx": "^4",
-    "vitest": "^3"
+    "vitest": "^5.1.2"
   },
   "overrides": {
     "basic-ftp": "6.2.6"

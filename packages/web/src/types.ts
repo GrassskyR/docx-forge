@@ -44,6 +44,9 @@ export interface UsageSnapshot {
   cost_usd: number | null
 }
 
+export type RendererMode = "auto" | "word_com" | "wps_com" | "libreoffice"
+export type ActiveRenderer = "word_com" | "wps_com" | "libreoffice" | "none"
+
 export interface HealthInfo {
   service: string
   sqlite: string
@@ -52,6 +55,88 @@ export interface HealthInfo {
   llm_configured: boolean
   vision_mode: "native" | "sidecar" | "text_only"
   langfuse_enabled?: boolean
+  renderer_ready?: boolean
+  active_renderer?: ActiveRenderer
+  word_com?: boolean
+  wps_com?: boolean
+  poppler_source?: "bundled" | "system" | "missing"
+  platform?: string
+  is_desktop?: boolean
+  is_portable?: boolean
+  data_dir?: string
+}
+
+export interface ToolchainStatus {
+  platform: string
+  renderer_mode: RendererMode
+  active_renderer: ActiveRenderer
+  renderer_ready: boolean
+  word_com: boolean
+  wps_com: boolean
+  libreoffice: boolean
+  libreoffice_path: string | null
+  pdftoppm: boolean
+  pdftohtml: boolean
+  pdfinfo: boolean
+  poppler_source: "bundled" | "system" | "missing"
+  poppler_dir: string | null
+}
+
+export interface PublicAppConfig {
+  llm_base_url: string
+  llm_api_key_configured: boolean
+  llm_api_key_hint: string
+  llm_model: string
+  llm_supports_vision: boolean
+  llm_input_usd_per_million: number | null
+  llm_output_usd_per_million: number | null
+  vision_base_url: string
+  vision_api_key_configured: boolean
+  vision_api_key_hint: string
+  vision_model: string
+  renderer_mode: RendererMode
+  soffice_path: string
+}
+
+export interface SettingsPatch {
+  llm_base_url?: string
+  llm_api_key?: string
+  clear_llm_api_key?: boolean
+  llm_model?: string
+  llm_supports_vision?: boolean
+  llm_input_usd_per_million?: number | null
+  llm_output_usd_per_million?: number | null
+  vision_base_url?: string
+  vision_api_key?: string
+  clear_vision_api_key?: boolean
+  vision_model?: string
+  renderer_mode?: RendererMode
+  soffice_path?: string
+}
+
+export interface SettingsResponse {
+  config: PublicAppConfig
+  toolchain: ToolchainStatus
+  health?: HealthInfo
+  data_dir: string
+  is_desktop: boolean
+  is_portable: boolean
+}
+
+export interface DocForgeDesktopBridge {
+  readonly isDesktop: true
+  readonly platform: string
+  readonly isPortable: boolean
+  saveDocxAs(
+    docUrl: string,
+    suggestedName: string,
+  ): Promise<{ canceled: boolean; filePath?: string }>
+  openDocInApp(docUrl: string, suggestedName: string): Promise<{ filePath: string }>
+  revealDocInFolder(docUrl: string, suggestedName: string): Promise<{ filePath: string }>
+  openDataDir(): Promise<void>
+  pickExecutable(title: string): Promise<string | null>
+  openExternal(url: string): Promise<void>
+  onMenuAction(cb: (action: string) => void): () => void
 }
 
 export interface TemplatesResponse {

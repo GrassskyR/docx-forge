@@ -4,6 +4,8 @@ import type {
   DraftIngestResponse,
   HealthInfo,
   SessionsPayload,
+  SettingsPatch,
+  SettingsResponse,
   TemplatesResponse,
 } from "./types.js"
 
@@ -57,6 +59,17 @@ export async function readSseStream(
 
 export function fetchHealth() {
   return request<HealthInfo>("/health")
+}
+
+export function fetchSettings() {
+  return request<SettingsResponse>("/api/settings")
+}
+
+export function updateSettings(patch: SettingsPatch) {
+  return request<SettingsResponse>("/api/settings", {
+    method: "PUT",
+    body: JSON.stringify(patch),
+  })
 }
 
 export function fetchTemplates() {

@@ -9,8 +9,9 @@ export function makeAgent(
   binding: ToolSessionBinding,
   getSnapshot?: () => WorkspaceContextSnapshot,
 ) {
-  const model = textModel()
-  configureRates(model)
+  const cfg = work.docs.config.current()
+  const model = textModel(cfg)
+  configureRates(model, "LLM", cfg)
   return new Agent({
     initialState: {
       model,
@@ -38,7 +39,7 @@ export function makeAgent(
       tools: createTools(work, binding),
     },
     transformContext: contextHook(work.templates, getSnapshot),
-    getApiKey: () => process.env.LLM_API_KEY,
+    getApiKey: () => work.docs.config.current().llm_api_key,
     toolExecution: "sequential",
   })
 }

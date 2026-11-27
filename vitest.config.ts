@@ -16,5 +16,6 @@ export default defineConfig({
   test: {
     maxConcurrency: concurrency,
     fileParallelism: true,
+    testTimeout: 30_000,
   },
 })

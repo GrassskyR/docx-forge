@@ -5,16 +5,23 @@ import {
   type TextContent,
 } from "@mariozechner/pi-ai"
 import { Billing } from "./billing.js"
+import type { AppConfig } from "./config_store.js"
 import { traceGeneration } from "./observability.js"
 
-export function textModel(): Model<"openai-completions"> {
-  const supportsVision = process.env.LLM_SUPPORTS_VISION === "true"
+export function textModel(cfg?: AppConfig): Model<"openai-completions"> {
+  const supportsVision = cfg
+    ? cfg.llm_supports_vision
+    : process.env.LLM_SUPPORTS_VISION === "true"
+  const id = (cfg ? cfg.llm_model : process.env.LLM_MODEL || "").trim() || "unconfigured"
+  const baseUrl =
+    (cfg ? cfg.llm_base_url : process.env.LLM_BASE_URL || "").trim() ||
+    "https://api.openai.com/v1"
   return {
-    id: (process.env.LLM_MODEL || "unconfigured").trim(),
+    id,
     name: "文档排版模型",
     provider: "openai",
     api: "openai-completions",
-    baseUrl: (process.env.LLM_BASE_URL || "https://api.openai.com/v1").trim(),
+    baseUrl,
     reasoning: false,
     input: supportsVision ? ["text", "image"] : ["text"],
     contextWindow: 64000,
@@ -47,17 +54,24 @@ export async function jsonCompletion(
   images: { page: number; data: string }[] = [],
   opName = "json-completion",
   signal?: AbortSignal,
+  cfg?: AppConfig,
 ) {
   if (signal?.aborted) throw new Error("任务已取消")
-  const sidecar = images.length > 0 && process.env.LLM_SUPPORTS_VISION !== "true"
-  const model = textModel()
+  const supportsVision = cfg
+    ? cfg.llm_supports_vision
+    : process.env.LLM_SUPPORTS_VISION === "true"
+  const sidecar = images.length > 0 && !supportsVision
+  const model = textModel(cfg)
   if (images.length) model.input = ["text", "image"]
   if (sidecar) {
-    model.id = process.env.VISION_MODEL!.trim()
-    model.baseUrl = process.env.VISION_BASE_URL!.trim()
+    model.id = (cfg ? cfg.vision_model : process.env.VISION_MODEL || "").trim()
+    model.baseUrl = (cfg ? cfg.vision_base_url : process.env.VISION_BASE_URL || "").trim()
   }
   const prefix = sidecar ? "VISION" : "LLM"
-  const priced = configureRates(model, prefix)
+  const priced = configureRates(model, prefix, cfg)
+  const apiKey = sidecar
+    ? (cfg ? cfg.vision_api_key : process.env.VISION_API_KEY || "").trim()
+    : (cfg ? cfg.llm_api_key : process.env.LLM_API_KEY || "").trim()
   const content: (ImageContent | TextContent)[] = [{ type: "text", text: prompt }]
   for (const { page, data } of images) {
     content.push(
@@ -79,7 +93,7 @@ export async function jsonCompletion(
               "你是资深 OOXML 文档结构解析与排版规划专家。只输出合法 JSON，字符串内严禁包含未转义英文双引号。",
             messages: [{ role: "user", content, timestamp: Date.now() }],
           },
-          { apiKey: process.env[prefix + "_API_KEY"]?.trim(), signal },
+          { apiKey, signal },
         )
         bill.record(result.usage, priced)
         if (signal?.aborted || result.stopReason === "aborted") {
@@ -113,7 +127,23 @@ export async function jsonCompletion(
   )
 }
 
-export function configureRates(model: Model<"openai-completions">, prefix = "LLM") {
+export function configureRates(
+  model: Model<"openai-completions">,
+  prefix = "LLM",
+  cfg?: AppConfig,
+) {
+  if (prefix === "LLM" && cfg) {
+    if (cfg.llm_input_usd_per_million === null || cfg.llm_output_usd_per_million === null) {
+      return false
+    }
+    model.cost = {
+      input: cfg.llm_input_usd_per_million,
+      output: cfg.llm_output_usd_per_million,
+      cacheRead: cfg.llm_input_usd_per_million,
+      cacheWrite: cfg.llm_output_usd_per_million,
+    }
+    return true
+  }
   const input = process.env[prefix + "_INPUT_USD_PER_MILLION"]
   const output = process.env[prefix + "_OUTPUT_USD_PER_MILLION"]
   if (!input || !output) return false

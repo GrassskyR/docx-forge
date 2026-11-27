@@ -3,3 +3,7 @@ declare module "*.vue" {
   const component: DefineComponent<Record<string, any>, Record<string, any>, any>
   export default component
 }
+
+interface Window {
+  docforgeDesktop?: import("./types.js").DocForgeDesktopBridge
+}

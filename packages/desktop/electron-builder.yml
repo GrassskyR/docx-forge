@@ -1,0 +1,67 @@
+appId: com.docforge.desktop
+productName: DocForge
+executableName: docforge
+copyright: Copyright © 2026 DocForge
+electronVersion: "45.5.0"
+asar: true
+npmRebuild: false
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - package.json
+  - dist/**/*
+  - from: ../web/dist
+    to: web-dist
+  - "!**/*.map"
+  - "!node_modules/**"
+
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+  - from: resources/poppler/${os}
+    to: poppler
+    filter:
+      - "**/*"
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DocForge
+  artifactName: DocForge-Setup-${version}-${arch}.${ext}
+
+portable:
+  artifactName: DocForge-Portable-${version}-${arch}.${ext}
+
+mac:
+  icon: build/icon.png
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+  artifactName: DocForge-${version}-${arch}.${ext}
+
+linux:
+  icon: build/icon.png
+  category: Office
+  maintainer: DocForge
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+  artifactName: DocForge-${version}-${arch}.${ext}

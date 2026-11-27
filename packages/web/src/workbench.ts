@@ -18,6 +18,8 @@ import {
   type MappingRow,
   type RawAgentMessage,
   type SessionsPayload,
+  type SettingsPatch,
+  type SettingsResponse,
   type TimelineItem,
   type UsageSnapshot,
 } from "./types.js"
@@ -120,6 +122,11 @@ export function useWorkbench() {
     openDropdown: null as DropdownId,
     popoverCat: "all" as CategoryId,
     importOpen: false,
+    importInitialFile: null as File | null,
+    settingsOpen: false,
+    settingsSaving: false,
+    settingsData: null as SettingsResponse | null,
+    bannerDismissed: false,
     mode: "copy" as "copy" | "chat",
     drawerTab: "telemetry" as "telemetry" | "ooxml" | "vision",
     visionEnabled: true,
@@ -848,10 +855,51 @@ export function useWorkbench() {
     }
   }
 
-  function downloadDocx(customUrl?: string) {
+  async function loadSettings() {
+    try {
+      state.settingsData = await api.fetchSettings()
+    } catch (e) {
+      toast("加载设置失败：" + (e instanceof Error ? e.message : String(e)))
+    }
+  }
+
+  async function openSettings() {
+    state.openDropdown = null
+    state.settingsOpen = true
+    await loadSettings()
+  }
+
+  async function saveSettings(patch: SettingsPatch) {
+    state.settingsSaving = true
+    try {
+      const res = await api.updateSettings(patch)
+      state.settingsData = res
+      if (res.health) state.health = res.health
+      state.settingsOpen = false
+      toast("设置已保存并立即生效")
+    } catch (e) {
+      toast("保存设置失败：" + (e instanceof Error ? e.message : String(e)))
+    } finally {
+      state.settingsSaving = false
+    }
+  }
+
+  async function downloadDocx(customUrl?: string) {
     const url = customUrl || state.currentDoc?.docx_url
     if (!url) {
       toast("请先套用格式或通过 AI 生成文档后再下载")
+      return
+    }
+    const desktop = window.docforgeDesktop
+    if (desktop) {
+      try {
+        const res = await desktop.saveDocxAs(url, suggestedDocxName.value)
+        if (!res.canceled && res.filePath) {
+          toast("已保存到：" + res.filePath)
+        }
+      } catch (e) {
+        toast("保存失败：" + (e instanceof Error ? e.message : String(e)))
+      }
       return
     }
     const a = document.createElement("a")
@@ -860,6 +908,27 @@ export function useWorkbench() {
     document.body.appendChild(a)
     a.click()
     a.remove()
+  }
+
+  async function openDocInLocalApp(customUrl?: string) {
+    const url = customUrl || state.currentDoc?.docx_url
+    if (!url || !window.docforgeDesktop) return
+    try {
+      await window.docforgeDesktop.openDocInApp(url, suggestedDocxName.value)
+      toast("正在用本机默认程序打开文档…")
+    } catch (e) {
+      toast("打开失败：" + (e instanceof Error ? e.message : String(e)))
+    }
+  }
+
+  async function revealDocInLocalFolder(customUrl?: string) {
+    const url = customUrl || state.currentDoc?.docx_url
+    if (!url || !window.docforgeDesktop) return
+    try {
+      await window.docforgeDesktop.revealDocInFolder(url, suggestedDocxName.value)
+    } catch (e) {
+      toast("定位文件失败：" + (e instanceof Error ? e.message : String(e)))
+    }
   }
 
   return {
@@ -892,5 +961,10 @@ export function useWorkbench() {
     applyBgImportedTemplate,
     sendChat,
     downloadDocx,
+    openDocInLocalApp,
+    revealDocInLocalFolder,
+    loadSettings,
+    openSettings,
+    saveSettings,
   }
 }
