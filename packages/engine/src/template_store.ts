@@ -127,13 +127,23 @@ export class TemplateStore {
   }
 
   private ensureBuiltinSeed() {
+    const folder = join(this.data, "template_assets", BUILTIN_ID)
+    const basePath = join(folder, "base.docx")
     const countRow = this.store.db
       .prepare("SELECT COUNT(*) as n FROM template_assets")
       .get() as { n: number }
-    if (countRow.n > 0) return
-    const folder = join(this.data, "template_assets", BUILTIN_ID)
+    if (countRow.n > 0) {
+      if (existsSync(basePath)) {
+        try {
+          const ct = unzipSync(readFileSync(basePath))["[Content_Types].xml"]
+          if (ct && Buffer.from(ct).toString("utf8").includes("package/2006.relationships+xml")) {
+            writeFileSync(basePath, buildDefaultSeedDocx())
+          }
+        } catch {}
+      }
+      return
+    }
     mkdirSync(folder, { recursive: true })
-    const basePath = join(folder, "base.docx")
     writeFileSync(basePath, buildDefaultSeedDocx())
     const dna: StyleDNA = {
       page_width_twips: 11906,

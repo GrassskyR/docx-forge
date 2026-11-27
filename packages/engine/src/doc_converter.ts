@@ -1,9 +1,7 @@
-import { execFile } from "node:child_process"
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { basename, join, parse, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
-import { promisify } from "node:util"
 import { unzipSync } from "fflate"
 import {
   execPoppler,
@@ -12,8 +10,8 @@ import {
   resolveWpsProgId,
   type ActiveRenderer,
 } from "./toolchain.js"
+import { convertViaWinCom } from "./win_com.js"
 
-const execFileAsync = promisify(execFile)
 const ole = Buffer.from("D0CF11E0A1B11AE1", "hex")
 
 let comQueue: Promise<void> = Promise.resolve()
@@ -27,38 +25,6 @@ function enqueueCom<T>(task: () => Promise<T>): Promise<T> {
   return result
 }
 
-const WIN_COM_SCRIPT = [
-  "$ErrorActionPreference = 'Stop'",
-  "$src = $env:DOCFORGE_COM_SRC",
-  "$dst = $env:DOCFORGE_COM_DST",
-  "$ext = $env:DOCFORGE_COM_EXT",
-  "$progId = $env:DOCFORGE_COM_PROGID",
-  "$app = $null",
-  "$doc = $null",
-  "try {",
-  "  $app = New-Object -ComObject $progId",
-  "  $app.Visible = $false",
-  "  try { $app.DisplayAlerts = 0 } catch {}",
-  "  $doc = $app.Documents.Open($src, $false, $true, $false)",
-  "  if ($ext -eq 'pdf') {",
-  "    try { $doc.ExportAsFixedFormat($dst, 17) } catch { $doc.SaveAs2($dst, 17) }",
-  "  } else {",
-  "    $doc.SaveAs2($dst, 16)",
-  "  }",
-  "} finally {",
-  "  if ($doc -ne $null) {",
-  "    try { $doc.Close($false) } catch {}",
-  "    [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($doc)",
-  "  }",
-  "  if ($app -ne $null) {",
-  "    try { $app.Quit() } catch {}",
-  "    [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($app)",
-  "  }",
-  "  [GC]::Collect()",
-  "  [GC]::WaitForPendingFinalizers()",
-  "}",
-].join("\n")
-
 async function convertWithCom(
   kind: "word_com" | "wps_com",
   source: string,
@@ -69,21 +35,7 @@ async function convertWithCom(
     kind === "word_com" ? "Word.Application" : (await resolveWpsProgId()) || "KWPS.Application"
   const result = join(resolve(directory), parse(source).name + "." + extension)
   await enqueueCom(async () => {
-    await execFileAsync(
-      "powershell.exe",
-      ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", WIN_COM_SCRIPT],
-      {
-        timeout: 90_000,
-        windowsHide: true,
-        env: {
-          ...process.env,
-          DOCFORGE_COM_SRC: resolve(source),
-          DOCFORGE_COM_DST: result,
-          DOCFORGE_COM_EXT: extension,
-          DOCFORGE_COM_PROGID: progId,
-        },
-      },
-    )
+    await convertViaWinCom(progId, resolve(source), result, extension, 90_000)
   })
   await stat(result)
   return result

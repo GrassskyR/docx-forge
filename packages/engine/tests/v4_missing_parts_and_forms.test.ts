@@ -29,10 +29,11 @@ test("无壳参考文档：100% 保留页眉校徽 Logo，自动生成同款字�
     const pkgNs = "http://schemas.openxmlformats.org/package/2006"
     const docNs = "http://schemas.openxmlformats.org/officeDocument/2006"
     const wordMime = "application/vnd.openxmlformats-officedocument.wordprocessingml"
+    const relsMime = "application/vnd.openxmlformats-package.relationships+xml"
     const contentTypes =
       `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
       `<Types xmlns="${pkgNs}/content-types">` +
-      `<Default Extension="rels" ContentType="${pkgNs}.relationships+xml"/>` +
+      `<Default Extension="rels" ContentType="${relsMime}"/>` +
       `<Default Extension="xml" ContentType="application/xml"/>` +
       `<Default Extension="png" ContentType="image/png"/>` +
       `<Override PartName="/word/document.xml" ContentType="${wordMime}.document.main+xml"/>` +
