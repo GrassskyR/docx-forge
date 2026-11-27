@@ -3,4 +3,7 @@ data/
 node_modules/
 dist/
 packages/web/dist/
+packages/desktop/dist/
+packages/desktop/release/
+packages/desktop/resources/poppler/
 __pycache__/

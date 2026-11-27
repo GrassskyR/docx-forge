@@ -110,6 +110,10 @@ flowchart LR
 npm run typecheck                                # TypeScript 类型检查
 npm run stylecheck                               # 代码行宽（≤110）与单行语句格式检查
 npm run build                                    # 类型检查并打包前端到 packages/web/dist
+npm run dev:desktop                              # 启动 Electron 桌面端开发窗口
+npm run build:desktop                            # 构建前端与 Electron 桌面端 bundle
+npx tsx scripts/prepare_poppler.ts               # 按当前平台准备内置 Poppler 工具链
+npm run dist:desktop                             # 打包当前平台桌面安装包 / 便携版
 npm test                                         # 运行全部单元与集成测试
 npx tsx packages/server/tests/e2e_verify_v3.ts   # 运行端到端联调验收脚本
 npx tsx eval/run_lab_report_benchmark.ts -c 12   # 运行 30 份高校实验报告模板评测

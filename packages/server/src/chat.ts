@@ -118,8 +118,8 @@ export function sessionAndChatHandler(
       send(404, { detail: "资源不存在" })
       return
     }
-    if (!process.env.LLM_API_KEY) {
-      send(503, { detail: "请配置 .env 中的 LLM_API_KEY、LLM_BASE_URL、LLM_MODEL" })
+    if (!client.config.current().llm_api_key) {
+      send(503, { detail: "请先在「设置」中配置大模型 API Key（或配置 .env 中的 LLM_API_KEY）" })
       return
     }
     if (typeof body.prompt !== "string" || !body.prompt.trim()) {
@@ -141,8 +141,9 @@ export function sessionAndChatHandler(
       return
     }
 
+    const cfg = client.config.current()
     const useVision = body.vision_enabled !== false
-    const vision_mode = useVision ? visionMode() : "text_only"
+    const vision_mode = useVision ? visionMode(cfg) : "text_only"
     let vision_pages_isolated = 0
     let abortedByClient = false
     busySessions.add(node.id)
@@ -262,10 +263,11 @@ export function sessionAndChatHandler(
         event({ type: "text", text: e.assistantMessageEvent.delta })
       }
       if (e.type === "message_end" && e.message.role === "assistant") {
-        const usage = client.bill.record(
-          e.message.usage,
-          Boolean(process.env.LLM_INPUT_USD_PER_MILLION && process.env.LLM_OUTPUT_USD_PER_MILLION),
-        )
+        const liveCfg = client.config.current()
+        const priced =
+          liveCfg.llm_input_usd_per_million !== null &&
+          liveCfg.llm_output_usd_per_million !== null
+        const usage = client.bill.record(e.message.usage, priced)
         event({ type: "usage", usage })
       }
       if (e.type === "tool_execution_start") {

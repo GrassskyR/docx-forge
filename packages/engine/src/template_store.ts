@@ -1,4 +1,3 @@
-import { execFile } from "node:child_process"
 import { randomUUID } from "node:crypto"
 import {
   copyFileSync,
@@ -12,7 +11,6 @@ import {
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { promisify } from "node:util"
 import { unzipSync } from "fflate"
 import { Assert } from "typebox/value"
 import { Blueprint, StyleDNA, type FieldSlot, type TemplateAsset } from "@docs-agent/shared"
@@ -20,9 +18,9 @@ import { buildDefaultSeedDocx } from "./builders.js"
 import { convert } from "./doc_converter.js"
 import { paraPlainText, resolveCoord } from "./dom_locator.js"
 import { Store } from "./store.js"
+import { execPoppler } from "./toolchain.js"
 import { children, parseXml } from "./xml_utils.js"
 
-const run = promisify(execFile)
 export const BUILTIN_TEMPLATE_ID = "builtin-standard-doc"
 const BUILTIN_ID = BUILTIN_TEMPLATE_ID
 
@@ -318,10 +316,10 @@ export class TemplateStore {
     const work = await mkdtemp(join(tmpdir(), "docforge-tpl-sample-"))
     try {
       const pdf = await convert(basePath, work, "pdf")
-      const infoOut = await run("pdfinfo", [pdf], { env: { ...process.env, LC_ALL: "C" } })
+      const infoOut = await execPoppler("pdfinfo", [pdf])
       const maxPage = Math.min(3, Number(/^Pages:\s*(\d+)/m.exec(infoOut.stdout)?.[1] ?? 1))
       for (let p = 1; p <= maxPage; p++) {
-        await run("pdftoppm", [
+        await execPoppler("pdftoppm", [
           "-f",
           String(p),
           "-l",

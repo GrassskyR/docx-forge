@@ -26,11 +26,13 @@ const props = defineProps<{
   visionEnabled: boolean
   langfuseEnabled?: boolean
   bgImport: BackgroundImportState | null
+  needsSetup?: boolean
 }>()
 
 const emit = defineEmits<{
   toggleDebug: []
   toggleDebugDrawer: []
+  openSettings: []
   setDropdown: [menu: DropdownId]
   changePopoverCat: [cat: CategoryId]
   createSession: []
@@ -563,6 +565,35 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
 
         <div class="h-4 w-px bg-[#E2E8F0]"></div>
       </div>
+
+      <button
+        id="settingsBtn"
+        type="button"
+        class="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-[12px] font-medium text-[#334155] transition cursor-pointer"
+        title="模型 API Key、渲染引擎与本地目录设置"
+        @click="emit('openSettings')"
+      >
+        <svg
+          class="w-3.5 h-3.5 text-[#64748B]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12m9.9 9.9l2.12 2.12M2 12h3m14 0h3"
+          />
+          <path
+            d="M4.93 19.07l2.12-2.12m9.9-9.9l2.12-2.12"
+          />
+        </svg>
+        <span class="hidden sm:inline">设置</span>
+        <span
+          v-if="needsSetup"
+          class="w-2 h-2 rounded-full bg-[#F59E0B] absolute -top-0.5 -right-0.5"
+        ></span>
+      </button>
 
       <button
         id="debugToggleBtn"

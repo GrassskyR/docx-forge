@@ -1,14 +1,14 @@
-import { randomUUID } from "node:crypto"
-import { accessSync, constants } from "node:fs"
+import { randomUUID, timingSafeEqual } from "node:crypto"
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http"
 import { basename, extname, join } from "node:path"
 import { Readable } from "node:stream"
 import { fileURLToPath } from "node:url"
-import { readDraft, visionMode } from "@docs-agent/engine"
+import { probeToolchain, readDraft, visionMode } from "@docs-agent/engine"
 import { adjustments, toolSchemas } from "@docs-agent/shared"
 import { Assert } from "typebox/value"
 import { sessionAndChatHandler } from "./chat.js"
+import type { AppConfigPatch, SecretCipher } from "./config_store.js"
 import { Documents, HttpError, dataFile } from "./documents.js"
 import { logger } from "./logger.js"
 import { langfuseEnabled } from "./observability.js"
@@ -16,6 +16,17 @@ import { SessionStore } from "./session_store.js"
 import { Workspace } from "./workspace.js"
 
 export const root = fileURLToPath(new URL("../../../", import.meta.url))
+
+export interface CreateAppOptions {
+  dataDir?: string
+  distDir?: string
+  useModel?: boolean
+  authToken?: string
+  secretCipher?: SecretCipher
+  isDesktop?: boolean
+  isPortable?: boolean
+  syncToolchain?: boolean
+}
 
 const types: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -36,15 +47,11 @@ const types: Record<string, string> = {
   ".pdf": "application/pdf",
 }
 
-function available(name: string) {
-  return process.env.PATH?.split(":").some((dir) => {
-    try {
-      accessSync(join(dir, name), constants.X_OK)
-      return true
-    } catch {
-      return false
-    }
-  })
+function tokenMatches(expected: string, actual: string | string[] | undefined): boolean {
+  if (typeof actual !== "string") return false
+  const a = Buffer.from(expected)
+  const b = Buffer.from(actual)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 async function upload(req: IncomingMessage, dir: string, draft = false) {
@@ -80,13 +87,46 @@ function openSse(res: ServerResponse) {
 }
 
 export function createApp(
-  directory = join(root, "data"),
-  useModel = Boolean(process.env.LLM_API_KEY),
+  directoryOrOptions: string | CreateAppOptions = join(root, "data"),
+  useModel?: boolean,
 ) {
-  const docs = new Documents(directory, useModel)
+  const opts: CreateAppOptions =
+    typeof directoryOrOptions === "string"
+      ? { dataDir: directoryOrOptions, useModel }
+      : directoryOrOptions
+  const directory = opts.dataDir ?? join(root, "data")
+  const dist = opts.distDir ?? join(root, "packages/web/dist")
+  const docs = new Documents(directory, opts.useModel, {
+    secretCipher: opts.secretCipher,
+    syncToolchain: opts.syncToolchain,
+  })
   const work = new Workspace(docs)
   const sessions = new SessionStore(docs.store, work.templates)
   const chatAndSessions = sessionAndChatHandler(docs, work, sessions)
+
+  async function buildHealth(forceProbe = false) {
+    docs.store.db.prepare("SELECT 1").get()
+    const tc = await probeToolchain(forceProbe)
+    const cfg = docs.config.current()
+    return {
+      service: "ok",
+      sqlite: "ok",
+      libreoffice: tc.libreoffice,
+      pdftoppm: tc.pdftoppm,
+      llm_configured: Boolean(cfg.llm_api_key),
+      vision_mode: visionMode(cfg),
+      langfuse_enabled: langfuseEnabled(),
+      renderer_ready: tc.renderer_ready,
+      active_renderer: tc.active_renderer,
+      word_com: tc.word_com,
+      wps_com: tc.wps_com,
+      poppler_source: tc.poppler_source,
+      platform: tc.platform,
+      is_desktop: Boolean(opts.isDesktop),
+      is_portable: Boolean(opts.isPortable),
+      data_dir: directory,
+    }
+  }
 
   const server = createServer(async (req, res) => {
     const started = Date.now()
@@ -104,6 +144,14 @@ export function createApp(
       res.end(JSON.stringify(value))
     }
     try {
+      const protectedRoute =
+        path === "/health" || path.startsWith("/api/") || path.startsWith("/files/")
+      if (opts.authToken && protectedRoute) {
+        if (!tokenMatches(opts.authToken, req.headers["x-docforge-token"])) {
+          return send(403, { detail: "未授权的本地访问请求" })
+        }
+      }
+
       const method = req.method
       if (path === "/api/chat" || path.startsWith("/api/sessions")) {
         return await chatAndSessions(req, res, path, send)
@@ -111,15 +159,16 @@ export function createApp(
 
       if (method === "GET") {
         if (path === "/health") {
-          docs.store.db.prepare("SELECT 1").get()
+          return send(200, await buildHealth(false))
+        }
+        if (path === "/api/settings") {
+          const toolchain = await probeToolchain(true)
           return send(200, {
-            service: "ok",
-            sqlite: "ok",
-            libreoffice: available("soffice"),
-            pdftoppm: available("pdftoppm"),
-            llm_configured: Boolean(process.env.LLM_API_KEY),
-            vision_mode: visionMode(),
-            langfuse_enabled: langfuseEnabled(),
+            config: docs.config.publicView(),
+            toolchain,
+            data_dir: directory,
+            is_desktop: Boolean(opts.isDesktop),
+            is_portable: Boolean(opts.isPortable),
           })
         }
         if (path === "/api/templates") {
@@ -152,7 +201,6 @@ export function createApp(
             throw new HttpError(404, "模板不存在")
           }
         }
-        const dist = join(root, "packages/web/dist")
         const file =
           path === "/"
             ? join(dist, "index.html")
@@ -224,6 +272,20 @@ export function createApp(
       for await (const chunk of req) chunks.push(Buffer.from(chunk))
       const payload = JSON.parse(Buffer.concat(chunks).toString() || "{}")
 
+      if (path === "/api/settings" && method === "PUT") {
+        const config = docs.config.update(payload as AppConfigPatch)
+        const toolchain = await probeToolchain(true)
+        const health = await buildHealth(false)
+        return send(200, {
+          config,
+          toolchain,
+          health,
+          data_dir: directory,
+          is_desktop: Boolean(opts.isDesktop),
+          is_portable: Boolean(opts.isPortable),
+        })
+      }
+
       if (path === "/api/documents/compose-stream" && method === "POST") {
         const draftText = typeof payload.draft_text === "string" ? payload.draft_text : ""
         if (!draftText.trim()) {
@@ -257,7 +319,8 @@ export function createApp(
               onPhase: (label) => emit({ type: "phase", label }),
             },
           )
-          if (payload.run_vision !== false && visionMode() !== "text_only") {
+          const liveVision = visionMode(docs.config.current())
+          if (payload.run_vision !== false && liveVision !== "text_only") {
             emit({ type: "phase", label: "正在执行关键页视觉核查…" })
             const audited = await work.audit(doc.doc_id, true, ctl.signal)
             Object.assign(doc, { vision: audited.vision })

@@ -1,18 +1,15 @@
-import { execFile } from "node:child_process"
 import { readFile } from "node:fs/promises"
-import { promisify } from "node:util"
 import { unzipSync } from "fflate"
 import type { LayoutTelemetry } from "@docs-agent/shared"
 import { convert } from "./doc_converter.js"
+import { execPoppler } from "./toolchain.js"
 import { parseXml, W } from "./xml_utils.js"
-
-const run = promisify(execFile)
 
 export async function telemetry(path: string, directory: string): Promise<LayoutTelemetry> {
   const pdf = await convert(path, directory, "pdf")
   const [{ stdout: xml }, { stdout: info }] = await Promise.all([
-    run("pdftohtml", ["-xml", "-i", "-stdout", pdf], { maxBuffer: 64 * 1024 * 1024 }),
-    run("pdfinfo", [pdf], { env: { ...process.env, LC_ALL: "C" } }),
+    execPoppler("pdftohtml", ["-xml", "-i", "-stdout", pdf], { maxBuffer: 64 * 1024 * 1024 }),
+    execPoppler("pdfinfo", [pdf]),
   ])
   const total_pages = Number(/^Pages:\s*(\d+)/m.exec(info)?.[1])
   const word = parseXml(unzipSync(await readFile(path))["word/document.xml"])

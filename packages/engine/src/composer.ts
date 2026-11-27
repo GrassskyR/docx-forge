@@ -1,8 +1,6 @@
-import { execFile } from "node:child_process"
 import { randomUUID } from "node:crypto"
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { promisify } from "node:util"
 import type { Document, Element } from "@xmldom/xmldom"
 import { unzipSync, zipSync } from "fflate"
 import {
@@ -34,6 +32,7 @@ import {
   visualCols,
 } from "./dom_locator.js"
 import { readDraft } from "./draft_ingestor.js"
+import { execPoppler } from "./toolchain.js"
 import {
   PPR_ORDER,
   RPR_ORDER,
@@ -46,7 +45,6 @@ import {
   xmlBytes,
 } from "./xml_utils.js"
 
-const run = promisify(execFile)
 const XML_SPACE_NS = "http://www.w3.org/XML/1998/namespace"
 
 export type ComposeInput = {
@@ -535,7 +533,7 @@ async function syncRealTocPages(
   const staging = await mkdtemp(join(directory, ".toc-sync-"))
   try {
     const pdf = await convert(docxPath, staging, "pdf")
-    const { stdout: xml } = await run("pdftohtml", ["-xml", "-i", "-stdout", pdf], {
+    const { stdout: xml } = await execPoppler("pdftohtml", ["-xml", "-i", "-stdout", pdf], {
       maxBuffer: 64 * 1024 * 1024,
     })
     const pdfXml = parseXml(Buffer.from(xml))

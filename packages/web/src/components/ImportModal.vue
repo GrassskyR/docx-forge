@@ -4,6 +4,7 @@ import { CATEGORY_LABELS, normalizeCategory, type CategoryId } from "../types"
 
 const props = defineProps<{
   open: boolean
+  initialFile?: File | null
 }>()
 
 const emit = defineEmits<{
@@ -19,14 +20,15 @@ const autoMatched = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 watch(
-  () => props.open,
-  (isOpen) => {
+  () => [props.open, props.initialFile] as const,
+  ([isOpen, initFile]) => {
     if (isOpen) {
       pickedFile.value = null
       tplName.value = ""
       tplCat.value = "gongwen"
       tplRules.value = ""
       autoMatched.value = false
+      if (initFile) setFile(initFile)
     }
   },
 )
