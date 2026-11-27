@@ -295,6 +295,12 @@ export class TemplateStore {
     return Boolean(row)
   }
 
+  rulesOf(id: string): string {
+    const folder = this.folder(id)
+    const p = join(folder, "SKILL.md")
+    return existsSync(p) ? readFileSync(p, "utf8") : ""
+  }
+
   folder(id: string) {
     return join(this.data, "template_assets", this.get(id).id)
   }
@@ -413,6 +419,88 @@ export class TemplateStore {
       .prepare("UPDATE template_assets SET payload=? WHERE id=?")
       .run(JSON.stringify(updated), id)
     return this.enrich(updated)
+  }
+
+  async saveEdited(
+    sourceId: string,
+    opts: {
+      saveAsNew?: boolean
+      setActive?: boolean
+      name?: string
+      category?: string
+      blueprint: Blueprint
+      style_dna: StyleDNA
+      rules_md: string
+      baseBytes: Uint8Array
+    },
+  ): Promise<{ asset: TemplateAsset; forked: boolean }> {
+    const rawRow = this.store.db
+      .prepare("SELECT payload FROM template_assets WHERE id=?")
+      .get(sourceId)
+    if (!rawRow) throw new Error("模板不存在: " + sourceId)
+    const raw = JSON.parse(String(rawRow.payload)) as TemplateAsset
+    Assert(Blueprint, opts.blueprint)
+    Assert(StyleDNA, opts.style_dna)
+
+    const shouldFork = sourceId === BUILTIN_ID || Boolean(opts.saveAsNew)
+    const nextCategory = opts.category?.trim() || raw.category
+    if (shouldFork) {
+      const fallbackName =
+        sourceId === BUILTIN_ID ? raw.name + "（定制版）" : raw.name + "（修订版）"
+      const nextName = opts.name?.trim() || fallbackName
+      const work = await mkdtemp(join(tmpdir(), "docforge-tpl-edit-"))
+      try {
+        const tmpBase = join(work, "base.docx")
+        writeFileSync(tmpBase, opts.baseBytes)
+        const created = this.persist(
+          tmpBase,
+          nextName,
+          nextCategory,
+          opts.blueprint,
+          opts.style_dna,
+          opts.rules_md,
+          sourceId,
+          Boolean(opts.setActive),
+        )
+        await this.ensureSamples(created.id)
+        return { asset: this.get(created.id), forked: true }
+      } finally {
+        await rm(work, { recursive: true, force: true })
+      }
+    }
+
+    const nextName = opts.name?.trim() || raw.name
+    const folder = join(this.data, "template_assets", sourceId)
+    const basePath = join(folder, "base.docx")
+    writeFileSync(basePath, opts.baseBytes)
+    for (const f of readdirSync(folder)) {
+      if (/^sample-\d+\.png$/.test(f)) rmSync(join(folder, f), { force: true })
+    }
+    writeFileSync(join(folder, "blueprint.json"), JSON.stringify(opts.blueprint, null, 2))
+    writeFileSync(join(folder, "style_dna.json"), JSON.stringify(opts.style_dna, null, 2))
+    writeFileSync(join(folder, "SKILL.md"), opts.rules_md)
+    const capability_card = buildCapabilityCard(
+      nextName,
+      nextCategory,
+      basePath,
+      opts.blueprint,
+      opts.style_dna,
+      opts.rules_md,
+    )
+    const updated: TemplateAsset = {
+      ...raw,
+      name: nextName,
+      category: nextCategory,
+      blueprint: opts.blueprint,
+      style_dna: opts.style_dna,
+      capability_card,
+    }
+    this.store.db
+      .prepare("UPDATE template_assets SET payload=? WHERE id=?")
+      .run(JSON.stringify(updated), sourceId)
+    if (opts.setActive) this.activate(sourceId)
+    await this.ensureSamples(sourceId)
+    return { asset: this.get(sourceId), forked: false }
   }
 
   private persist(

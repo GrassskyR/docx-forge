@@ -77,7 +77,8 @@ export function contextHook(
     const activeTplId = rawTplId && templates.has(rawTplId) ? rawTplId : BUILTIN_TEMPLATE_ID
     history = history.map((m, i) => {
       if (i >= current || m.role !== "toolResult") return m
-      const isListing = m.toolName === "manage_templates"
+      const isListing =
+        m.toolName === "manage_templates" || m.toolName === "update_template"
       const prefix =
         isListing && activeTplId
           ? `[历史快照，当前激活模板为 ${activeTplId}，以顶部最新能力卡为准] `

@@ -4,13 +4,18 @@ import { join } from "node:path"
 import type { AgentTool } from "@mariozechner/pi-agent-core"
 import type { ImageContent, TextContent } from "@mariozechner/pi-ai"
 import { visionMode } from "@docs-agent/engine"
-import { toolSchemas, type LayoutTelemetry } from "@docs-agent/shared"
+import {
+  toolSchemas,
+  type LayoutTelemetry,
+  type TemplateAsset,
+} from "@docs-agent/shared"
 import type { Workspace } from "./workspace.js"
 
 export interface ToolSessionBinding {
   vision: boolean
   getTemplateId: () => string
   setTemplateId: (id: string) => void
+  onTemplateUpdated?: (asset: TemplateAsset, forked: boolean) => void
   onTemplateDeleted?: (id: string) => void
   onComposed?: (doc: Record<string, unknown>, input: Record<string, unknown>) => void
   onAdjusted?: (doc: Record<string, unknown>) => void
@@ -66,8 +71,8 @@ export function createTools(work: Workspace, binding: ToolSessionBinding): Agent
     ],
     [
       "manage_templates",
-      "查询、获取详情、切换当前会话模板、修改名称分类、派生复制或删除模板",
-      (p) => {
+      "查询、获取详情、透视模板底层结构与段落样式(inspect)、切换模板、改名分类、派生或删除模板",
+      async (p) => {
         const curTpl = binding.getTemplateId()
         if (p.action === "list") {
           const templates = work.templates.list()
@@ -79,6 +84,9 @@ export function createTools(work: Workspace, binding: ToolSessionBinding): Agent
         }
         if (p.action === "get") {
           return work.templates.get(p.template_id ?? curTpl)
+        }
+        if (p.action === "inspect") {
+          return work.inspectTemplate(p.template_id ?? curTpl)
         }
         if (p.action === "update") {
           return work.templates.update(p.template_id ?? curTpl, {
@@ -98,6 +106,18 @@ export function createTools(work: Workspace, binding: ToolSessionBinding): Agent
           binding.onTemplateDeleted?.(p.template_id)
         }
         return { deleted: p.template_id, active_template_id: binding.getTemplateId() }
+      },
+    ],
+    [
+      "update_template",
+      "按用户要求微调或修复模板（修改段落字体/字号/加粗/下划线/缩进/对齐/行距/大纲级别、" +
+        "增补样式原型段、调整页边距、修正蓝图 fields/content_slots/remove_targets/prototypes 及规则；" +
+        "自定义模板默认就地更新，内置默认模板自动派生新模板）",
+      async (p, signal) => {
+        const targetId = p.template_id || binding.getTemplateId()
+        const res = await work.editTemplate(targetId, p, { signal })
+        binding.onTemplateUpdated?.(res.template, res.forked)
+        return res
       },
     ],
     [

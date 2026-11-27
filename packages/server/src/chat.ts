@@ -10,6 +10,7 @@ import type { Workspace } from "./workspace.js"
 const TOOL_PHASE_LABELS: Record<string, string> = {
   learn_reference_doc: "正在解析参考文档版式与槽位…",
   manage_templates: "正在读取模板配置…",
+  update_template: "正在微调模板样式与结构并自检…",
   ingest_draft: "正在切分草稿段落结构…",
   compose_document: "正在写入模板槽位并生成 Word…",
   refine_and_audit: "正在微调跨页版面收口…",
@@ -174,6 +175,22 @@ export function sessionAndChatHandler(
           event({
             type: "template",
             template_id: nextId,
+            events: node.events,
+          })
+        },
+        onTemplateUpdated: (asset, forked) => {
+          if (forked && asset.id !== curTemplateId) {
+            curTemplateId = asset.id
+            node = sessions.update(node.id, { template_id: asset.id })
+          } else {
+            node = sessions.update(node.id, {
+              preview_stale: Boolean(curDoc),
+              append_event: `已微调当前排版格式「${asset.name}」`,
+            })
+          }
+          event({
+            type: "template",
+            template_id: curTemplateId,
             events: node.events,
           })
         },

@@ -18,11 +18,14 @@ import {
   type LintReport,
   type RemoveTarget,
   type TemplateAsset,
+  type TemplateEditPatch,
 } from "@docs-agent/shared"
 import {
+  BUILTIN_TEMPLATE_ID,
   Store,
   TemplateStore,
   adjustLayout,
+  applyTemplateDocxEdits,
   auditComposition,
   bodyBlocks,
   children,
@@ -30,6 +33,7 @@ import {
   convert,
   ingestDraft,
   inspectReference,
+  inspectTemplateDocx,
   logicalTextboxes,
   nonTocSdtParas,
   paraPlainText,
@@ -38,6 +42,7 @@ import {
   readDraft,
   readStampedCoord,
   resolveCoord,
+  syncPrototypeStyleDna,
   telemetry,
   visionMode,
   visualAudit,
@@ -412,6 +417,7 @@ async function observeDryRun(
   baseBytes: Uint8Array,
   docMap: DocumentMap,
   blueprint: Blueprint,
+  renderImages = true,
 ): Promise<DryRunObservation> {
   const hardIssues: string[] = []
   const work = await mkdtemp(join(tmpdir(), "docforge-dryrun-"))
@@ -509,7 +515,7 @@ async function observeDryRun(
 
     const residualMap = buildResidualMapText(outRoot)
     const dryImages: { page: number; data: string }[] = []
-    if (visionMode() !== "text_only" && layout.total_pages > 0) {
+    if (renderImages && visionMode() !== "text_only" && layout.total_pages > 0) {
       const warnPages = layout.warnings.map((w) => w.page)
       const midPage = Math.max(1, Math.ceil(layout.total_pages / 2))
       const pickPages = [...new Set([1, ...warnPages, midPage, layout.total_pages])]
@@ -940,6 +946,150 @@ export class Workspace {
     const { inspect_id } = await this.inspect(filePath, [1, 2, 3])
     const finalName = name?.trim() || basename(filePath).replace(/\.[^.]+$/, "")
     return this.internalize(inspect_id, finalName, category, rules, setActive, opts)
+  }
+
+  async inspectTemplate(templateId: string) {
+    const asset = this.templates.get(templateId)
+    const folder = this.templates.folder(asset.id)
+    const basePath = join(folder, "base.docx")
+    const baseBytes = await readFile(basePath)
+    const rules_md = this.templates.rulesOf(asset.id)
+    const tmpWork = await mkdtemp(join(tmpdir(), "docforge-tpl-insp-"))
+    try {
+      const { doc_map } = await inspectReference(basePath, tmpWork)
+      const { prototype_styles, paragraph_styles } = inspectTemplateDocx(
+        baseBytes,
+        asset.blueprint,
+      )
+      return {
+        template: {
+          id: asset.id,
+          name: asset.name,
+          category: asset.category,
+          builtin: asset.id === BUILTIN_TEMPLATE_ID,
+          parent_id: asset.parent_id,
+          blueprint: asset.blueprint,
+          style_dna: asset.style_dna,
+          rules_md,
+        },
+        map_text: doc_map.map_text,
+        prototype_styles,
+        paragraph_styles,
+      }
+    } finally {
+      await rm(tmpWork, { recursive: true, force: true })
+    }
+  }
+
+  async editTemplate(
+    templateId: string,
+    patch: TemplateEditPatch,
+    opts?: TaskProgressOpts,
+  ) {
+    ensureAlive(opts?.signal)
+    const current = this.templates.get(templateId)
+    const folder = this.templates.folder(current.id)
+    const baseBytes = await readFile(join(folder, "base.docx"))
+    const prevRules = this.templates.rulesOf(current.id)
+
+    opts?.onPhase?.("正在按指令调整模板底层结构与样式…")
+    const nextBaseBytes = applyTemplateDocxEdits(baseBytes, {
+      page_setup: patch.page_setup,
+      format_paragraphs: patch.format_paragraphs,
+      insert_paragraphs: patch.insert_paragraphs,
+    })
+
+    const tmpWork = await mkdtemp(join(tmpdir(), "docforge-tpl-edit-check-"))
+    try {
+      const tmpDocx = join(tmpWork, "edited.docx")
+      await writeFile(tmpDocx, nextBaseBytes)
+      const { doc_map: nextDocMap } = await inspectReference(tmpDocx, tmpWork)
+
+      const bpPatch = patch.blueprint
+      const mergedRaw: Record<string, unknown> = {
+        ...current.blueprint,
+        ...(bpPatch?.template_kind !== undefined
+          ? { template_kind: bpPatch.template_kind }
+          : {}),
+        ...(bpPatch?.fields !== undefined ? { fields: bpPatch.fields } : {}),
+        ...(bpPatch?.content_slots !== undefined
+          ? { content_slots: bpPatch.content_slots }
+          : {}),
+        ...(bpPatch?.remove_targets !== undefined
+          ? { remove_targets: bpPatch.remove_targets }
+          : {}),
+        ...(bpPatch?.must_preserve !== undefined
+          ? { must_preserve: bpPatch.must_preserve }
+          : {}),
+        ...(bpPatch?.prototypes !== undefined
+          ? { prototypes: bpPatch.prototypes }
+          : {}),
+        ...(bpPatch?.preserved !== undefined
+          ? { preserved: bpPatch.preserved }
+          : {}),
+      }
+      if (bpPatch?.grid !== undefined) {
+        mergedRaw.grid = bpPatch.grid ?? undefined
+      }
+      if (bpPatch?.cover_builder !== undefined) {
+        mergedRaw.cover_builder = bpPatch.cover_builder ?? undefined
+      }
+      if (bpPatch?.toc !== undefined) {
+        mergedRaw.toc = bpPatch.toc ?? undefined
+      }
+
+      const validBlueprint = validateBlueprint(
+        mergedRaw as Partial<Blueprint>,
+        nextDocMap,
+        nextBaseBytes,
+      )
+      const syncedDna = syncPrototypeStyleDna(
+        nextBaseBytes,
+        validBlueprint,
+        nextDocMap.style_dna,
+      )
+
+      ensureAlive(opts?.signal)
+      opts?.onPhase?.("正在执行修订后模板试填与结构自检…")
+      const obs = await observeDryRun(nextBaseBytes, nextDocMap, validBlueprint, false)
+      if (obs.hardIssues.length > 0) {
+        throw new Error("修订后的模板未通过试填自检: " + obs.hardIssues.join("；"))
+      }
+
+      ensureAlive(opts?.signal)
+      opts?.onPhase?.("正在保存模板并刷新样张预览…")
+      const nextRules = patch.rules_md !== undefined ? patch.rules_md.trim() : prevRules
+      const { asset, forked } = await this.templates.saveEdited(current.id, {
+        saveAsNew: patch.save_as_new,
+        setActive: false,
+        name: patch.name,
+        category: patch.category,
+        blueprint: validBlueprint,
+        style_dna: syncedDna,
+        rules_md: nextRules,
+        baseBytes: nextBaseBytes,
+      })
+
+      logger.info(
+        {
+          sourceId: current.id,
+          savedId: asset.id,
+          forked,
+          fields: asset.blueprint.fields.length,
+          prototypes: Object.keys(asset.blueprint.prototypes),
+        },
+        "模板微调与自检入库完成",
+      )
+      return {
+        mode: forked ? "forked" : "updated",
+        forked,
+        template: asset,
+        dry_run_pages: obs.layout?.total_pages ?? 1,
+        warnings: obs.layout?.warnings ?? [],
+      }
+    } finally {
+      await rm(tmpWork, { recursive: true, force: true })
+    }
   }
 
   ingest(input: { text?: string; file_path?: string }) {

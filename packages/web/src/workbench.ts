@@ -188,7 +188,9 @@ export function useWorkbench() {
     (state.currentDoc?.preview_urls ?? []).map((u) => u + "?v=" + state.docVersion),
   )
 
-  const samplePreviewUrls = computed(() => activeFormat.value?.sampleUrls ?? [])
+  const samplePreviewUrls = computed(() =>
+    (activeFormat.value?.sampleUrls ?? []).map((u) => u + "?v=" + state.docVersion),
+  )
 
   function startBusy(kind: "copy" | "chat" | "surgery", initialLabel: string) {
     if (activeAbort) activeAbort.abort()
@@ -763,6 +765,14 @@ export function useWorkbench() {
             }
           } else if (ev.type === "template" && ev.template_id) {
             state.templateId = ev.template_id
+            state.docVersion++
+            const latestEv = Array.isArray(ev.events) ? ev.events.at(-1) : undefined
+            if (latestEv?.text) {
+              const idx = state.timeline.indexOf(reply)
+              if (idx >= 0) {
+                state.timeline.splice(idx, 0, { kind: "event", text: latestEv.text })
+              }
+            }
             void refreshFormats()
           } else if (ev.type === "workspace_sync") {
             if (typeof ev.draft_text === "string") state.draftText = ev.draft_text

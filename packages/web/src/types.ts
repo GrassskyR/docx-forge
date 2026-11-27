@@ -243,6 +243,7 @@ export function normalizeCategory(raw: string): Exclude<CategoryId, "all"> {
 export const TOOL_FRIENDLY_LABELS: Record<string, string> = {
   learn_reference_doc: "解析参考文档版式与槽位",
   manage_templates: "读取模板配置信息",
+  update_template: "微调并保存排版模板",
   ingest_draft: "切分草稿段落结构",
   compose_document: "写入模板槽位并生成 Word",
   refine_and_audit: "微调跨页版面收口",

@@ -137,6 +137,14 @@ export function createApp(
             throw new HttpError(404, "模板不存在")
           }
         }
+        const inspectMatch = /^\/api\/templates\/([^/]+)\/inspect$/.exec(path)
+        if (inspectMatch) {
+          try {
+            return send(200, await work.inspectTemplate(inspectMatch[1]))
+          } catch {
+            throw new HttpError(404, "模板不存在")
+          }
+        }
         if (/^\/api\/templates\/[^/]+$/.test(path)) {
           try {
             return send(200, work.templates.get(path.split("/")[3]))
@@ -303,6 +311,18 @@ export function createApp(
           return send(200, asset)
         }
         if (path === "/api/templates/" + id && method === "PATCH") {
+          const isDeepEdit =
+            payload.page_setup !== undefined ||
+            payload.format_paragraphs !== undefined ||
+            payload.insert_paragraphs !== undefined ||
+            payload.blueprint !== undefined ||
+            payload.rules_md !== undefined ||
+            payload.save_as_new !== undefined
+          if (isDeepEdit) {
+            Assert(toolSchemas.update_template, payload)
+            const edited = await work.editTemplate(id, payload)
+            return send(200, edited.template)
+          }
           return send(
             200,
             work.templates.update(id, { name: payload.name, category: payload.category }),

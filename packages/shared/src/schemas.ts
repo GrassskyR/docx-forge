@@ -281,6 +281,121 @@ export const adjustments = Type.Array(
 )
 
 const optionalText = Type.Optional(Type.String())
+
+export const TemplateParaStylePatch = Type.Object(
+  {
+    font_cn: optionalText,
+    font_en: optionalText,
+    size_pt: Type.Optional(Type.Number({ minimum: 6, maximum: 96 })),
+    bold: Type.Optional(Type.Boolean()),
+    italic: Type.Optional(Type.Boolean()),
+    underline: Type.Optional(Type.Enum(["none", "single", "thick", "double"])),
+    color_hex: optionalText,
+    alignment: Type.Optional(
+      Type.Enum(["left", "center", "right", "both", "distribute"]),
+    ),
+    line_twips: Type.Optional(integer),
+    line_rule: Type.Optional(Type.Enum(["auto", "exact", "atLeast"])),
+    space_before_twips: Type.Optional(integer),
+    space_after_twips: Type.Optional(integer),
+    first_line_twips: Type.Optional(Type.Integer({ minimum: 0 })),
+    left_twips: Type.Optional(Type.Integer({ minimum: 0 })),
+    outline_lvl: Type.Optional(
+      Type.Union([Type.Integer({ minimum: 0, maximum: 8 }), Type.Null()]),
+    ),
+    text: optionalText,
+  },
+  { additionalProperties: false },
+)
+export type TemplateParaStylePatch = Static<typeof TemplateParaStylePatch>
+
+export const TemplateParagraphFormatOp = Type.Object(
+  {
+    start: coord,
+    end: Type.Optional(coord),
+    style: TemplateParaStylePatch,
+  },
+  { additionalProperties: false },
+)
+export type TemplateParagraphFormatOp = Static<typeof TemplateParagraphFormatOp>
+
+export const TemplateInsertParagraphOp = Type.Object(
+  {
+    position: Type.Union([
+      Type.Literal("end"),
+      Type.Object({ before: coord }, { additionalProperties: false }),
+      Type.Object({ after: coord }, { additionalProperties: false }),
+    ]),
+    text: optionalText,
+    style: TemplateParaStylePatch,
+  },
+  { additionalProperties: false },
+)
+export type TemplateInsertParagraphOp = Static<typeof TemplateInsertParagraphOp>
+
+export const TemplatePageSetupPatch = Type.Object(
+  {
+    page_width_twips: Type.Optional(integer),
+    page_height_twips: Type.Optional(integer),
+    margins_twips: Type.Optional(
+      Type.Object(
+        {
+          top: Type.Optional(integer),
+          bottom: Type.Optional(integer),
+          left: Type.Optional(integer),
+          right: Type.Optional(integer),
+          header: Type.Optional(integer),
+          footer: Type.Optional(integer),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+  },
+  { additionalProperties: false },
+)
+export type TemplatePageSetupPatch = Static<typeof TemplatePageSetupPatch>
+
+export const TemplateBlueprintPatch = Type.Object(
+  {
+    template_kind: Type.Optional(Type.Enum(["flowing", "form_table", "style_shell"])),
+    grid: Type.Optional(
+      Type.Union([
+        Type.Object({
+          lines: Type.Integer({ minimum: 1 }),
+          characters: Type.Integer({ minimum: 1 }),
+        }),
+        Type.Null(),
+      ]),
+    ),
+    fields: Type.Optional(Type.Array(FieldSlot)),
+    content_slots: Type.Optional(Type.Array(ContentSlot)),
+    remove_targets: Type.Optional(Type.Array(RemoveTarget)),
+    must_preserve: Type.Optional(Type.Array(Type.String())),
+    prototypes: Type.Optional(Type.Record(Type.String(), coord)),
+    cover_builder: Type.Optional(Type.Union([CoverBuilderSpec, Type.Null()])),
+    toc: Type.Optional(Type.Union([TocBuilderSpec, Type.Null()])),
+    preserved: Type.Optional(Type.Array(Type.String())),
+  },
+  { additionalProperties: false },
+)
+export type TemplateBlueprintPatch = Static<typeof TemplateBlueprintPatch>
+
+export const TemplateEditPatch = Type.Object(
+  {
+    template_id: optionalText,
+    save_as_new: Type.Optional(Type.Boolean()),
+    name: optionalText,
+    category: optionalText,
+    rules_md: optionalText,
+    page_setup: Type.Optional(TemplatePageSetupPatch),
+    format_paragraphs: Type.Optional(Type.Array(TemplateParagraphFormatOp)),
+    insert_paragraphs: Type.Optional(Type.Array(TemplateInsertParagraphOp)),
+    blueprint: Type.Optional(TemplateBlueprintPatch),
+  },
+  { additionalProperties: false },
+)
+export type TemplateEditPatch = Static<typeof TemplateEditPatch>
+
 export const toolSchemas = {
   learn_reference_doc: Type.Object({
     file_path: Type.String(),
@@ -290,11 +405,12 @@ export const toolSchemas = {
     set_active: Type.Optional(Type.Boolean()),
   }),
   manage_templates: Type.Object({
-    action: Type.Enum(["list", "get", "set_active", "update", "fork", "delete"]),
+    action: Type.Enum(["list", "get", "inspect", "set_active", "update", "fork", "delete"]),
     template_id: optionalText,
     name: optionalText,
     category: optionalText,
   }),
+  update_template: TemplateEditPatch,
   ingest_draft: Type.Object({
     text: optionalText,
     file_path: optionalText,
