@@ -65,12 +65,16 @@ jobs:
         run: npm ci
 
       - name: Prepare bundled Poppler
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/prepare_poppler.ts --platform=${{ matrix.platform }}
 
       - name: Build Web & Desktop Bundle
         run: npm run build:desktop
 
       - name: Package Electron App
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: npm run ${{ matrix.script }} -w @docs-agent/desktop
 
       - name: Create Windows Portable Zip (with portable.txt)

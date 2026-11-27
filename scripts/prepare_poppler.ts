@@ -66,9 +66,13 @@ async function prepareWindows(destRoot: string) {
   rmSync(destRoot, { recursive: true, force: true })
   mkdirSync(binDir, { recursive: true })
 
+  const ghHeaders: Record<string, string> = { "User-Agent": "DocForge-Builder" }
+  if (process.env.GITHUB_TOKEN?.trim()) {
+    ghHeaders.Authorization = "Bearer " + process.env.GITHUB_TOKEN.trim()
+  }
   const relRes = await fetch(
     "https://api.github.com/repos/oschwartz10612/poppler-windows/releases/latest",
-    { headers: { "User-Agent": "DocForge-Builder" } },
+    { headers: ghHeaders },
   )
   if (!relRes.ok) {
     throw new Error("获取 poppler-windows Release 列表失败: " + relRes.status)
@@ -129,6 +133,7 @@ function collectMacDylibs(binPath: string, libDir: string, seen: Set<string>) {
     const prefix = binPath.startsWith(libDir) ? "@loader_path/" : "@loader_path/../lib/"
     execFileSync("install_name_tool", ["-change", dep, prefix + name, binPath])
   }
+  execFileSync("codesign", ["--force", "--sign", "-", binPath])
 }
 
 function prepareMac(destRoot: string) {
