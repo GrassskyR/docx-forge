@@ -179,12 +179,11 @@ export function createApp(
         }
         const sampleMatch = /^\/api\/templates\/([^/]+)\/samples$/.exec(path)
         if (sampleMatch) {
-          try {
-            const sample_urls = await work.templates.ensureSamples(sampleMatch[1])
-            return send(200, { sample_urls })
-          } catch {
+          if (!work.templates.has(sampleMatch[1])) {
             throw new HttpError(404, "模板不存在")
           }
+          const sample_urls = await work.templates.ensureSamples(sampleMatch[1])
+          return send(200, { sample_urls })
         }
         const inspectMatch = /^\/api\/templates\/([^/]+)\/inspect$/.exec(path)
         if (inspectMatch) {

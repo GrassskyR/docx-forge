@@ -1,3 +1,4 @@
+export * from "./win_com.js"
 export * from "./toolchain.js"
 export * from "./doc_converter.js"
 export * from "./xml_utils.js"

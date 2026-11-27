@@ -606,10 +606,11 @@ export function buildDefaultSeedDocx(): Uint8Array {
   const ooxmlPkg = "http://schemas.openxmlformats.org/package/2006"
   const ooxmlDoc = "http://schemas.openxmlformats.org/officeDocument/2006"
   const ooxmlWord = "application/vnd.openxmlformats-officedocument.wordprocessingml"
+  const relsMime = "application/vnd.openxmlformats-package.relationships+xml"
   const contentTypes =
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
     `<Types xmlns="${ooxmlPkg}/content-types">` +
-    `<Default Extension="rels" ContentType="${ooxmlPkg}.relationships+xml"/>` +
+    `<Default Extension="rels" ContentType="${relsMime}"/>` +
     `<Default Extension="xml" ContentType="application/xml"/>` +
     `<Override PartName="/word/document.xml" ContentType="${ooxmlWord}.document.main+xml"/>` +
     `<Override PartName="/word/styles.xml" ContentType="${ooxmlWord}.styles+xml"/>` +

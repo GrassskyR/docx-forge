@@ -14,14 +14,16 @@ export class HttpError extends Error {
 }
 
 export async function dataFile(root: string, path: string) {
-  const inside = (file: string) => {
-    const part = relative(resolve(root), file)
+  const check = (base: string, file: string) => {
+    const part = relative(base, file)
     if (part === ".." || part.startsWith(".." + sep)) {
       throw new HttpError(403, "文件不在数据目录")
     }
     return file
   }
-  return inside(await realpath(inside(resolve(path))))
+  const target = check(resolve(root), resolve(path))
+  const [realRoot, realTarget] = await Promise.all([realpath(resolve(root)), realpath(target)])
+  return check(realRoot, realTarget)
 }
 
 export class Documents {

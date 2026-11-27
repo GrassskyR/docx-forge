@@ -24,7 +24,7 @@ function checkStatements(path: string, source: string) {
 const errors: string[] = []
 const sources = globSync(["packages/*/src/**/*.{ts,vue}", "scripts/*.ts", "eval/*.ts"])
 for (const path of sources) {
-  if (path === "eval/run_benchmark_v3.ts") continue
+  if (path.replaceAll("\\", "/") === "eval/run_benchmark_v3.ts") continue
   const lines = readFileSync(path, "utf8").split("\n")
   const source = lines.join("\n")
   if (path.endsWith(".ts")) checkStatements(path, source)

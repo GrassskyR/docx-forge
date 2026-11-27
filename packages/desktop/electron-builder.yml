@@ -27,6 +27,11 @@ extraResources:
 
 win:
   icon: build/icon.ico
+  extraResources:
+    - from: resources/koffi
+      to: koffi
+      filter:
+        - "**/*"
   target:
     - target: nsis
       arch:

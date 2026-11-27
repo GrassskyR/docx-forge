@@ -6,8 +6,9 @@
   "exports": "./src/index.ts",
   "dependencies": {
     "@docs-agent/shared": "*",
-    "fflate": "^0.8",
     "@xmldom/xmldom": "^0.9",
+    "fflate": "^0.8",
+    "koffi": "^3.3.8",
     "xpath": "^0.0.34"
   }
 }

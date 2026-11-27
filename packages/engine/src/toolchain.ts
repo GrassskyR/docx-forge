@@ -3,6 +3,7 @@ import { accessSync, constants, existsSync } from "node:fs"
 import { homedir } from "node:os"
 import { delimiter, dirname, join, resolve } from "node:path"
 import { promisify } from "node:util"
+import { hasWinProgId } from "./win_com.js"
 
 const execFileAsync = promisify(execFile)
 
@@ -150,23 +151,10 @@ export function resolveSofficeBin(): string | null {
   return linuxCandidates.find((p) => isExecutable(p)) ?? null
 }
 
-async function hasWindowsProgId(progId: string): Promise<boolean> {
-  if (process.platform !== "win32") return false
-  try {
-    await execFileAsync("reg.exe", ["query", "HKCR\\" + progId], {
-      timeout: 5_000,
-      windowsHide: true,
-    })
-    return true
-  } catch {
-    return false
-  }
-}
-
 export async function resolveWpsProgId(): Promise<string | null> {
   if (process.platform !== "win32") return null
   for (const progId of ["KWPS.Application", "Kwps.Application"]) {
-    if (await hasWindowsProgId(progId)) return progId
+    if (hasWinProgId(progId)) return progId
   }
   return null
 }
@@ -193,7 +181,7 @@ export async function probeToolchain(force = false): Promise<ToolchainStatus> {
   if (cachedStatus && !force) return cachedStatus
   const [wordCom, wpsProgId] =
     process.platform === "win32"
-      ? await Promise.all([hasWindowsProgId("Word.Application"), resolveWpsProgId()])
+      ? [hasWinProgId("Word.Application"), await resolveWpsProgId()]
       : [false, null]
   const wpsCom = Boolean(wpsProgId)
   const sofficePath = resolveSofficeBin()
