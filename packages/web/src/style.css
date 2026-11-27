@@ -200,10 +200,17 @@ body {
 }
 
 .chat-md table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   font-size: 12px;
   margin: 0.55em 0;
+}
+
+.chat-md table code {
+  word-break: normal;
+  white-space: nowrap;
 }
 
 .chat-md th,

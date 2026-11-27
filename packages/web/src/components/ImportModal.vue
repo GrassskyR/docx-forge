@@ -1,47 +1,71 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { onMounted, onUnmounted, ref, watch } from "vue"
+import { CATEGORY_LABELS, normalizeCategory, type CategoryId } from "../types"
 
 const props = defineProps<{
   open: boolean
-  busy: boolean
-  busyLabel?: string
 }>()
 
 const emit = defineEmits<{
   close: []
-  confirm: [file: File, name: string, category: string, rules: string]
+  confirm: [file: File, name: string, category: Exclude<CategoryId, "all">, rules: string]
 }>()
 
 const pickedFile = ref<File | null>(null)
-const tplName = ref("单位红头通知格式")
-const tplCat = ref("gongwen")
+const tplName = ref("")
+const tplCat = ref<Exclude<CategoryId, "all">>("gongwen")
 const tplRules = ref("")
+const autoMatched = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) {
+      pickedFile.value = null
+      tplName.value = ""
+      tplCat.value = "gongwen"
+      tplRules.value = ""
+      autoMatched.value = false
+    }
+  },
+)
 
 function setFile(file: File | undefined) {
   if (!file) return
   pickedFile.value = file
-  const base = file.name.replace(/\.docx?$/i, "")
+  const base = file.name.replace(/\.docx?$/i, "").trim()
   if (base) tplName.value = base
+  tplCat.value = normalizeCategory(file.name)
+  autoMatched.value = true
 }
 
 function onDrop(e: DragEvent) {
   e.preventDefault()
-  if (props.busy) return
   setFile(e.dataTransfer?.files?.[0])
 }
 
-function handleClose() {
-  if (props.busy) return
-  emit("close")
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape" && props.open) {
+    emit("close")
+  }
 }
 
+onMounted(() => {
+  window.addEventListener("keydown", onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", onKeydown)
+})
+
 function submit() {
-  if (!pickedFile.value || props.busy) return
+  if (!pickedFile.value) return
+  const base = pickedFile.value.name.replace(/\.docx?$/i, "").trim()
   emit(
     "confirm",
     pickedFile.value,
-    tplName.value.trim() || "自定义格式",
+    tplName.value.trim() || base || "自定义格式",
     tplCat.value,
     tplRules.value.trim(),
   )
@@ -52,22 +76,22 @@ function submit() {
   <div
     v-if="open"
     id="importModal"
-    class="fixed inset-0 bg-[#0F172A]/35 backdrop-blur-[2px] flex items-center justify-center p-4 z-50"
+    class="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-50"
+    @click.self="emit('close')"
   >
     <div class="bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl w-full max-w-[440px] overflow-hidden">
       <div class="px-5 py-4 border-b border-[#F1F5F9] flex items-center justify-between">
         <div>
           <h3 class="text-[14.5px] font-semibold text-[#0F172A]">导入范例文档</h3>
           <p class="text-[12px] text-[#64748B] mt-0.5">
-            上传一份标准 .doc / .docx，系统自动识别封面槽位、剔除说明页并记住版式
+            上传 .doc / .docx，提交后将在后台自检入库，不耽误当前文档编写
           </p>
         </div>
         <button
           id="closeImportModal"
           type="button"
-          :disabled="busy"
-          class="w-7 h-7 rounded-lg hover:bg-[#F1F5F9] disabled:opacity-40 text-[#64748B] flex items-center justify-center cursor-pointer"
-          @click="handleClose"
+          class="w-7 h-7 rounded-lg hover:bg-[#F1F5F9] text-[#64748B] flex items-center justify-center cursor-pointer"
+          @click="emit('close')"
         >
           ✕
         </button>
@@ -85,13 +109,17 @@ function submit() {
           class="border-2 border-dashed border-[#CBD5E1] hover:border-[#2563EB] bg-[#F8FAFC] rounded-xl p-6 text-center transition cursor-pointer"
           @dragover.prevent
           @drop="onDrop"
-          @click="!busy && fileInput?.click()"
+          @click="fileInput?.click()"
         >
           <div class="font-medium text-[#0F172A]">
-            {{ pickedFile ? "已选择：" + pickedFile.name : "拖拽 .doc / .docx 文件到此处，或点击选择" }}
+            {{
+              pickedFile
+                ? "✓ 已选择：" + pickedFile.name
+                : "拖拽 .doc / .docx 文件到此处，或点击选择"
+            }}
           </div>
           <div class="text-[11.5px] text-[#64748B] mt-1">
-            自动保留封面、页眉页脚与媒体图片，智能剥离不打印的说明示例页
+            自动保留封面、页眉校徽与样式链，智能剥离不打印的填表说明页
           </div>
         </div>
 
@@ -101,9 +129,9 @@ function submit() {
             <input
               id="newTplName"
               v-model="tplName"
-              :disabled="busy"
               type="text"
-              class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] outline-none"
+              placeholder="选择文件后自动填入，可修改"
+              class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] placeholder-[#94A3B8] outline-none"
             />
           </div>
           <div>
@@ -111,7 +139,6 @@ function submit() {
             <select
               id="newTplCat"
               v-model="tplCat"
-              :disabled="busy"
               class="w-full h-9 px-2.5 rounded-lg border border-[#CBD5E1] bg-white outline-none"
             >
               <option value="gongwen">公文</option>
@@ -125,36 +152,39 @@ function submit() {
           <label class="block text-[12px] font-medium text-[#334155] mb-1">额外要求（可选）</label>
           <input
             v-model="tplRules"
-            :disabled="busy"
             type="text"
-            class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] outline-none"
-            placeholder="例如：保留封面与实习报告页眉，去除说明页"
+            class="w-full h-9 px-3 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] placeholder-[#94A3B8] outline-none"
+            placeholder="例如：保留页眉校徽，剥离第 2 页撰写规范说明"
           />
         </div>
       </div>
 
       <div class="px-5 py-3.5 bg-[#F8FAFC] border-t border-[#F1F5F9] flex items-center justify-between gap-2">
         <span class="text-[11.5px] text-[#64748B] truncate">
-          {{ busy ? busyLabel || "正在解剖骨架并内化模板…" : "仅点击取消或右上角关闭窗口" }}
+          {{
+            pickedFile && autoMatched
+              ? "已自动匹配为「" + CATEGORY_LABELS[tplCat] + "」分类"
+              : "请先选择一份 .doc / .docx 范例文档"
+          }}
         </span>
         <div class="flex items-center gap-2 shrink-0">
           <button
             id="cancelImportBtn"
             type="button"
-            :disabled="busy"
-            class="h-8 px-3.5 rounded-lg border border-[#CBD5E1] bg-white disabled:opacity-40 text-[12px] font-medium text-[#334155] hover:bg-[#F1F5F9] cursor-pointer"
-            @click="handleClose"
+            class="h-8 px-3.5 rounded-lg border border-[#CBD5E1] bg-white text-[12px] font-medium text-[#334155] hover:bg-[#F1F5F9] cursor-pointer"
+            @click="emit('close')"
           >
             取消
           </button>
           <button
             id="confirmImportBtn"
             type="button"
-            :disabled="!pickedFile || busy"
-            class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white text-[12px] font-medium cursor-pointer"
+            :disabled="!pickedFile"
+            :title="pickedFile ? '在后台提取版式并自检入库' : '请先选择 .doc / .docx 文件'"
+            class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-45 disabled:cursor-not-allowed text-white text-[12px] font-medium cursor-pointer"
             @click="submit"
           >
-            {{ busy ? "正在内化…" : "保存为格式" }}
+            开始后台导入
           </button>
         </div>
       </div>

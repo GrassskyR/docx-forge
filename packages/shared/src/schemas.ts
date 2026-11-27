@@ -73,6 +73,7 @@ export const FieldSlot = Type.Object(
     mode: Type.Optional(Type.Enum(["blank", "match", "cell", "colon"])),
     blank_index: Type.Optional(integer),
     match: Type.Optional(Type.String()),
+    sample: Type.Optional(Type.String()),
   },
   { additionalProperties: false },
 )
@@ -165,8 +166,30 @@ export const TemplateAsset = Type.Object({
   style_dna: StyleDNA,
   parent_id: Type.Union([Type.String(), Type.Null()]),
   capability_card: Type.String(),
+  sample_urls: Type.Optional(Type.Array(Type.String())),
 })
 export type TemplateAsset = Static<typeof TemplateAsset>
+
+export const SessionTimelineEvent = Type.Object({
+  after_msg_count: integer,
+  text: Type.String(),
+  timestamp: integer,
+})
+export type SessionTimelineEvent = Static<typeof SessionTimelineEvent>
+
+export const SessionSummary = Type.Object({
+  id: Type.String(),
+  parent_id: Type.Union([Type.String(), Type.Null()]),
+  name: Type.String(),
+  auto_named: Type.Boolean(),
+  template_id: Type.String(),
+  template_name: Type.String(),
+  updated_at: integer,
+  message_count: integer,
+  doc_pages: Type.Optional(integer),
+  has_draft: Type.Boolean(),
+})
+export type SessionSummary = Static<typeof SessionSummary>
 
 export const DraftIndex = Type.Object({
   draft_id: Type.String(),
@@ -267,9 +290,10 @@ export const toolSchemas = {
     set_active: Type.Optional(Type.Boolean()),
   }),
   manage_templates: Type.Object({
-    action: Type.Enum(["list", "get", "set_active", "fork", "delete"]),
+    action: Type.Enum(["list", "get", "set_active", "update", "fork", "delete"]),
     template_id: optionalText,
     name: optionalText,
+    category: optionalText,
   }),
   ingest_draft: Type.Object({
     text: optionalText,
@@ -296,8 +320,12 @@ export const toolSchemas = {
 export const SSEEvent = Type.Object(
   {
     type: Type.Enum([
+      "phase",
       "text",
       "tool",
+      "template",
+      "workspace_sync",
+      "sample",
       "document",
       "usage",
       "layout",

@@ -7,6 +7,15 @@ import { visionMode } from "@docs-agent/engine"
 import { toolSchemas, type LayoutTelemetry } from "@docs-agent/shared"
 import type { Workspace } from "./workspace.js"
 
+export interface ToolSessionBinding {
+  vision: boolean
+  getTemplateId: () => string
+  setTemplateId: (id: string) => void
+  onTemplateDeleted?: (id: string) => void
+  onComposed?: (doc: Record<string, unknown>, input: Record<string, unknown>) => void
+  onAdjusted?: (doc: Record<string, unknown>) => void
+}
+
 async function buildPageImageObservations(
   docDir: string,
   layout: LayoutTelemetry | undefined,
@@ -33,39 +42,62 @@ async function buildPageImageObservations(
   return out
 }
 
-export function createTools(work: Workspace, settings: { vision: boolean }): AgentTool[] {
-  const specs: [keyof typeof toolSchemas, string, (p: any) => Promise<unknown> | unknown][] = [
+export function createTools(work: Workspace, binding: ToolSessionBinding): AgentTool[] {
+  const specs: [
+    keyof typeof toolSchemas,
+    string,
+    (p: any, signal?: AbortSignal) => Promise<unknown> | unknown,
+  ][] = [
     [
       "learn_reference_doc",
-      "从本地 .doc/.docx 参考文档执行多模态 ReAct 试填观测与自审闭环，保存并激活模板资产",
-      (p) =>
-        work.learnFile(
+      "从本地 .doc/.docx 参考文档执行多模态试填自审闭环，保存并设为当前会话模板",
+      async (p, signal) => {
+        const asset = await work.learnFile(
           p.file_path,
           p.name,
-          p.category ?? "general",
+          p.category ?? "gongwen",
           p.rules_md ?? "",
           p.set_active !== false,
-        ),
+          { signal },
+        )
+        if (p.set_active !== false) binding.setTemplateId(asset.id)
+        return asset
+      },
     ],
     [
       "manage_templates",
-      "查询、获取详情、切换激活、派生复制或删除模板资产",
+      "查询、获取详情、切换当前会话模板、修改名称分类、派生复制或删除模板",
       (p) => {
+        const curTpl = binding.getTemplateId()
         if (p.action === "list") {
           const templates = work.templates.list()
           return {
-            active_template_id: work.templates.activeId,
+            active_template_id: curTpl,
             count: templates.length,
             templates,
           }
         }
         if (p.action === "get") {
-          return work.templates.get(p.template_id ?? work.templates.activeId ?? "")
+          return work.templates.get(p.template_id ?? curTpl)
         }
-        if (p.action === "fork") return work.templates.fork(p.template_id, p.name)
-        if (p.action === "set_active") work.templates.activate(p.template_id)
-        else work.templates.delete(p.template_id)
-        return { template_id: p.template_id, active_template_id: work.templates.activeId }
+        if (p.action === "update") {
+          return work.templates.update(p.template_id ?? curTpl, {
+            name: p.name,
+            category: p.category,
+          })
+        }
+        if (p.action === "fork") {
+          return work.templates.fork(p.template_id ?? curTpl, p.name || "派生格式")
+        }
+        if (p.action === "set_active") {
+          if (p.template_id) binding.setTemplateId(p.template_id)
+          return { template_id: p.template_id, active_template_id: binding.getTemplateId() }
+        }
+        if (p.template_id) {
+          work.templates.delete(p.template_id)
+          binding.onTemplateDeleted?.(p.template_id)
+        }
+        return { deleted: p.template_id, active_template_id: binding.getTemplateId() }
       },
     ],
     [
@@ -75,17 +107,33 @@ export function createTools(work: Workspace, settings: { vision: boolean }): Age
     ],
     [
       "compose_document",
-      "按当前模板确定性组装生成 .docx，返回每页物理遥测及关键告警页渲染图供 ReAct 自检",
-      (p) => work.compose(p),
+      "按模板确定性组装生成 .docx（未填槽位自动擦除旧示例），返回每页遥测与预览",
+      async (p, signal) => {
+        const targetTpl = p.template_id || binding.getTemplateId()
+        if (p.template_id && p.template_id !== binding.getTemplateId()) {
+          binding.setTemplateId(p.template_id)
+        }
+        const res = await work.compose({ ...p, template_id: targetTpl }, { signal })
+        binding.onComposed?.(res as unknown as Record<string, unknown>, p)
+        return res
+      },
     ],
     [
       "refine_and_audit",
-      "按指定 section 分节或全局执行版面微调（compact_pages / prevent_orphan_signature / line_spacing_delta）并返回渲染图与审计结果",
-      async (p) => {
+      "执行版面微调（compact_pages / prevent_orphan_signature / line_spacing_delta）并返回渲染结果",
+      async (p, signal) => {
+        let adjustedDoc: Record<string, unknown> | undefined
         if (p.operations?.length) {
-          await work.adjust(p.doc_id, p.operations)
+          adjustedDoc = (await work.adjust(p.doc_id, p.operations)) as Record<string, unknown>
         }
-        return work.audit(p.doc_id, settings.vision && p.run_vision !== false)
+        const audited = await work.audit(
+          p.doc_id,
+          binding.vision && p.run_vision !== false,
+          signal,
+        )
+        const merged = { ...(adjustedDoc ?? {}), ...audited }
+        binding.onAdjusted?.(merged)
+        return merged
       },
     ],
   ]
@@ -96,18 +144,18 @@ export function createTools(work: Workspace, settings: { vision: boolean }): Age
     description,
     parameters: toolSchemas[name],
     executionMode: "sequential",
-    execute: async (_id, params) => {
-      const details = (await perform(params)) as Record<string, unknown> | undefined
+    execute: async (_id, params, signal) => {
+      const details = (await perform(params, signal)) as Record<string, unknown> | undefined
       const content: (TextContent | ImageContent)[] = [
         { type: "text", text: JSON.stringify(details) },
       ]
-      const canSeeImages = settings.vision && visionMode() !== "text_only"
+      const canSeeImages = binding.vision && visionMode() !== "text_only"
       if (canSeeImages && details) {
         const docId =
           typeof details.doc_id === "string"
             ? details.doc_id
             : typeof (params as Record<string, unknown>)?.doc_id === "string"
-              ? String((params as Record<string, unknown>).doc_id)
+              ? String((params as Record<string, unknown>)?.doc_id)
               : undefined
         const layout = details.layout as LayoutTelemetry | undefined
         const shouldAttach =

@@ -14,8 +14,6 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": target,
-      "/chat": target,
-      "/sessions": target,
       "/files": target,
       "/health": target,
     },

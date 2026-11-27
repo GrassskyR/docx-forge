@@ -16,12 +16,12 @@ flowchart LR
     Shared -.-> Server
     Shared -.-> Engine["packages/engine (纯 TS 确定性 OOXML 引擎)"]
     Server -->|进程内直调| Engine
-    Server --> Agent["Pi-Agent Core + Context Hook (全量能力卡置顶 / 历史图阅后即焚)"]
-    Server --> Tree["持久化树状会话 (data/sessions.json)"]
+    Server --> Agent["Pi-Agent Core + Context Hook (能力卡与工作区底稿置顶 / 历史图阅后即焚)"]
+    Server --> Sessions[("SQLite 文档任务级会话 (docforge.db: sessions)")]
     Engine --> Inspector["全透视文档地图 (DocumentMap) & 风格基因 (StyleDNA)"]
     Engine --> Builders["原生补件构建器 (封面姓名下划线框 / 原生 TOC / 三线表)"]
-    Engine --> Composer["多维框表手术 + 零拷贝保真组装"]
-    Engine --> Store[("node:sqlite (profiles.db) + template_assets")]
+    Engine --> Composer["多维框表手术 + 未填槽位擦除 + 零拷贝组装"]
+    Engine --> Store[("node:sqlite (docforge.db) + template_assets")]
     Engine --> Telemetry["LibreOffice + Poppler 版面遥测 & 自动压页收口"]
 ```
 
@@ -60,21 +60,22 @@ cp .env.example .env  # 若已有 .env 请勿覆盖，按需填入模型配置
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL` | 可选，Langfuse OpenTelemetry 链路追踪（留空自动使用本地 Pino 日志） |
 | `LLM_SUPPORTS_VISION` | 设为 `true` 时使用主模型原生多模态进行关键页视觉终审 |
 | `VISION_BASE_URL` / `VISION_API_KEY` / `VISION_MODEL` | 主模型为纯文本模型时，可选配置多模态侧车模型执行视觉终审；未配置时自动以 `text_only` 模式运行 |
+| `BENCH_CONCURRENCY` | 评测脚本与语料测试并发度（默认自适应 `min(12, CPU核数-2)`，也可通过 `--concurrency=N` 覆盖） |
 
 ## 统一接口与 Agent 工具参考
 
 ### 单端口 HTTP / SSE 路由
 
 - **健康与静态资源**：`GET /health`、`GET /`、`GET /assets/*`、`GET /files/*`
-- **模板资产接口**（同时兼容 `/api/*` 与 `/api/v3/*` 前缀）：
-  - `POST /api/templates/inspect`（上传 `.doc/.docx` 提取结构地图、风格基因与预览图）
-  - `POST /api/templates`（执行大模型蓝图提取 + 内存试填转 PDF 自检并持久化）
-  - `GET /api/templates`、`GET /api/templates/:id`、`PUT /api/templates/active`、`POST /api/templates/:id/fork`、`DELETE /api/templates/:id`
-- **草稿、组装与版面诊断接口**：
+- **模板资产接口**：
+  - `POST /api/templates/import`（SSE 异步后台导入：解剖样张 + 多轮试填转 PDF 自检并持久化，支持断连取消）
+  - `POST /api/templates/inspect`、`POST /api/templates`、`GET /api/templates`、`GET /api/templates/:id`、`GET /api/templates/:id/samples`
+  - `PATCH /api/templates/:id`（重命名与修改分类）、`POST /api/templates/:id/fork`、`DELETE /api/templates/:id`
+- **草稿、流式组装与版面诊断接口**：
   - `POST /api/drafts/ingest`（导入 `.txt/.docx` 或纯文本草稿并建立 `P0..Pn` 索引）
-  - `POST /api/documents/compose`（支持 `authored` 与 `exact_copy` 模式，以及 `generate_cover` / `generate_toc` 原生补件开关）
+  - `POST /api/documents/compose-stream`（SSE 一站式套版流）与 `POST /api/documents/compose`（支持 `authored` 与 `exact_copy` 模式、未填槽位自动擦除及 `generate_cover` / `generate_toc` 补件开关）
   - `POST /api/documents/:id/adjust-layout`、`POST /api/documents/:id/visual-audit`
-- **Agent 对话与树状会话**：`POST /chat`（SSE）、`GET /sessions`、`POST /sessions/fork`、`POST /sessions/switch`
+- **Agent 对话与文档任务会话**：`POST /api/chat`（SSE 双向底稿同步与断连中断）、`GET /api/sessions`、`POST /api/sessions`、`PUT /api/sessions/active`、`POST /api/sessions/:id/fork`、`PATCH /api/sessions/:id`、`DELETE /api/sessions/:id`
 
 ### Pi-Agent 5 个正交核心工具（`packages/server/src/tools.ts`）
 
@@ -90,8 +91,8 @@ cp .env.example .env  # 若已有 .env 请勿覆盖，按需填入模型配置
 npm run typecheck                                # 全仓 TypeScript 严格类型检查
 npm run stylecheck                               # 源码行宽（≤110）与格式规范检查
 npm run build                                    # 类型检查 + 打包前端工作台至 packages/web/dist
-npm test                                         # 运行全量 Vitest 单元与集成测试（10 套件 46 用例）
+npm test                                         # 运行全量 Vitest 单元与集成测试（支持 BENCH_CONCURRENCY 并发）
 npx tsx packages/server/tests/e2e_verify_v3.ts   # 运行单进程 HTTP + Pi-Agent 真实模型端到端验收
-npx tsx eval/run_lab_report_benchmark.ts         # 运行 30 所高校真实实验报告模板全量盲测
-npx tsx eval/run_benchmark_v3.ts                 # 运行 30 份跨领域公文/论文/合同语料与长草稿零拷贝评测
+npx tsx eval/run_lab_report_benchmark.ts -c 12   # 运行 30 所高校真实实验报告模板盲测（支持 -c / BENCH_CONCURRENCY）
+npx tsx eval/run_benchmark_v3.ts -c 12           # 运行 30 份跨领域语料与长草稿零拷贝评测（支持 -c / BENCH_CONCURRENCY）
 ```

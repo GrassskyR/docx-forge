@@ -1,10 +1,9 @@
-import type { ComposePlan, TemplateAsset, VisionAudit } from "@docs-agent/shared"
+import type { TemplateAsset, VisionAudit } from "@docs-agent/shared"
 import type {
   DocumentResult,
   DraftIngestResponse,
   HealthInfo,
-  InspectResponse,
-  SessionsResponse,
+  SessionsPayload,
   TemplatesResponse,
 } from "./types.js"
 
@@ -22,142 +21,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T
 }
 
-export function fetchHealth() {
-  return request<HealthInfo>("/health")
-}
-
-export function fetchTemplates() {
-  return request<TemplatesResponse>("/api/templates")
-}
-
-export function setActiveTemplate(templateId: string | null) {
-  return request<{ active_template_id: string | null }>("/api/templates/active", {
-    method: "PUT",
-    body: JSON.stringify({ template_id: templateId }),
-  })
-}
-
-export async function inspectDocFile(file: File) {
-  const form = new FormData()
-  form.set("file", file, file.name)
-  return request<InspectResponse>("/api/templates/inspect", { method: "POST", body: form })
-}
-
-export function saveTemplateFromInspect(
-  inspectId: string,
-  name: string,
-  category: string,
-  rulesMd: string,
-) {
-  return request<TemplateAsset>("/api/templates", {
-    method: "POST",
-    body: JSON.stringify({
-      inspect_id: inspectId,
-      name,
-      category,
-      rules_md: rulesMd,
-      set_active: true,
-    }),
-  })
-}
-
-export function forkTemplateAsset(id: string, name: string) {
-  return request<TemplateAsset>("/api/templates/" + encodeURIComponent(id) + "/fork", {
-    method: "POST",
-    body: JSON.stringify({ name }),
-  })
-}
-
-export function ingestDraftText(text: string) {
-  return request<DraftIngestResponse>("/api/drafts/ingest", {
-    method: "POST",
-    body: JSON.stringify({ text }),
-  })
-}
-
-export function ingestDraftFile(file: File) {
-  const form = new FormData()
-  form.set("file", file, file.name)
-  return request<DraftIngestResponse>("/api/drafts/ingest", { method: "POST", body: form })
-}
-
-export function composeDocument(payload: {
-  template_id?: string
-  mode: "exact_copy" | "authored"
-  draft_id?: string
-  slot_values?: Record<string, string>
-  body_plan?: ComposePlan
-  normalize_punctuation?: boolean
-  generate_cover?: boolean
-  generate_toc?: boolean
-}) {
-  return request<DocumentResult>("/api/documents/compose", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  })
-}
-
-export function adjustDocumentLayout(
-  docId: string,
-  operations: {
-    type:
-      | "compact_pages"
-      | "prevent_orphan_signature"
-      | "line_spacing_delta"
-      | "space_after_delta"
-    delta?: number
-  }[],
-) {
-  return request<DocumentResult>(
-    "/api/documents/" + encodeURIComponent(docId) + "/adjust-layout",
-    {
-      method: "POST",
-      body: JSON.stringify({ operations }),
-    },
-  )
-}
-
-export function visualAuditDocument(docId: string, runVision = true) {
-  return request<{ vision: VisionAudit }>(
-    "/api/documents/" + encodeURIComponent(docId) + "/visual-audit",
-    {
-      method: "POST",
-      body: JSON.stringify({ run_vision: runVision }),
-    },
-  )
-}
-
-export function fetchSessions() {
-  return request<SessionsResponse>("/sessions")
-}
-
-export function forkSessionBranch(name: string, templateId?: string | null) {
-  return request<{ id: string }>("/sessions/fork", {
-    method: "POST",
-    body: JSON.stringify({ name, template_id: templateId }),
-  })
-}
-
-export function switchSessionBranch(id: string) {
-  return request<{ id: string }>("/sessions/switch", {
-    method: "POST",
-    body: JSON.stringify({ id }),
-  })
-}
-
-export async function streamChat(
-  prompt: string,
-  visionEnabled: boolean,
+export async function readSseStream(
+  path: string,
+  init: RequestInit,
   onEvent: (ev: Record<string, any>) => void,
 ) {
-  const res = await fetch("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, vision_enabled: visionEnabled }),
-  })
+  const headers =
+    init.body instanceof FormData
+      ? init.headers
+      : { "Content-Type": "application/json", ...init.headers }
+  const res = await fetch(path, { ...init, headers })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err?.error ?? err?.detail ?? "对话请求失败 (" + res.status + ")")
+    throw new Error(err?.detail ?? err?.error ?? "请求失败 (" + res.status + ")")
   }
   const reader = res.body?.getReader()
   if (!reader) return
@@ -177,4 +53,182 @@ export async function streamChat(
       }
     }
   }
+}
+
+export function fetchHealth() {
+  return request<HealthInfo>("/health")
+}
+
+export function fetchTemplates() {
+  return request<TemplatesResponse>("/api/templates")
+}
+
+export function fetchTemplateSamples(id: string) {
+  return request<{ sample_urls: string[] }>(
+    "/api/templates/" + encodeURIComponent(id) + "/samples",
+  )
+}
+
+export function updateTemplate(id: string, patch: { name?: string; category?: string }) {
+  return request<TemplateAsset>("/api/templates/" + encodeURIComponent(id), {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  })
+}
+
+export function forkTemplateAsset(id: string, name: string) {
+  return request<TemplateAsset>("/api/templates/" + encodeURIComponent(id) + "/fork", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  })
+}
+
+export function deleteTemplate(id: string) {
+  return request<{ deleted: string }>("/api/templates/" + encodeURIComponent(id), {
+    method: "DELETE",
+  })
+}
+
+export function streamImportTemplate(
+  file: File,
+  name: string,
+  category: string,
+  rulesMd: string,
+  signal: AbortSignal,
+  onEvent: (ev: Record<string, any>) => void,
+) {
+  const form = new FormData()
+  form.set("file", file, file.name)
+  if (name) form.set("name", name)
+  if (category) form.set("category", category)
+  if (rulesMd) form.set("rules_md", rulesMd)
+  return readSseStream("/api/templates/import", { method: "POST", body: form, signal }, onEvent)
+}
+
+export function ingestDraftFile(file: File) {
+  const form = new FormData()
+  form.set("file", file, file.name)
+  return request<DraftIngestResponse>("/api/drafts/ingest", { method: "POST", body: form })
+}
+
+export function streamComposeDocument(
+  payload: {
+    session_id: string
+    template_id?: string
+    draft_text: string
+    slot_values?: Record<string, string>
+    normalize_punctuation?: boolean
+    generate_cover?: boolean
+    generate_toc?: boolean
+    run_vision?: boolean
+  },
+  signal: AbortSignal,
+  onEvent: (ev: Record<string, any>) => void,
+) {
+  return readSseStream(
+    "/api/documents/compose-stream",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      signal,
+    },
+    onEvent,
+  )
+}
+
+export function adjustDocumentLayout(
+  docId: string,
+  operations: {
+    type:
+      | "compact_pages"
+      | "prevent_orphan_signature"
+      | "line_spacing_delta"
+      | "space_after_delta"
+    delta?: number
+  }[],
+  sessionId?: string,
+) {
+  return request<DocumentResult>(
+    "/api/documents/" + encodeURIComponent(docId) + "/adjust-layout",
+    {
+      method: "POST",
+      body: JSON.stringify({ operations, session_id: sessionId }),
+    },
+  )
+}
+
+export function visualAuditDocument(docId: string, runVision = true, sessionId?: string) {
+  return request<{ vision: VisionAudit }>(
+    "/api/documents/" + encodeURIComponent(docId) + "/visual-audit",
+    {
+      method: "POST",
+      body: JSON.stringify({ run_vision: runVision, session_id: sessionId }),
+    },
+  )
+}
+
+export function fetchSessions() {
+  return request<SessionsPayload>("/api/sessions")
+}
+
+export function createSession(opts?: { name?: string; template_id?: string | null }) {
+  return request<SessionsPayload>("/api/sessions", {
+    method: "POST",
+    body: JSON.stringify(opts ?? {}),
+  })
+}
+
+export function switchActiveSession(sessionId: string) {
+  return request<SessionsPayload>("/api/sessions/active", {
+    method: "PUT",
+    body: JSON.stringify({ session_id: sessionId }),
+  })
+}
+
+export function forkSession(id: string, name?: string, templateId?: string | null) {
+  return request<SessionsPayload>("/api/sessions/" + encodeURIComponent(id) + "/fork", {
+    method: "POST",
+    body: JSON.stringify({ name, template_id: templateId }),
+  })
+}
+
+export function patchSession(
+  id: string,
+  patch: {
+    name?: string
+    template_id?: string
+    draft_text?: string
+    slot_values?: Record<string, string>
+    generate_cover?: boolean
+    generate_toc?: boolean
+    normalize_punct?: boolean
+    preview_stale?: boolean
+  },
+) {
+  return request<SessionsPayload>("/api/sessions/" + encodeURIComponent(id), {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  })
+}
+
+export function deleteSession(id: string) {
+  return request<SessionsPayload>("/api/sessions/" + encodeURIComponent(id), {
+    method: "DELETE",
+  })
+}
+
+export function streamChat(
+  payload: { session_id: string; prompt: string; vision_enabled: boolean },
+  signal: AbortSignal,
+  onEvent: (ev: Record<string, any>) => void,
+) {
+  return readSseStream(
+    "/api/chat",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      signal,
+    },
+    onEvent,
+  )
 }

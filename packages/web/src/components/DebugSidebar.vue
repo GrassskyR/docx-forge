@@ -5,12 +5,14 @@ import type { FormatOption } from "../types"
 const props = defineProps<{
   formats: FormatOption[]
   activeFormat?: FormatOption
+  drawerOpen: boolean
 }>()
 
 const emit = defineEmits<{
   selectFormat: [fmt: FormatOption]
   openImport: []
-  forkCurrent: []
+  duplicateCurrent: []
+  closeDrawer: []
 }>()
 
 const cardStats = computed(() => {
@@ -22,17 +24,30 @@ const cardStats = computed(() => {
 </script>
 
 <template>
+  <!-- 中窄屏 (<1280px) 抽屉遮罩 -->
+  <div
+    v-if="drawerOpen"
+    class="xl:hidden fixed inset-0 bg-[#0F172A]/30 z-30"
+    @click="emit('closeDrawer')"
+  ></div>
+
   <aside
     id="debugSidebar"
-    class="w-full lg:w-[268px] shrink-0 bg-[#F4F6F9] border-b lg:border-b-0 lg:border-r border-[#E2E8F0] flex flex-col min-h-0"
+    class="w-[264px] shrink-0 bg-[#F4F6F9] border-r border-[#E2E8F0] flex-col min-h-0 z-40"
+    :class="
+      drawerOpen
+        ? 'fixed inset-y-0 left-0 flex shadow-2xl xl:static xl:shadow-none'
+        : 'hidden xl:flex'
+    "
   >
     <div class="p-3 border-b border-[#E2E8F0] flex items-center justify-between gap-2">
-      <span class="text-[12px] font-semibold text-[#0F172A]">模板资产库（调试视图）</span>
+      <span class="text-[12px] font-semibold text-[#0F172A]">[调试] 模板资产与能力卡</span>
       <div class="flex items-center gap-2 text-[11.5px]">
         <button
+          v-if="activeFormat"
           type="button"
           class="font-medium text-[#475569] hover:text-[#0F172A] cursor-pointer"
-          @click="emit('forkCurrent')"
+          @click="emit('duplicateCurrent')"
         >
           派生
         </button>
@@ -44,10 +59,17 @@ const cardStats = computed(() => {
         >
           + 导入
         </button>
+        <button
+          type="button"
+          class="xl:hidden text-[#64748B] hover:text-[#0F172A] pl-1 cursor-pointer"
+          @click="emit('closeDrawer')"
+        >
+          ✕
+        </button>
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto scroll-thin p-3 space-y-2 max-h-[220px] lg:max-h-none">
+    <div class="flex-1 overflow-y-auto scroll-thin p-3 space-y-2">
       <div
         v-for="fmt in formats"
         :key="fmt.id"
@@ -73,7 +95,7 @@ const cardStats = computed(() => {
 
     <div class="p-3 border-t border-[#E2E8F0] bg-white">
       <div class="flex items-center justify-between text-[11px] font-semibold text-[#0F172A] mb-1.5">
-        <span>上下文能力卡</span>
+        <span>置顶能力卡摘要</span>
         <span id="capTokenBadge" class="font-mono font-normal text-[#64748B] tabular">
           {{ cardStats }}
         </span>

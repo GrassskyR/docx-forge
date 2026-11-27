@@ -3,7 +3,7 @@ import { execFile } from "node:child_process"
 import { createHash } from "node:crypto"
 import { existsSync } from "node:fs"
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { availableParallelism, tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadEnvFile } from "node:process"
 import { promisify } from "node:util"
@@ -1186,7 +1186,46 @@ async function runStrategyOnDoc(
   }
 }
 
+function resolveBenchConcurrency(): number {
+  const arg = process.argv.slice(2).find((a) => /^(-c|--concurrency)=?\d*$/.test(a))
+  let fromCli = 0
+  if (arg) {
+    const eq = arg.split("=")[1]
+    if (eq) {
+      fromCli = Number(eq)
+    } else {
+      const next = process.argv[process.argv.indexOf(arg) + 1]
+      fromCli = Number(next)
+    }
+  }
+  const raw =
+    fromCli ||
+    Number(process.env.BENCH_CONCURRENCY || process.env.CONCURRENCY) ||
+    Math.min(12, Math.max(6, availableParallelism() - 2))
+  return Math.max(1, Math.floor(raw))
+}
+
+async function runPool<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, idx: number) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length)
+  let cursor = 0
+  async function loop() {
+    while (cursor < items.length) {
+      const idx = cursor++
+      out[idx] = await worker(items[idx], idx)
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => loop())
+  await Promise.all(workers)
+  return out
+}
+
 async function main() {
+  const benchStart = Date.now()
+  const concurrency = resolveBenchConcurrency()
   const corpusDir = "eval/lab_reports"
   const fullManifest = JSON.parse(
     await readFile(join(corpusDir, "manifest.json"), "utf8"),
@@ -1204,57 +1243,57 @@ async function main() {
     ? fullManifest.filter((m) => filterIds.includes(m.id))
     : fullManifest
 
-  console.log(`Starting Dual-Track V4 Benchmark across ${manifest.length} templates...`)
+  console.log(
+    `Starting Dual-Track V4 Benchmark across ${manifest.length} templates ` +
+      `(concurrency=${concurrency}, override via BENCH_CONCURRENCY or --concurrency=N)...`,
+  )
   type TrackRes = Omit<Awaited<ReturnType<typeof runStrategyOnDoc>>, "gt" | "legacyGt">
-  const perDoc: (LabManifestItem & {
-    ground_truth?: GroundTruthOracle
-    legacy_ground_truth?: GroundTruthOracle
-    tracks: Record<"rule_baseline" | "rule_enhanced" | "llm_hybrid", TrackRes>
-  })[] = []
 
-  for (let i = 0; i < manifest.length; i += 3) {
-    const slice = manifest.slice(i, i + 3)
-    const batchRes = await Promise.all(
-      slice.map(async (item) => {
-        const src = join(corpusDir, item.file)
-        const rb = await runStrategyOnDoc("rule_baseline", src, item)
-        const re = await runStrategyOnDoc("rule_enhanced", src, item)
-        const lh = await runStrategyOnDoc("llm_hybrid", src, item)
-        const lCalTag = lh.strict_e2e_pass ? "PASS" : "FAIL"
-        const lLegTag = lh.legacy_oracle.strict_e2e_pass ? "PASS" : "FAIL"
-        const llmStat =
-          `${lh.metadata_filled}/${lh.metadata_total}, p=${lh.total_pages}, ` +
-          `blank=${lh.blank_pages}(raw=${lh.raw_zero_text_pages}), ${lh.tokens_used}tok`
-        console.log(
-          `[${item.id}] ${item.source_org.slice(0, 10).padEnd(10)} | ` +
-            `Cal=${lCalTag} | Leg=${lLegTag} | (${llmStat}) | ` +
-            `calFails=${lh.failure_codes.join(",") || "NONE"} | ` +
-            `legFails=${lh.legacy_oracle.failure_codes.join(",") || "NONE"}`,
-        )
-        if (!lh.strict_e2e_pass || !lh.legacy_oracle.strict_e2e_pass) {
-          console.log(
-            `   -> [${item.id} DIAG] pdf=${lh.pdf_ok} audit=${lh.ooxml_audit_passed} ` +
-              `calBanner=${lh.banner_preserved} legBanner=${lh.legacy_oracle.banner_preserved} ` +
-              `form=${lh.form_container_respected} calUnfilled=[${lh.unfilled_fields.join(",")}] ` +
-              `calResidues=[${lh.leaked_residues.join(",")}] ` +
-              `legResidues=[${lh.legacy_oracle.leaked_residues.join(",")}] ` +
-              `err=${(lh as { error?: string }).error ?? ""}`,
-          )
-        }
-        return {
-          ...item,
-          ground_truth: rb.gt ?? lh.gt,
-          legacy_ground_truth: rb.legacyGt ?? lh.legacyGt,
-          tracks: {
-            rule_baseline: { ...rb, gt: undefined, legacyGt: undefined },
-            rule_enhanced: { ...re, gt: undefined, legacyGt: undefined },
-            llm_hybrid: { ...lh, gt: undefined, legacyGt: undefined },
-          },
-        }
-      }),
+  const perDoc = await runPool(manifest, concurrency, async (item) => {
+    const src = join(corpusDir, item.file)
+    const [[rb, re], lh] = await Promise.all([
+      (async () => {
+        const b = await runStrategyOnDoc("rule_baseline", src, item)
+        const e = await runStrategyOnDoc("rule_enhanced", src, item)
+        return [b, e] as const
+      })(),
+      runStrategyOnDoc("llm_hybrid", src, item),
+    ])
+    const lCalTag = lh.strict_e2e_pass ? "PASS" : "FAIL"
+    const lLegTag = lh.legacy_oracle.strict_e2e_pass ? "PASS" : "FAIL"
+    const llmStat =
+      `${lh.metadata_filled}/${lh.metadata_total}, p=${lh.total_pages}, ` +
+      `blank=${lh.blank_pages}(raw=${lh.raw_zero_text_pages}), ${lh.tokens_used}tok`
+    console.log(
+      `[${item.id}] ${item.source_org.slice(0, 10).padEnd(10)} | ` +
+        `Cal=${lCalTag} | Leg=${lLegTag} | (${llmStat}) | ` +
+        `calFails=${lh.failure_codes.join(",") || "NONE"} | ` +
+        `legFails=${lh.legacy_oracle.failure_codes.join(",") || "NONE"}`,
     )
-    perDoc.push(...batchRes)
-  }
+    if (!lh.strict_e2e_pass || !lh.legacy_oracle.strict_e2e_pass) {
+      console.log(
+        `   -> [${item.id} DIAG] pdf=${lh.pdf_ok} audit=${lh.ooxml_audit_passed} ` +
+          `calBanner=${lh.banner_preserved} legBanner=${lh.legacy_oracle.banner_preserved} ` +
+          `form=${lh.form_container_respected} calUnfilled=[${lh.unfilled_fields.join(",")}] ` +
+          `calResidues=[${lh.leaked_residues.join(",")}] ` +
+          `legResidues=[${lh.legacy_oracle.leaked_residues.join(",")}] ` +
+          `err=${(lh as { error?: string }).error ?? ""}`,
+      )
+    }
+    const { gt: rbGt, legacyGt: rbLeg, ...rbTrack } = rb
+    const { gt: _reGt, legacyGt: _reLeg, ...reTrack } = re
+    const { gt: lhGt, legacyGt: lhLeg, ...lhTrack } = lh
+    return {
+      ...item,
+      ground_truth: rbGt ?? lhGt,
+      legacy_ground_truth: rbLeg ?? lhLeg,
+      tracks: {
+        rule_baseline: rbTrack,
+        rule_enhanced: reTrack,
+        llm_hybrid: lhTrack,
+      },
+    }
+  })
 
   const summarizeTrack = (
     key: "rule_baseline" | "rule_enhanced" | "llm_hybrid",
@@ -1299,6 +1338,8 @@ async function main() {
 
   const summary = {
     generated_at: new Date().toISOString(),
+    elapsed_seconds: Number(((Date.now() - benchStart) / 1000).toFixed(2)),
+    concurrency,
     vision_mode: visionMode(),
     corpus_size: manifest.length,
     formats: {
@@ -1322,7 +1363,11 @@ async function main() {
     await mkdir("eval", { recursive: true })
     await writeFile("eval/results_lab_reports.json", JSON.stringify(summary, null, 2) + "\n")
   }
-  console.log("\n=== CALIBRATED ORACLE SUMMARY ===")
+  console.log(
+    `\n=== LAB BENCHMARK FINISHED in ${((Date.now() - benchStart) / 1000).toFixed(1)}s ` +
+      `(concurrency=${concurrency}) ===`,
+  )
+  console.log("=== CALIBRATED ORACLE SUMMARY ===")
   console.log("Rule Baseline :", summary.tracks.rule_baseline)
   console.log("Rule Enhanced :", summary.tracks.rule_enhanced)
   console.log("LLM Hybrid    :", summary.tracks.llm_hybrid)

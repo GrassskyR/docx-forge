@@ -30,27 +30,28 @@ try {
   ]) {
     const form = new FormData()
     form.set("file", new Blob([await readFile(file)]), file.split("/").at(-1)!)
-    const inspection = await post("/api/v3/templates/inspect", form)
+    const inspection = await post("/api/templates/inspect", form)
     assert(inspection.sample_urls.length)
-    const asset = await post("/api/v3/templates", {
+    const asset = await post("/api/templates", {
       inspect_id: inspection.inspect_id,
       category,
       name: category + "内化验证",
       rules_md: "保留原件图片与分节。正文原型名 body。",
     })
     assert(asset.blueprint.content_slots.length)
-    const draft = await post("/api/v3/drafts/ingest", {
+    const draft = await post("/api/drafts/ingest", {
       text: "项目执行安排\n请相关部门确认进度。\n项目办公室",
     })
-    const result = await post("/api/v3/documents/compose", {
+    const result = await post("/api/documents/compose", {
+      template_id: asset.id,
       mode: "exact_copy",
       draft_id: draft.draft_id,
     })
     assert(result.lint_report.passed && result.fidelity === 1 && result.preview_urls.length)
     assert(result.usage.prompt_tokens > 0 && result.usage.completion_tokens > 0)
-    const audit = await post("/api/v3/documents/" + result.doc_id + "/visual-audit", {})
+    const audit = await post("/api/documents/" + result.doc_id + "/visual-audit", {})
     assert(audit.vision.status)
-    const adjust = await post("/api/v3/documents/" + result.doc_id + "/adjust-layout", {
+    const adjust = await post("/api/documents/" + result.doc_id + "/adjust-layout", {
       operations: [{ type: "space_after_delta", delta: -1 }],
     })
     assert(adjust.after.total_pages > 0)
@@ -62,14 +63,19 @@ try {
       audit.vision.status,
     )
   }
-  const response = await fetch(origin + "/chat", {
+  const response = await fetch(origin + "/api/chat", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt: "调用 manage_templates 列出当前模板，然后只回复模板数量。",
     }),
   })
   const sse = await response.text()
-  assert(sse.includes('"type":"tool"') && sse.includes('"type":"usage"') && sse.includes('"type":"done"'))
+  assert(
+    sse.includes('"type":"tool"') &&
+      sse.includes('"type":"usage"') &&
+      sse.includes('"type":"done"'),
+  )
   assert(!sse.includes('"type":"error"'))
   console.log("Pi-Agent real tool call and SSE usage verified")
 } finally {

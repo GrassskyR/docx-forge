@@ -1,8 +1,9 @@
 import { strict as assert } from "node:assert"
 import { execFile } from "node:child_process"
 import { createHash } from "node:crypto"
+import { existsSync } from "node:fs"
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { availableParallelism, tmpdir } from "node:os"
 import { join } from "node:path"
 import { loadEnvFile } from "node:process"
 import { promisify } from "node:util"
@@ -334,8 +335,29 @@ async function runPool<T, R>(
   return results
 }
 
+function resolveBenchConcurrency(): number {
+  const arg = process.argv.slice(2).find((a) => /^(-c|--concurrency)=?\d*$/.test(a))
+  let fromCli = 0
+  if (arg) {
+    const eq = arg.split("=")[1]
+    if (eq) {
+      fromCli = Number(eq)
+    } else {
+      const next = process.argv[process.argv.indexOf(arg) + 1]
+      fromCli = Number(next)
+    }
+  }
+  const raw =
+    fromCli ||
+    Number(process.env.BENCH_CONCURRENCY || process.env.CONCURRENCY) ||
+    Math.min(12, Math.max(6, availableParallelism() - 2))
+  return Math.max(1, Math.floor(raw))
+}
+
 async function main() {
-  loadEnvFile(".env")
+  if (existsSync(".env")) loadEnvFile(".env")
+  const concurrency = resolveBenchConcurrency()
+  const tStart = Date.now()
   const startedAt = new Date().toISOString()
   const modelId = process.env.LLM_MODEL || "unconfigured"
   const activeVisionMode = visionMode()
@@ -360,8 +382,10 @@ async function main() {
       })),
     ]
 
-    console.log("=== [1/4] Running 30 Real Cross-Domain Documents Full Pipeline ===")
-    const corpusResults = await runPool(allDocs, 3, async (entry) => {
+    console.log(
+      `=== [1/4] Running 30 Real Cross-Domain Documents Full Pipeline (concurrency=${concurrency}) ===`,
+    )
+    const corpusResults = await runPool(allDocs, concurrency, async (entry) => {
       const source = join(entry.dir, entry.file)
       const bytes = await readFile(source)
       const sha256 = createHash("sha256").update(bytes).digest("hex")
@@ -464,16 +488,18 @@ async function main() {
       }
     })
 
-    console.log("=== [2/4] Running 6 Cross-Domain Long-Draft Zero-Copy Benchmarks (Real LLM) ===")
+    console.log(
+      `=== [2/4] Running 6 Cross-Domain Long-Draft Zero-Copy Benchmarks (concurrency=${concurrency}) ===`,
+    )
     const draftsSpec = buildSixLongDrafts()
-    const zeroCopyResults = []
-    for (const item of draftsSpec) {
+    const useLlm = Boolean(process.env.LLM_API_KEY)
+    const zeroCopyResults = await runPool(draftsSpec, concurrency, async (item) => {
       assert(
         item.text.length >= 1500 && item.text.length <= 5000,
         `${item.id} length ${item.text.length} out of 1500..5000 range`,
       )
       const caseDir = await mkdtemp(join(workRoot, "zerocopy-"))
-      const docs = new Documents(caseDir, true)
+      const docs = new Documents(caseDir, useLlm)
       try {
         const work = new Workspace(docs)
         const source = join(item.template_dir, item.template_file)
@@ -536,13 +562,15 @@ async function main() {
           .join("\n")
         assert.equal(actualText, item.text, item.id + " must match draft character-for-character")
         assert.equal(composed.fidelity, 1)
-        assert(composed.usage.prompt_tokens > 0 && composed.usage.completion_tokens > 0)
+        if (useLlm) {
+          assert(composed.usage.prompt_tokens > 0 && composed.usage.completion_tokens > 0)
+        }
 
         console.log(
           `  [OK] ${item.id}: chars=${item.text.length}, ranges=${composed.body_plan.length}, ` +
             `total_tok=${composed.usage.total_tokens}`,
         )
-        zeroCopyResults.push({
+        return {
           id: item.id,
           domain: item.domain,
           template_file: item.template_file,
@@ -555,12 +583,12 @@ async function main() {
           completion_tokens: composed.usage.completion_tokens,
           cached_tokens: composed.usage.cached_tokens,
           total_tokens: composed.usage.total_tokens,
-        })
+        }
       } finally {
         docs.store.db.close()
         await rm(caseDir, { recursive: true, force: true })
       }
-    }
+    })
 
     console.log("=== [3/4] Running Layout Overflow Auto-Closure Benchmark ===")
     const caseDir = await mkdtemp(join(workRoot, "overflow-"))
@@ -647,6 +675,8 @@ async function main() {
         {
           generated_at: new Date().toISOString(),
           started_at: startedAt,
+          elapsed_seconds: Number(((Date.now() - tStart) / 1000).toFixed(2)),
+          concurrency,
           llm_model: modelId,
           vision_runtime_mode: activeVisionMode,
           corpus_30: corpusResults,
@@ -657,7 +687,9 @@ async function main() {
         2,
       ) + "\n",
     )
-    console.log("=== Cross-Domain Benchmark Complete! ===")
+    console.log(
+      `=== Cross-Domain Benchmark Complete in ${((Date.now() - tStart) / 1000).toFixed(1)}s (concurrency=${concurrency})! ===`,
+    )
   } finally {
     await rm(workRoot, { recursive: true, force: true })
   }

@@ -16,18 +16,22 @@ for (const [directory, count] of CORPORA) {
     expect(new Set(manifest.map((e: { file: string }) => e.file)).size).toBe(count),
   )
   for (const entry of manifest) {
-    test(entry.file + " 哈希、结构地图与风格基因", async () => {
-      const source = join(directory, entry.file)
-      expect(createHash("sha256").update(readFileSync(source)).digest("hex")).toBe(entry.sha256)
-      const dir = mkdtempSync(join(tmpdir(), "docforge-map-"))
-      try {
-        const { doc_map } = await inspectReference(source, dir)
-        expect(doc_map.paragraphs + doc_map.tables).toBeGreaterThan(0)
-        expect(doc_map.map_text.length).toBeGreaterThan(0)
-        expect(doc_map.style_dna.body_style.font_cn.length).toBeGreaterThan(0)
-      } finally {
-        rmSync(dir, { recursive: true, force: true })
-      }
-    }, 120_000)
+    test.concurrent(
+      entry.file + " 哈希、结构地图与风格基因",
+      async () => {
+        const source = join(directory, entry.file)
+        expect(createHash("sha256").update(readFileSync(source)).digest("hex")).toBe(entry.sha256)
+        const dir = mkdtempSync(join(tmpdir(), "docforge-map-"))
+        try {
+          const { doc_map } = await inspectReference(source, dir)
+          expect(doc_map.paragraphs + doc_map.tables).toBeGreaterThan(0)
+          expect(doc_map.map_text.length).toBeGreaterThan(0)
+          expect(doc_map.style_dna.body_style.font_cn.length).toBeGreaterThan(0)
+        } finally {
+          rmSync(dir, { recursive: true, force: true })
+        }
+      },
+      120_000,
+    )
   }
 }

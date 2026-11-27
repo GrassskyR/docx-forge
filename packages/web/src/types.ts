@@ -1,26 +1,38 @@
 import type {
   ComposePlan,
-  DocumentMap,
   DraftIndex,
   LayoutTelemetry,
   LintReport,
+  SessionSummary,
+  SessionTimelineEvent,
   TemplateAsset,
   VisionAudit,
 } from "@docs-agent/shared"
 
 export type CategoryId = "all" | "gongwen" | "thesis" | "contract"
+export type DropdownId = "session" | "format" | "layout" | null
+
+export interface FormatField {
+  name: string
+  label: string
+  sample?: string
+}
 
 export interface FormatOption {
   id: string
   name: string
+  builtin: boolean
   category: Exclude<CategoryId, "all">
   categoryLabel: string
+  hasCover: boolean
+  hasToc: boolean
   desc: string
-  fields: { name: string; label?: string }[]
+  fields: FormatField[]
   contentSlots: string[]
   prototypes: string[]
   preserved: string[]
   capabilityCard: string
+  sampleUrls: string[]
   asset: TemplateAsset
 }
 
@@ -44,7 +56,6 @@ export interface HealthInfo {
 
 export interface TemplatesResponse {
   templates: TemplateAsset[]
-  active_template_id: string | null
   usage: UsageSnapshot
 }
 
@@ -59,6 +70,8 @@ export interface DocumentResult {
   template_id?: string
   body_plan?: ComposePlan
   body_indices?: number[]
+  body_texts?: string[]
+  resolved_slots?: Record<string, string>
   lint_report: LintReport
   layout?: LayoutTelemetry
   vision?: VisionAudit
@@ -74,20 +87,71 @@ export interface MappingRow {
 }
 
 export interface ToolTraceStep {
+  id?: string
   status: "running" | "ok" | "warn"
-  text: string
+  label: string
+  rawName?: string
 }
 
-export interface ChatTurn {
-  role: "user" | "assistant"
-  text: string
-  steps?: ToolTraceStep[]
-  docUrl?: string
-  docPages?: number
+export type TimelineItem =
+  | { kind: "event"; text: string }
+  | { kind: "user"; text: string }
+  | {
+      kind: "assistant"
+      text: string
+      streaming?: boolean
+      collapsed?: boolean
+      elapsed?: number
+      steps: ToolTraceStep[]
+      docUrl?: string
+      docPages?: number
+    }
+
+export interface RawAgentMessage {
+  role: "user" | "assistant" | "toolResult"
+  content: string | { type: string; text?: string; name?: string }[]
+  toolName?: string
+  isError?: boolean
+}
+
+export interface ActiveSessionRecord {
+  id: string
+  parent_id: string | null
+  name: string
+  auto_named: boolean
+  template_id: string
+  updated_at: number
+  draft_text: string
+  slot_values: Record<string, string>
+  generate_cover: boolean
+  generate_toc: boolean
+  normalize_punct: boolean
+  current_doc: DocumentResult | null
+  preview_stale: boolean
+  events: SessionTimelineEvent[]
+  messages: RawAgentMessage[]
+}
+
+export interface SessionsPayload {
+  sessions: SessionSummary[]
+  active_session_id: string
+  active: ActiveSessionRecord
+  deleted?: string
+}
+
+export interface BackgroundImportState {
+  name: string
+  category: Exclude<CategoryId, "all">
+  phase: string
+  elapsedSec: number
+  sampleUrl?: string
+  done: boolean
+  error?: string
+  templateId?: string
 }
 
 export const SLOT_LABELS: Record<string, string> = {
-  title: "题目 / 标题",
+  title: "文档标题",
   report_title: "报告题目",
   course: "课程名称",
   student_id: "学号",
@@ -100,43 +164,47 @@ export const SLOT_LABELS: Record<string, string> = {
   student: "学生姓名",
   advisor: "指导教师",
   teacher: "指导教师",
+  score: "评分",
+  comment: "评语",
   date: "日期",
-  party_a: "甲方名称",
-  party_b: "乙方名称",
+  doc_no: "发文字号",
+  party_a: "委托方（甲方）",
+  party_b: "受托方（乙方）",
   contract_no: "合同编号",
 }
 
-export interface SessionBranch {
-  id: string
-  parent_id: string | null
-  name: string
-  template_id: string | null
-  message_count: number
-}
-
-export interface SessionsResponse {
-  nodes: SessionBranch[]
-  current: string
-  node: {
-    id: string
-    name: string
-    template_id: string | null
-    template_name: string
-    messages: RawAgentMessage[]
+export function cleanSlotLabel(field: { name: string; label?: string }): string {
+  const raw = (field.label || SLOT_LABELS[field.name] || field.name).trim()
+  let s = raw
+    .replace(/[：:\s]+$/, "")
+    .replace(/[（(][^）)]*(?:下划线|封面|括号|填写|选填|空位)[^）)]*[）)]/g, "")
+    .trim()
+  if (/^[\u4e00-\u9fa5](?:\s+[\u4e00-\u9fa5])+$/.test(s)) {
+    s = s.replace(/\s+/g, "")
   }
+  s = s.replace(/评\s*分\/价/, "评分")
+  return s || SLOT_LABELS[field.name] || field.name
 }
 
-export interface RawAgentMessage {
-  role: "user" | "assistant" | "toolResult"
-  content: string | { type: string; text?: string; name?: string }[]
-  toolName?: string
-  isError?: boolean
-}
-
-export interface InspectResponse {
-  inspect_id: string
-  doc_map: DocumentMap
-  sample_urls: string[]
+export function extractDocTitle(
+  slotValues: Record<string, string>,
+  draftText: string,
+  fallbackName?: string,
+): string {
+  const candidates = [
+    slotValues.title,
+    slotValues.report_title,
+    draftText
+      .split(/\r?\n/)
+      .map((l) => l.replace(/^#+\s*/, "").trim())
+      .find((l) => l.length > 0 && l.length <= 48 && !/^[一二三四五六1-9][、.]/.test(l)),
+    fallbackName && fallbackName !== "未命名文档" ? fallbackName : "",
+  ]
+  for (const item of candidates) {
+    const clean = (item ?? "").replace(/[\\/:*?"<>|\r\n]+/g, " ").trim()
+    if (clean && clean !== "文档标题") return clean.slice(0, 32)
+  }
+  return "未命名文档"
 }
 
 export const CATEGORY_LABELS: Record<Exclude<CategoryId, "all">, string> = {
@@ -152,7 +220,10 @@ export function normalizeCategory(raw: string): Exclude<CategoryId, "all"> {
     value.includes("academic") ||
     value.includes("lab") ||
     value.includes("论文") ||
-    value.includes("报告")
+    value.includes("报告") ||
+    value.includes("实验") ||
+    value.includes("课程设计") ||
+    value.includes("实习")
   ) {
     return "thesis"
   }
@@ -160,12 +231,21 @@ export function normalizeCategory(raw: string): Exclude<CategoryId, "all"> {
     value.includes("contract") ||
     value.includes("form") ||
     value.includes("合同") ||
+    value.includes("协议") ||
     value.includes("申报") ||
     value.includes("表")
   ) {
     return "contract"
   }
   return "gongwen"
+}
+
+export const TOOL_FRIENDLY_LABELS: Record<string, string> = {
+  learn_reference_doc: "解析参考文档版式与槽位",
+  manage_templates: "读取模板配置信息",
+  ingest_draft: "切分草稿段落结构",
+  compose_document: "写入模板槽位并生成 Word",
+  refine_and_audit: "微调跨页版面收口",
 }
 
 export const STARTER_DRAFTS: Record<Exclude<CategoryId, "all">, string> = {
@@ -179,7 +259,7 @@ export const STARTER_DRAFTS: Record<Exclude<CategoryId, "all">, string> = {
     "二、时间安排与报送要求",
     "请各单位于2026年12月5日前完成全面自查，通过校内OA系统报送自查汇总表。",
     "综合办公室",
-    "2026年11月25日",
+    "2026年11月27日",
   ].join("\n"),
   thesis: [
     "1. 实验目的与运行环境",
@@ -191,11 +271,9 @@ export const STARTER_DRAFTS: Record<Exclude<CategoryId, "all">, string> = {
     "实验结果表明增加物理页框并结合哈希双向链表实现 LRU 淘汰策略可显著降低抖动风险。",
   ].join("\n"),
   contract: [
-    "合同编号：HT-2026-TECH-0092",
-    "委托方（甲方）：长三角数字科技有限公司",
-    "受托方（乙方）：先进智能软件研究院",
-    "第三条 交付成果、验收标准及知识产权归属",
-    "3.1 乙方应于本合同生效后30个工作日内完成全部模块交付并配合验收。",
-    "3.2 乙方承诺交付成果不侵犯任何第三方合法权益，否则承担全部法律及赔偿责任。",
+    "大数据平台技术开发委托合同",
+    "第一条 交付成果、验收标准及知识产权归属",
+    "1.1 乙方应于本合同生效后30个工作日内完成全部流式采集模块交付并配合终验。",
+    "1.2 乙方承诺交付成果不侵犯任何第三方合法权益，否则承担全部法律及赔偿责任。",
   ].join("\n"),
 }

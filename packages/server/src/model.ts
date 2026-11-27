@@ -46,7 +46,9 @@ export async function jsonCompletion(
   bill: Billing,
   images: { page: number; data: string }[] = [],
   opName = "json-completion",
+  signal?: AbortSignal,
 ) {
+  if (signal?.aborted) throw new Error("任务已取消")
   const sidecar = images.length > 0 && process.env.LLM_SUPPORTS_VISION !== "true"
   const model = textModel()
   if (images.length) model.input = ["text", "image"]
@@ -69,6 +71,7 @@ export async function jsonCompletion(
     async () => {
       let lastErr = ""
       for (let attempt = 0; attempt < 2; attempt++) {
+        if (signal?.aborted) throw new Error("任务已取消")
         const result = await completeSimple(
           model,
           {
@@ -76,10 +79,13 @@ export async function jsonCompletion(
               "你是资深 OOXML 文档结构解析与排版规划专家。只输出合法 JSON，字符串内严禁包含未转义英文双引号。",
             messages: [{ role: "user", content, timestamp: Date.now() }],
           },
-          { apiKey: process.env[prefix + "_API_KEY"]?.trim() },
+          { apiKey: process.env[prefix + "_API_KEY"]?.trim(), signal },
         )
         bill.record(result.usage, priced)
-        if (result.stopReason === "error" || result.stopReason === "aborted") {
+        if (signal?.aborted || result.stopReason === "aborted") {
+          throw new Error("任务已取消")
+        }
+        if (result.stopReason === "error") {
           lastErr = result.errorMessage || "LLM 请求中断"
           if (attempt === 0 && /EOF|fetch|network|reset|timeout|502|503|429/i.test(lastErr)) {
             await new Promise((r) => setTimeout(r, 1500))
@@ -95,7 +101,7 @@ export async function jsonCompletion(
           return { parsed: parseLooseJson(rawText), rawText, usage: result.usage }
         } catch (err) {
           lastErr = err instanceof Error ? err.message : String(err)
-          if (attempt === 0) {
+          if (attempt === 0 && !signal?.aborted) {
             await new Promise((r) => setTimeout(r, 1500))
             continue
           }

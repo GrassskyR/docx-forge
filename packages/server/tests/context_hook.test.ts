@@ -7,7 +7,7 @@ import { Documents } from "../src/documents.js"
 import { Workspace } from "../src/workspace.js"
 import { contextHook } from "../src/context_hook.js"
 
-test("审阅完成后清除历史图片，每轮置顶完整模板能力卡，按返回用量累计账单", async () => {
+test("审阅后清除历史图片，按会话置顶模板能力卡与工作区底稿快照，累计账单", async () => {
   const data = await mkdtemp(join(tmpdir(), "docforge-hook-"))
   const docs = new Documents(data, false)
   try {
@@ -43,7 +43,13 @@ test("审阅完成后清除历史图片，每轮置顶完整模板能力卡，�
       details: { data: "historical-base64" },
       content: [{ type: "image", mimeType: "image/png", data: "historical-base64" }],
     }
-    const hook = contextHook(work.templates)
+    const hook = contextHook(work.templates, () => ({
+      template_id: asset.id,
+      draft_text: "左侧编辑器当前手写草稿内容",
+      slot_values: { student_name: "林知远" },
+      generate_cover: true,
+      doc_id: "doc-123",
+    }))
     expect(JSON.stringify(await hook([tool]))).toContain("historical-base64")
     const reviewed = await hook([
       tool,
@@ -62,7 +68,11 @@ test("审阅完成后清除历史图片，每轮置顶完整模板能力卡，�
     expect(JSON.stringify(reviewed)).not.toContain("historical-base64")
     expect(JSON.stringify(reviewed)).not.toContain('"type":"image"')
     expect(JSON.stringify(reviewed)).toContain("关键页图像已审阅")
-    expect(reviewed[0].content).toBe(asset.capability_card)
+    const topContent = String(reviewed[0].content)
+    expect(topContent).toContain(asset.capability_card)
+    expect(topContent).toContain("[当前文档工作区底稿]")
+    expect(topContent).toContain("左侧编辑器当前手写草稿内容")
+    expect(topContent).toContain("林知远")
     docs.bill.record(usage, true)
     expect(docs.bill.record(usage, true)).toMatchObject({ total_tokens: 230, cost_usd: 0.242 })
   } finally {

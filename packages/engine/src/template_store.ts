@@ -1,15 +1,30 @@
+import { execFile } from "node:child_process"
 import { randomUUID } from "node:crypto"
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs"
+import { mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { promisify } from "node:util"
 import { unzipSync } from "fflate"
 import { Assert } from "typebox/value"
-import { Blueprint, StyleDNA, type TemplateAsset } from "@docs-agent/shared"
+import { Blueprint, StyleDNA, type FieldSlot, type TemplateAsset } from "@docs-agent/shared"
 import { buildDefaultSeedDocx } from "./builders.js"
-import { resolveCoord } from "./dom_locator.js"
+import { convert } from "./doc_converter.js"
+import { paraPlainText, resolveCoord } from "./dom_locator.js"
 import { Store } from "./store.js"
 import { children, parseXml } from "./xml_utils.js"
 
-const BUILTIN_ID = "builtin-standard-doc"
+const run = promisify(execFile)
+export const BUILTIN_TEMPLATE_ID = "builtin-standard-doc"
+const BUILTIN_ID = BUILTIN_TEMPLATE_ID
 
 function describePrototypes(base: string, prototypes: Record<string, string>) {
   const xml = unzipSync(readFileSync(base))["word/document.xml"]
@@ -26,6 +41,39 @@ function describePrototypes(base: string, prototypes: Record<string, string>) {
   })
   if (!prototypes.table) entries.push("table(标准三线表)")
   return entries.join("、")
+}
+
+function extractFieldSamples(id: string, base: string, fields: FieldSlot[]): FieldSlot[] {
+  if (!fields.length || !existsSync(base)) return fields
+  const xml = unzipSync(readFileSync(base))["word/document.xml"]
+  if (!xml) return fields
+  const root = parseXml(xml).documentElement!
+  return fields.map((f) => {
+    if (f.sample !== undefined) return f
+    let sample = f.match?.trim() ?? ""
+    if (!sample && f.coord && id !== BUILTIN_ID) {
+      const node = resolveCoord(root, f.coord)
+      if (node) {
+        const raw =
+          node.element.localName === "p"
+            ? paraPlainText(node.element)
+            : (node.element.textContent ?? "")
+        let cleaned = raw.replace(/\s+/g, " ").trim()
+        if (f.label) {
+          const cleanLbl = f.label.replace(/[：:\s]+$/, "")
+          if (cleanLbl && cleaned.startsWith(cleanLbl)) {
+            cleaned = cleaned.slice(cleanLbl.length).replace(/^[：:\s]+/, "")
+          }
+        }
+        if (f.mode === "colon") {
+          const cIdx = cleaned.search(/[：:]/)
+          if (cIdx >= 0) cleaned = cleaned.slice(cIdx + 1).trim()
+        }
+        if (!/^[_\s＿—-]+$/.test(cleaned)) sample = cleaned.slice(0, 40)
+      }
+    }
+    return sample ? { ...f, sample } : f
+  })
 }
 
 export function buildCapabilityCard(
@@ -61,7 +109,7 @@ export function buildCapabilityCard(
 
   return [
     `[激活模板] ${name} · ${category}`,
-    `元数据填空项(slot_values,只填纯值不带标签): ${fieldDesc}`,
+    `元数据填空项(slot_values,只填纯值不带标签,未填项自动置空): ${fieldDesc}`,
     `正文内容槽位(body_plan.slot): ${slotDesc}`,
     `可用样式原型(prototype): ${describePrototypes(baseDocxPath, blueprint.prototypes)}`,
     `保留与自动组件: ${[...blueprint.preserved, ...builders].join("、") || "母版节属性与样式"}`,
@@ -202,24 +250,49 @@ export class TemplateStore {
       .run(BUILTIN_ID)
   }
 
+  private sampleUrlsOf(id: string): string[] {
+    const dir = join(this.data, "template_assets", id)
+    if (!existsSync(dir)) return []
+    return readdirSync(dir)
+      .filter((f) => /^sample-\d+\.png$/.test(f))
+      .sort((a, b) => a.localeCompare(b, "en", { numeric: true }))
+      .map((f) => `/files/template_assets/${id}/${f}`)
+  }
+
+  private enrich(asset: TemplateAsset): TemplateAsset {
+    const base = join(this.data, "template_assets", asset.id, "base.docx")
+    const fields = extractFieldSamples(asset.id, base, asset.blueprint.fields)
+    const sample_urls = this.sampleUrlsOf(asset.id)
+    return {
+      ...asset,
+      blueprint: { ...asset.blueprint, fields },
+      ...(sample_urls.length ? { sample_urls } : {}),
+    }
+  }
+
   get activeId(): string | null {
     const row = this.store.db
       .prepare("SELECT value FROM settings WHERE key='active_template'")
       .get()
-    return row ? String(row.value) : null
+    return row ? String(row.value) : BUILTIN_ID
   }
 
   list(): TemplateAsset[] {
     return this.store.db
       .prepare("SELECT payload FROM template_assets ORDER BY rowid")
       .all()
-      .map((row) => JSON.parse(String(row.payload)))
+      .map((row) => this.enrich(JSON.parse(String(row.payload))))
   }
 
   get(id: string): TemplateAsset {
     const row = this.store.db.prepare("SELECT payload FROM template_assets WHERE id=?").get(id)
     if (!row) throw new Error("模板不存在: " + id)
-    return JSON.parse(String(row.payload))
+    return this.enrich(JSON.parse(String(row.payload)))
+  }
+
+  has(id: string): boolean {
+    const row = this.store.db.prepare("SELECT 1 FROM template_assets WHERE id=?").get(id)
+    return Boolean(row)
   }
 
   folder(id: string) {
@@ -229,6 +302,36 @@ export class TemplateStore {
   activate(id: string) {
     this.get(id)
     this.store.db.prepare("INSERT OR REPLACE INTO settings VALUES('active_template',?)").run(id)
+  }
+
+  async ensureSamples(id: string): Promise<string[]> {
+    const existing = this.sampleUrlsOf(id)
+    if (existing.length) return existing
+    const folder = this.folder(id)
+    const basePath = join(folder, "base.docx")
+    const work = await mkdtemp(join(tmpdir(), "docforge-tpl-sample-"))
+    try {
+      const pdf = await convert(basePath, work, "pdf")
+      const infoOut = await run("pdfinfo", [pdf], { env: { ...process.env, LC_ALL: "C" } })
+      const maxPage = Math.min(3, Number(/^Pages:\s*(\d+)/m.exec(infoOut.stdout)?.[1] ?? 1))
+      for (let p = 1; p <= maxPage; p++) {
+        await run("pdftoppm", [
+          "-f",
+          String(p),
+          "-l",
+          String(p),
+          "-singlefile",
+          "-scale-to",
+          "960",
+          "-png",
+          pdf,
+          join(folder, `sample-${p}`),
+        ])
+      }
+      return this.sampleUrlsOf(id)
+    } finally {
+      await rm(work, { recursive: true, force: true })
+    }
   }
 
   save(
@@ -245,6 +348,9 @@ export class TemplateStore {
     const dna: StyleDNA = existsSync(docMapPath)
       ? JSON.parse(readFileSync(docMapPath, "utf8")).style_dna
       : this.get(BUILTIN_ID).style_dna
+    const samples = existsSync(inspDir)
+      ? readdirSync(inspDir).filter((f) => /^sample-\d+\.png$/.test(f))
+      : []
     return this.persist(
       join(inspDir, "base.docx"),
       name,
@@ -254,12 +360,18 @@ export class TemplateStore {
       rules,
       null,
       active,
+      samples.map((f) => join(inspDir, f)),
     )
   }
 
   fork(id: string, name: string) {
     const asset = this.get(id)
     const folder = this.folder(id)
+    const samples = existsSync(folder)
+      ? readdirSync(folder)
+          .filter((f) => /^sample-\d+\.png$/.test(f))
+          .map((f) => join(folder, f))
+      : []
     return this.persist(
       join(folder, "base.docx"),
       name,
@@ -269,7 +381,38 @@ export class TemplateStore {
       readFileSync(join(folder, "SKILL.md"), "utf8"),
       id,
       false,
+      samples,
     )
+  }
+
+  update(id: string, patch: { name?: string; category?: string }): TemplateAsset {
+    const rawRow = this.store.db.prepare("SELECT payload FROM template_assets WHERE id=?").get(id)
+    if (!rawRow) throw new Error("模板不存在: " + id)
+    const raw = JSON.parse(String(rawRow.payload)) as TemplateAsset
+    const folder = join(this.data, "template_assets", id)
+    const rules = existsSync(join(folder, "SKILL.md"))
+      ? readFileSync(join(folder, "SKILL.md"), "utf8")
+      : ""
+    const nextName = patch.name?.trim() || raw.name
+    const nextCat = patch.category?.trim() || raw.category
+    const capability_card = buildCapabilityCard(
+      nextName,
+      nextCat,
+      join(folder, "base.docx"),
+      raw.blueprint,
+      raw.style_dna,
+      rules,
+    )
+    const updated: TemplateAsset = {
+      ...raw,
+      name: nextName,
+      category: nextCat,
+      capability_card,
+    }
+    this.store.db
+      .prepare("UPDATE template_assets SET payload=? WHERE id=?")
+      .run(JSON.stringify(updated), id)
+    return this.enrich(updated)
   }
 
   private persist(
@@ -281,6 +424,7 @@ export class TemplateStore {
     rules: string,
     parent_id: string | null,
     active: boolean,
+    sampleFiles: string[] = [],
   ) {
     Assert(Blueprint, blueprint)
     Assert(StyleDNA, style_dna)
@@ -300,6 +444,10 @@ export class TemplateStore {
     this.store.db.exec("BEGIN")
     try {
       copyFileSync(base, join(folder, "base.docx"))
+      for (const sf of sampleFiles) {
+        const fname = sf.split(/[/\\]/).at(-1)!
+        copyFileSync(sf, join(folder, fname))
+      }
       writeFileSync(join(folder, "blueprint.json"), JSON.stringify(blueprint, null, 2))
       writeFileSync(join(folder, "style_dna.json"), JSON.stringify(style_dna, null, 2))
       writeFileSync(join(folder, "SKILL.md"), rules)
@@ -313,12 +461,15 @@ export class TemplateStore {
       rmSync(folder, { recursive: true, force: true })
       throw e
     }
-    return asset
+    return this.enrich(asset)
   }
 
   delete(id: string) {
-    if (id === BUILTIN_ID || id === this.activeId) throw new Error("不能删除当前或内置模板")
+    if (id === BUILTIN_ID) throw new Error("不能删除系统内置默认模板")
     const folder = this.folder(id)
+    if (this.activeId === id) {
+      this.activate(BUILTIN_ID)
+    }
     this.store.db.prepare("DELETE FROM template_assets WHERE id=?").run(id)
     rmSync(folder, { recursive: true, force: true })
   }

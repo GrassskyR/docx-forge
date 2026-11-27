@@ -1,46 +1,59 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue"
 import ChatThread from "./ChatThread.vue"
-import { SLOT_LABELS, type ChatTurn, type FormatOption, type MappingRow } from "../types.js"
+import type { FormatOption, MappingRow, TimelineItem } from "../types.js"
 
 const props = defineProps<{
   debug: boolean
   mode: "copy" | "chat"
   draftText: string
+  slotValues: Record<string, string>
+  generateCover: boolean
+  generateToc: boolean
   normalizePunct: boolean
   busy: boolean
+  busyKind: "copy" | "chat" | "surgery" | null
   busyLabel: string
+  elapsedSec: number
   fidelity: number | null | undefined
   lastTokenDelta: number
   mappings: MappingRow[]
-  chatMessages: ChatTurn[]
+  timeline: TimelineItem[]
   activeFormat?: FormatOption
-  slotValues: Record<string, string>
+  suggestedDocxName: string
 }>()
 
 const emit = defineEmits<{
   "update:mode": [mode: "copy" | "chat"]
   "update:draftText": [value: string]
+  "update:generateCover": [value: boolean]
+  "update:generateToc": [value: boolean]
   "update:normalizePunct": [value: boolean]
   updateSlot: [key: string, value: string]
+  fillSample: []
   uploadDraft: [file: File]
   applyFormat: []
+  stopTask: []
   sendChat: [prompt: string]
-  surgery: [kind: "compact" | "orphan" | "tighten" | "vision"]
+  downloadDoc: [url?: string]
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const scrollBox = ref<HTMLElement | null>(null)
 const chatInput = ref("")
 
+const lastAssistantStepCount = computed(() => {
+  const last = props.timeline.at(-1)
+  return last && last.kind === "assistant" ? last.steps.length : 0
+})
+
+const lastAssistantTextLen = computed(() => {
+  const last = props.timeline.at(-1)
+  return last && last.kind === "assistant" ? last.text.length : 0
+})
+
 watch(
-  () => [
-    props.mode,
-    props.chatMessages.length,
-    props.chatMessages.at(-1)?.text.length ?? 0,
-    props.chatMessages.at(-1)?.steps?.length ?? 0,
-    props.chatMessages.at(-1)?.docUrl ?? "",
-  ],
+  () => [props.mode, props.timeline.length, lastAssistantTextLen.value, lastAssistantStepCount.value],
   async () => {
     if (props.mode !== "chat") return
     await nextTick()
@@ -49,9 +62,29 @@ watch(
 )
 
 const extraSlots = computed(() => props.activeFormat?.fields ?? [])
+const hasDraft = computed(() => props.draftText.trim().length > 0)
 
-function slotLabel(field: { name: string; label?: string }) {
-  return field.label || SLOT_LABELS[field.name] || field.name
+const filledSlotCount = computed(
+  () => Object.values(props.slotValues).filter((v) => v?.trim()).length,
+)
+
+const contextBannerText = computed(() => {
+  const chars = props.draftText.trim().length
+  const totalSlots = extraSlots.value.length
+  if (chars > 0 || filledSlotCount.value > 0) {
+    return (
+      "已实时关联当前底稿：正文 " +
+      chars +
+      " 字" +
+      (totalSlots ? ` · 已填 ${filledSlotCount.value}/${totalSlots} 项信息` : "")
+    )
+  }
+  return "当前底稿为空，AI 起草后将自动同步回「原文字套格式」"
+})
+
+function slotPlaceholder(slot: { label: string; sample?: string }) {
+  if (slot.sample) return `例：${slot.sample}（留空则置空）`
+  return `填写${slot.label}（留空则置空）`
 }
 
 function onDraftPicked(e: Event) {
@@ -63,9 +96,14 @@ function onDraftPicked(e: Event) {
 
 function submitChat() {
   const text = chatInput.value.trim()
-  if (!text) return
+  if (!text || props.busy) return
   chatInput.value = ""
   emit("sendChat", text)
+}
+
+function onPickPrompt(promptText: string) {
+  chatInput.value = promptText
+  submitChat()
 }
 
 function onChatKeydown(e: KeyboardEvent) {
@@ -79,19 +117,14 @@ function onChatKeydown(e: KeyboardEvent) {
 <template>
   <section
     id="contentCol"
-    class="w-full shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-[#E2E8F0] flex flex-col min-h-[420px] lg:min-h-0"
-    :class="
-      debug
-        ? 'lg:w-[38%] lg:min-w-[350px] lg:max-w-[460px]'
-        : 'lg:w-[44%] lg:min-w-[360px] lg:max-w-[540px]'
-    "
+    class="w-full lg:w-[44%] lg:min-w-[340px] lg:max-w-[530px] shrink-0 bg-white lg:border-r border-[#E2E8F0] flex flex-col flex-1 lg:flex-none min-h-0"
   >
-    <div class="px-5 pt-4 pb-3 border-b border-[#F1F5F9] flex items-center justify-between gap-2">
-      <div class="inline-flex p-1 rounded-[10px] bg-[#F1F5F9] text-[12.5px]">
+    <div class="px-4 pt-3 pb-2.5 border-b border-[#F1F5F9] flex items-center justify-between gap-2">
+      <div class="inline-flex p-1 rounded-[10px] bg-[#F1F5F9] text-[12px]">
         <button
           id="tabCopy"
           type="button"
-          class="px-3.5 py-1.5 rounded-[7px] font-medium transition cursor-pointer"
+          class="px-3 py-1.5 rounded-[7px] font-medium transition cursor-pointer"
           :class="
             mode === 'copy'
               ? 'bg-white text-[#0F172A] shadow-2xs'
@@ -104,7 +137,7 @@ function onChatKeydown(e: KeyboardEvent) {
         <button
           id="tabChat"
           type="button"
-          class="px-3.5 py-1.5 rounded-[7px] font-medium transition cursor-pointer"
+          class="px-3 py-1.5 rounded-[7px] font-medium transition cursor-pointer"
           :class="
             mode === 'chat'
               ? 'bg-white text-[#0F172A] shadow-2xs'
@@ -115,14 +148,29 @@ function onChatKeydown(e: KeyboardEvent) {
           让 AI 写 / 改
         </button>
       </div>
-      <span class="text-[11.5px] text-[#64748B]">
-        {{ mode === "copy" ? "仅排格式，不改原文一字" : "像跟助理说话一样起草或微调" }}
+      <span class="text-[11.5px] text-[#64748B] truncate">
+        {{ mode === "copy" ? "共用同一份底稿，无缝接力" : "支持直接润色或微调左侧底稿" }}
       </span>
+    </div>
+
+    <!-- 对话模式下顶部底稿联动状态条 -->
+    <div
+      v-if="mode === 'chat'"
+      class="px-4 py-2 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between gap-2 text-[11.5px]"
+    >
+      <span class="text-[#475569] truncate">{{ contextBannerText }}</span>
+      <button
+        type="button"
+        class="text-[#2563EB] hover:underline font-medium shrink-0 cursor-pointer"
+        @click="emit('update:mode', 'copy')"
+      >
+        查看底稿 →
+      </button>
     </div>
 
     <div
       ref="scrollBox"
-      class="flex-1 min-h-0 overflow-y-auto scroll-thin p-5 flex flex-col gap-4 select-text"
+      class="flex-1 min-h-0 overflow-y-auto scroll-thin p-4 flex flex-col gap-3.5 select-text"
       :class="mode === 'chat' ? 'bg-[#F8FAFC]' : 'bg-white'"
     >
       <template v-if="mode === 'copy'">
@@ -131,47 +179,71 @@ function onChatKeydown(e: KeyboardEvent) {
           open
           class="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2.5 text-[12px]"
         >
-          <summary class="cursor-pointer font-medium text-[#334155] select-none">
-            封面 / 抬头信息填空（共 {{ extraSlots.length }} 项，留空则保持原封面）
+          <summary class="cursor-pointer font-medium text-[#334155] flex items-center justify-between select-none">
+            <span>文档信息填空（共 {{ extraSlots.length }} 项，留空项将自动置空）</span>
           </summary>
           <div class="grid grid-cols-2 gap-2.5 pt-2.5">
-            <div v-for="slot in extraSlots" :key="slot.name">
-              <label class="block text-[11px] text-[#64748B] mb-0.5">{{ slotLabel(slot) }}</label>
+            <div
+              v-for="slot in extraSlots"
+              :key="slot.name"
+              :class="extraSlots.length === 1 ? 'col-span-2' : ''"
+            >
+              <label class="block text-[11px] text-[#64748B] mb-0.5">{{ slot.label }}</label>
               <input
                 type="text"
                 :value="slotValues[slot.name] ?? ''"
-                :placeholder="'填写' + slotLabel(slot)"
-                class="w-full h-8 px-2.5 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] bg-white text-[12px] text-[#0F172A] outline-none"
+                :placeholder="slotPlaceholder(slot)"
+                class="w-full h-8 px-2.5 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] bg-white text-[12px] text-[#0F172A] placeholder-[#94A3B8] outline-none"
                 @input="emit('updateSlot', slot.name, ($event.target as HTMLInputElement).value)"
               />
             </div>
           </div>
         </details>
 
-        <div class="flex-1 flex flex-col gap-2 min-h-[240px]">
+        <div class="flex-1 flex flex-col gap-2 min-h-[220px]">
           <div class="flex items-center justify-between text-[12px]">
             <span class="font-medium text-[#334155]">文章正文</span>
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".docx,.txt,.md"
-              class="hidden"
-              @change="onDraftPicked"
-            />
-            <button
-              id="uploadDraftBtn"
-              type="button"
-              class="text-[#2563EB] hover:underline font-medium cursor-pointer"
-              @click="fileInput?.click()"
-            >
-              导入草稿 .docx / .txt
-            </button>
+            <div class="flex items-center gap-2.5">
+              <button
+                v-if="!hasDraft"
+                id="fillSampleBtn"
+                type="button"
+                class="text-[#2563EB] hover:underline font-medium cursor-pointer"
+                @click="emit('fillSample')"
+              >
+                填入示例正文
+              </button>
+              <button
+                v-else
+                id="clearDraftBtn"
+                type="button"
+                class="text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                @click="emit('update:draftText', '')"
+              >
+                清空正文
+              </button>
+              <input
+                ref="fileInput"
+                type="file"
+                accept=".docx,.txt,.md"
+                class="hidden"
+                @change="onDraftPicked"
+              />
+              <button
+                id="uploadDraftBtn"
+                type="button"
+                class="text-[#2563EB] hover:underline font-medium cursor-pointer"
+                @click="fileInput?.click()"
+              >
+                导入草稿 .docx/.txt
+              </button>
+            </div>
           </div>
           <textarea
             id="draftEditor"
             :value="draftText"
-            class="flex-1 w-full rounded-xl border border-[#E2E8F0] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] bg-[#F8FAFC]/50 focus:bg-white p-3.5 text-[13px] leading-[1.8] text-[#0F172A] outline-none resize-none transition"
-            placeholder="在此粘贴或输入文章内容…"
+            class="flex-1 w-full rounded-xl border border-[#E2E8F0] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] bg-[#F8FAFC]/50 focus:bg-white p-3.5 text-[13px] leading-[1.8] text-[#0F172A] placeholder-[#94A3B8] outline-none resize-none transition"
+            placeholder="在此粘贴或输入正文内容…（也可切到「让 AI 写 / 改」由 AI 起草后自动回填此处）"
             @input="emit('update:draftText', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
         </div>
@@ -184,7 +256,7 @@ function onChatKeydown(e: KeyboardEvent) {
               <template v-if="lastTokenDelta > 0"> · {{ lastTokenDelta }} tok</template>
             </span>
           </div>
-          <template v-if="mappings.length">
+          <template v-if="mappings.length && hasDraft">
             <div
               v-for="row in mappings"
               :key="row.id + row.target"
@@ -200,7 +272,7 @@ function onChatKeydown(e: KeyboardEvent) {
             v-else
             class="px-2.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-[11px] text-[#64748B]"
           >
-            点击下方「套用格式」后，将在此展示 P0..Pn 到模板槽位/原型的精确区间映射。
+            填写正文并点击「套用格式」后，将在此展示 P0..Pn 段落区间映射。
           </div>
         </div>
       </template>
@@ -208,67 +280,92 @@ function onChatKeydown(e: KeyboardEvent) {
       <ChatThread
         v-else
         :debug="debug"
-        :busy="busy"
-        :messages="chatMessages"
+        :busy="busy && busyKind === 'chat'"
+        :busy-label="busyLabel"
+        :elapsed-sec="elapsedSec"
+        :items="timeline"
         :active-format-name="activeFormat?.name"
-        @pick-prompt="chatInput = $event"
+        :has-draft="hasDraft"
+        :suggested-docx-name="suggestedDocxName"
+        @pick-prompt="onPickPrompt"
+        @download-doc="emit('downloadDoc', $event)"
       />
     </div>
 
-    <div v-if="debug" id="debugSurgeryBar" class="px-5 py-2.5 border-t border-[#E2E8F0] bg-[#F8FAFC]">
-      <div class="text-[10.5px] font-medium text-[#64748B] mb-1.5">调试手术工具（确定性操作）</div>
-      <div class="flex flex-wrap gap-1.5 text-[11px]">
-        <button
-          type="button"
-          class="px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer"
-          @click="emit('surgery', 'compact')"
-        >
-          一键压页收口
-        </button>
-        <button
-          type="button"
-          class="px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer"
-          @click="emit('surgery', 'orphan')"
-        >
-          防孤立落款
-        </button>
-        <button
-          type="button"
-          class="px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer"
-          @click="emit('surgery', 'tighten')"
-        >
-          行距紧缩 -1
-        </button>
-        <button
-          type="button"
-          class="px-2.5 py-1 rounded-full bg-white hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0] text-[#334155] font-medium cursor-pointer"
-          @click="emit('surgery', 'vision')"
-        >
-          强制视觉终审
-        </button>
-      </div>
-    </div>
+    <div class="px-4 py-3 border-t border-[#E2E8F0] bg-white">
+      <div v-if="mode === 'copy'" class="space-y-2.5">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-[#475569]">
+          <label
+            v-if="!activeFormat?.hasCover"
+            class="inline-flex items-center gap-1.5 cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              :checked="generateCover"
+              class="accent-[#2563EB] rounded"
+              @change="emit('update:generateCover', ($event.target as HTMLInputElement).checked)"
+            />
+            <span>自动生成独立封面</span>
+          </label>
+          <label
+            v-if="!activeFormat?.hasToc"
+            class="inline-flex items-center gap-1.5 cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              :checked="generateToc"
+              class="accent-[#2563EB] rounded"
+              @change="emit('update:generateToc', ($event.target as HTMLInputElement).checked)"
+            />
+            <span>自动生成目录</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              :checked="normalizePunct"
+              class="accent-[#2563EB] rounded"
+              @change="emit('update:normalizePunct', ($event.target as HTMLInputElement).checked)"
+            />
+            <span>规范公文标点</span>
+          </label>
+        </div>
 
-    <div class="px-5 py-3.5 border-t border-[#E2E8F0] bg-white">
-      <div v-if="mode === 'copy'" class="flex items-center justify-between gap-3">
-        <label class="flex items-center gap-2 text-[12px] text-[#475569] cursor-pointer">
-          <input
-            type="checkbox"
-            :checked="normalizePunct"
-            class="accent-[#2563EB] rounded"
-            @change="emit('update:normalizePunct', ($event.target as HTMLInputElement).checked)"
-          />
-          <span>顺手规范公文标点（〔〕/全角冒号）</span>
-        </label>
-        <button
-          id="applyFormatBtn"
-          type="button"
-          :disabled="busy"
-          class="h-9 px-5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-[13px] font-medium shadow-xs transition cursor-pointer shrink-0"
-          @click="emit('applyFormat')"
-        >
-          {{ busy ? busyLabel || "处理中…" : "套用格式" }}
-        </button>
+        <div class="flex items-center justify-between gap-2">
+          <div class="text-[12px] min-w-0 truncate tabular">
+            <span
+              v-if="busy && busyKind === 'copy'"
+              class="inline-flex items-center gap-1.5 text-[#2563EB] font-medium"
+            >
+              <span class="w-2 h-2 rounded-full bg-[#2563EB] animate-ping"></span>
+              <span>{{ busyLabel || "正在排版…" }} ({{ elapsedSec }}s)</span>
+            </span>
+            <span v-else class="text-[#64748B]">
+              {{ hasDraft ? "就绪，点击右侧按当前格式生成 Word" : "请先粘贴、输入或导入正文内容" }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              v-if="busy && busyKind === 'copy'"
+              id="stopCopyBtn"
+              type="button"
+              class="h-9 px-3.5 rounded-lg border border-[#DC2626] text-[#DC2626] hover:bg-[#FEF2F2] text-[12.5px] font-medium transition cursor-pointer"
+              @click="emit('stopTask')"
+            >
+              ■ 停止
+            </button>
+            <button
+              id="applyFormatBtn"
+              type="button"
+              :disabled="!hasDraft || busy"
+              :title="hasDraft ? '按当前格式排版生成 Word' : '请先输入或导入正文内容'"
+              class="h-9 px-5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-45 disabled:cursor-not-allowed text-white text-[13px] font-medium shadow-xs transition cursor-pointer shrink-0"
+              @click="emit('applyFormat')"
+            >
+              套用格式
+            </button>
+          </div>
+        </div>
       </div>
 
       <div
@@ -280,17 +377,28 @@ function onChatKeydown(e: KeyboardEvent) {
           v-model="chatInput"
           rows="2"
           class="w-full text-[13px] leading-relaxed text-[#0F172A] placeholder-[#94A3B8] outline-none resize-none bg-transparent"
-          placeholder="说说想写什么，或者想怎么调格式…"
+          placeholder="说说想写什么，或让 AI 润色/微调左侧底稿…"
           @keydown="onChatKeydown"
         ></textarea>
         <button
+          v-if="busy && busyKind === 'chat'"
+          id="stopChatBtn"
+          type="button"
+          class="h-8 px-3.5 rounded-lg border border-[#DC2626] text-[#DC2626] hover:bg-[#FEF2F2] text-[12px] font-medium shrink-0 transition cursor-pointer"
+          @click="emit('stopTask')"
+        >
+          ■ 停止
+        </button>
+        <button
+          v-else
           id="sendChatBtn"
           type="button"
-          :disabled="busy"
-          class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-[12.5px] font-medium shrink-0 transition cursor-pointer"
+          :disabled="!chatInput.trim() || busy"
+          :title="chatInput.trim() ? '发送 (Enter)' : '请输入对话指令'"
+          class="h-8 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-45 disabled:cursor-not-allowed text-white text-[12.5px] font-medium shrink-0 transition cursor-pointer"
           @click="submitChat"
         >
-          {{ busy ? "…" : "发送" }}
+          发送
         </button>
       </div>
     </div>

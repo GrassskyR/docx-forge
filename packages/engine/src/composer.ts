@@ -210,7 +210,11 @@ function replaceCrossRunSubstring(d: Document, p: Element, needle: string, repla
   const prefix = texts[startRun].slice(0, startOff)
   const suffix = texts[endRun].slice(endOff)
   const donorRpr = children(runs[startRun], "rPr")[0]
-  const merged = prefix + replacement + (startRun === endRun ? suffix : "")
+  const uEl = donorRpr && children(donorRpr, "u")[0]
+  const keepBlankLine =
+    !replacement && Boolean(uEl && uEl.getAttributeNS(W, "val") !== "none")
+  const effectiveRep = keepBlankLine ? " ".repeat(Math.max(6, visualCols(needle))) : replacement
+  const merged = prefix + effectiveRep + (startRun === endRun ? suffix : "")
   const newFirst = makeTextRunWithRpr(d, donorRpr, merged)
   p.insertBefore(newFirst, runs[startRun])
   p.removeChild(runs[startRun])
@@ -308,9 +312,9 @@ function applyParagraphFieldEdits(
         p.insertBefore(makeTextRunWithRpr(d, prefRpr, span.keepPrefix), firstRun)
       }
 
-      const targetW = Math.max(span.visualWidth, visualCols(value) + 2)
+      const targetW = Math.max(span.visualWidth, value ? visualCols(value) + 2 : 6)
       const pad = Math.max(0, targetW - visualCols(value) - 1)
-      const padded = " " + value + " ".repeat(pad)
+      const padded = value ? " " + value + " ".repeat(pad) : " ".repeat(targetW)
       const forceU = span.kind === "underscore"
       p.insertBefore(makeTextRunWithRpr(d, span.donorRPr, padded, forceU), firstRun)
 
@@ -333,7 +337,8 @@ function applyParagraphFieldEdits(
     const cPos = rt.search(/[：:]/)
     if (cPos >= 0) {
       const rPr = children(r, "rPr")[0]
-      p.insertBefore(makeTextRunWithRpr(d, rPr, rt.slice(0, cPos + 1) + " " + cleanVal), r)
+      const tailText = cleanVal ? " " + cleanVal : ""
+      p.insertBefore(makeTextRunWithRpr(d, rPr, rt.slice(0, cPos + 1) + tailText), r)
       for (const tail of runs.slice(idx)) {
         if (!tail.getElementsByTagNameNS(W, "txbxContent").length) p.removeChild(tail)
       }
@@ -838,19 +843,23 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     }
   }
 
-  // 4. Fill metadata FieldSlots
+  // 4. Fill metadata FieldSlots (unfilled slots default to clean erasure)
   const slotVals = input.slot_values ?? {}
+  const resolvedSlotMap: Record<string, string> = {}
   const paraEditGroups = new Map<
     Element,
     { mirrors: Element[]; edits: { field: FieldSlot; value: string }[] }
   >()
   for (const { field, target } of resolvedFields) {
-    const val = slotVals[field.name]
-    if (val === undefined || !target) continue
+    const rawVal = slotVals[field.name] ?? ""
+    if (rawVal.trim()) {
+      resolvedSlotMap[field.name] = stripLeadingFieldLabel(rawVal, field.label)
+    }
+    if (!target) continue
     if (target.kind === "cell" && (!field.mode || field.mode === "cell")) {
       const tc = target.element
       const sampleP = children(tc, "p")[0]
-      const cleanVal = stripLeadingFieldLabel(val, field.label)
+      const cleanVal = stripLeadingFieldLabel(rawVal, field.label)
       const newP = sampleP
         ? cloneParagraph(d, sampleP, cleanVal)
         : synthesizeParagraph(d, cleanVal, asset.style_dna.body_style)
@@ -858,6 +867,14 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
         if (node.localName !== "tcPr") tc.removeChild(node)
       }
       tc.appendChild(newP)
+    } else if (
+      target.kind === "block" &&
+      target.element.localName === "p" &&
+      field.mode === "cell" &&
+      !rawVal.trim() &&
+      !target.element.getElementsByTagNameNS(W, "sectPr").length
+    ) {
+      target.element.parentNode?.removeChild(target.element)
     } else {
       const pEl =
         target.element.localName === "p" ? target.element : children(target.element, "p")[0]
@@ -866,7 +883,7 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
         mirrors: target.mirrors,
         edits: [],
       }
-      group.edits.push({ field, value: val })
+      group.edits.push({ field, value: rawVal })
       paraEditGroups.set(pEl, group)
     }
   }
@@ -875,6 +892,9 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     for (const mirrorP of group.mirrors) {
       applyParagraphFieldEdits(d, mirrorP, group.edits)
     }
+  }
+  for (const [k, v] of Object.entries(slotVals)) {
+    if (v?.trim() && !(k in resolvedSlotMap)) resolvedSlotMap[k] = v.trim()
   }
 
   // 5. Inject content into content_slots
@@ -1045,6 +1065,8 @@ export async function compose(data: string, asset: TemplateAsset, input: Compose
     docx_url: "/files/documents/" + doc_id + "/document.docx",
     body_plan: normalizedPlan,
     body_indices: paraIndices,
+    body_texts: orderedTextItems.map((i) => i.text!),
+    resolved_slots: resolvedSlotMap,
     removed_sections: removedSections,
     added_sections: addedSections,
   }

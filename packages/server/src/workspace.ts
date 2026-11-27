@@ -52,6 +52,15 @@ import { jsonCompletion } from "./model.js"
 const run = promisify(execFile)
 const MAX_REACT_ROUNDS = 3
 
+export interface TaskProgressOpts {
+  onPhase?: (label: string) => void
+  signal?: AbortSignal
+}
+
+function ensureAlive(signal?: AbortSignal) {
+  if (signal?.aborted) throw new Error("任务已取消")
+}
+
 interface DryRunObservation {
   hardIssues: string[]
   layout?: LayoutTelemetry
@@ -744,13 +753,22 @@ export class Workspace {
     return { ...result, sample_urls: urls }
   }
 
-  async internalize(id: string, name: string, category: string, rules = "", setActive = true) {
+  async internalize(
+    id: string,
+    name: string,
+    category: string,
+    rules = "",
+    setActive = true,
+    opts?: TaskProgressOpts,
+  ) {
+    ensureAlive(opts?.signal)
     if (!/^[0-9a-f-]{36}$/.test(id)) throw new Error("无效检查编号")
     const dir = join(this.docs.directory, "inspections", id)
     const docMap = JSON.parse(await readFile(join(dir, "doc_map.json"), "utf8")) as DocumentMap
     const baseBytes = await readFile(join(dir, "base.docx"))
 
     if (!this.docs.useModel) {
+      opts?.onPhase?.("正在生成基础版式蓝图并保存…")
       const baseline = buildOfflineBaselineBlueprint(docMap, baseBytes)
       return this.templates.save(
         id,
@@ -779,6 +797,7 @@ export class Workspace {
     ): Promise<{ blueprint: Blueprint; rulesMd?: string }> => {
       let cur = raw
       for (let fix = 0; fix < 2; fix++) {
+        ensureAlive(opts?.signal)
         try {
           const inner = (cur?.blueprint ?? cur) as Record<string, unknown> | undefined
           const merged =
@@ -799,6 +818,7 @@ export class Workspace {
               this.docs.bill,
               refImages,
               `internalize-v4-coord-fix-${tag}`,
+              opts?.signal,
             )
           }
         }
@@ -807,12 +827,14 @@ export class Workspace {
     }
 
     // Step 0: Initial blueprint proposal from reference DocumentMap + reference images
+    opts?.onPhase?.("正在提取封面填空与正文槽位…")
     const initPrompt = buildInitialBlueprintPrompt(docMap, category, rules, refImages.length > 0)
     const initRaw = await jsonCompletion(
       initPrompt,
       this.docs.bill,
       refImages,
       "internalize-v4-propose",
+      opts?.signal,
     )
     const initResolved = await resolveCandidate(initRaw, "init")
     let validBlueprint: Blueprint = initResolved.blueprint
@@ -820,13 +842,17 @@ export class Workspace {
 
     // ReAct Loop: Dry-Run Render & Observe -> LLM Critic/Revise (up to 3 full critique rounds)
     for (let round = 0; round < MAX_REACT_ROUNDS; round++) {
+      ensureAlive(opts?.signal)
+      opts?.onPhase?.(`正在执行第 ${round + 1}/${MAX_REACT_ROUNDS} 轮试填排版自检…`)
       const obs = await observeDryRun(baseBytes, docMap, validBlueprint)
+      ensureAlive(opts?.signal)
       const reviewPrompt = buildReActReviewPrompt(docMap, validBlueprint, bestRules, obs)
       const review = await jsonCompletion(
         reviewPrompt,
         this.docs.bill,
         obs.dryImages,
         `internalize-v4-react-${round + 1}`,
+        opts?.signal,
       )
 
       const verdict = review?.verdict === "accept" ? "accept" : "revise"
@@ -872,6 +898,7 @@ export class Workspace {
           this.docs.bill,
           refImages,
           `internalize-v4-hard-fix-${round + 1}`,
+          opts?.signal,
         )
         const retryResolved = await resolveCandidate(retryRaw, `h${round + 1}`)
         validBlueprint = retryResolved.blueprint
@@ -879,6 +906,8 @@ export class Workspace {
       }
     }
 
+    ensureAlive(opts?.signal)
+    opts?.onPhase?.("正在保存格式模板…")
     const saved = this.templates.save(
       id,
       name,
@@ -905,17 +934,24 @@ export class Workspace {
     category = "general",
     rules = "",
     setActive = true,
+    opts?: TaskProgressOpts,
   ) {
+    opts?.onPhase?.("正在解析原件版式与渲染样张…")
     const { inspect_id } = await this.inspect(filePath, [1, 2, 3])
     const finalName = name?.trim() || basename(filePath).replace(/\.[^.]+$/, "")
-    return this.internalize(inspect_id, finalName, category, rules, setActive)
+    return this.internalize(inspect_id, finalName, category, rules, setActive, opts)
   }
 
   ingest(input: { text?: string; file_path?: string }) {
     return ingestDraft(this.docs.directory, input)
   }
 
-  async plan(template: TemplateAsset, draftId: string): Promise<ComposePlan> {
+  async plan(
+    template: TemplateAsset,
+    draftId: string,
+    signal?: AbortSignal,
+  ): Promise<ComposePlan> {
+    ensureAlive(signal)
     const paragraphs = await readDraft(this.docs.directory, draftId)
     const outline = paragraphs.map((p, i) => `P${i}|${p.length}|${p.slice(0, 28)}`)
     const paraProtos = Object.keys(template.blueprint.prototypes ?? {}).filter(
@@ -943,6 +979,7 @@ export class Workspace {
 
     let feedback = ""
     for (let attempt = 0; attempt < 2; attempt++) {
+      ensureAlive(signal)
       const raw = await jsonCompletion(
         [
           `只输出合法 JSON 对象 {"plan": [...]}，严格按顺序连续覆盖 P0 到 P${paragraphs.length - 1}，不得遗漏或重叠。` +
@@ -957,6 +994,7 @@ export class Workspace {
         this.docs.bill,
         [],
         "plan-zero-copy-v4",
+        signal,
       )
       const obj = (raw ?? {}) as Record<string, unknown>
       const rawList = Array.isArray(raw)
@@ -1017,9 +1055,16 @@ export class Workspace {
       template_id?: string
       body_plan?: ComposePlan
     },
+    opts?: TaskProgressOpts,
   ) {
+    ensureAlive(opts?.signal)
     const asset = this.templates.get(input.template_id ?? this.templates.activeId ?? "")
-    const body_plan = input.body_plan ?? (await this.plan(asset, input.draft_id!))
+    if (!input.body_plan) {
+      opts?.onPhase?.("正在按模板映射标题与正文样式…")
+    }
+    const body_plan = input.body_plan ?? (await this.plan(asset, input.draft_id!, opts?.signal))
+    ensureAlive(opts?.signal)
+    opts?.onPhase?.("正在写入槽位并生成 Word 文档…")
     const result = await compose(this.docs.directory, asset, { ...input, body_plan })
     const expected =
       input.mode === "exact_copy"
@@ -1036,6 +1081,8 @@ export class Workspace {
       result.removed_sections,
       result.added_sections,
     )
+    ensureAlive(opts?.signal)
+    opts?.onPhase?.("正在渲染高清页面预览与版面检查…")
     const layout = await telemetry(result.docx_path, directory)
     const pages = await preview(result.docx_path, directory)
     const response = {
@@ -1085,7 +1132,8 @@ export class Workspace {
     return { ...result, before: changes.before, after: changes.after }
   }
 
-  async audit(id: string, runVision = true) {
+  async audit(id: string, runVision = true, signal?: AbortSignal) {
+    ensureAlive(signal)
     const dir = this.directoryOf(id)
     const result = JSON.parse(await readFile(join(dir, "result.json"), "utf8")) as {
       layout: LayoutTelemetry
@@ -1102,6 +1150,7 @@ export class Workspace {
           this.docs.bill,
           images,
           "visual-audit",
+          signal,
         )
         const rawIssues = Array.isArray(output?.issues) ? output.issues : []
         return rawIssues

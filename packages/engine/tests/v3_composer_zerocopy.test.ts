@@ -26,7 +26,7 @@ const TARGETS = [
 ]
 
 for (const file of TARGETS) {
-  test("原件保留区、段落克隆与长文零改字 " + file, async () => {
+  test.concurrent("原件保留区、段落克隆与长文零改字 " + file, async () => {
     const data = await mkdtemp(join(tmpdir(), "docforge-compose-"))
     const db = new Store(join(data, "profiles.db"))
     try {

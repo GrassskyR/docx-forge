@@ -342,6 +342,20 @@ test("复杂框表手术：同行多空位宽度守恒填写、跨 Run 子串匹
     expect(outXml).toContain("二、实验步骤与数据记录")
     expect(outXml).toContain("先行进位加法器")
     expect(outXml).toContain("输出Sum")
+
+    // Verify unfilled FieldSlots default to clean erasure (no leaked stranger ID/course)
+    const blankOut = await compose(dir, asset, {
+      mode: "authored",
+      slot_values: { student_name: "王新宇" },
+      body_plan: [
+        { slot: "sec_purpose", prototype: "body", text: "验证留空槽位自动置空。" },
+        { slot: "sec_steps", prototype: "body", text: "步骤正常写入。" },
+      ],
+    })
+    const blankXml = strFromU8(unzipSync(await readFile(blankOut.docx_path))["word/document.xml"])
+    expect(blankXml).toContain("王新宇")
+    expect(blankXml).not.toContain("U201612345")
+    expect(blankXml).not.toContain("旧示例课程")
   } finally {
     db.db.close()
     await rm(dir, { recursive: true, force: true })

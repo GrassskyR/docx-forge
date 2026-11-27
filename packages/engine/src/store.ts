@@ -12,5 +12,9 @@ export class Store {
     this.db.exec(
       "CREATE TABLE IF NOT EXISTS template_assets(id TEXT PRIMARY KEY,payload TEXT NOT NULL)",
     )
+    this.db.exec(
+      "CREATE TABLE IF NOT EXISTS sessions(" +
+        "id TEXT PRIMARY KEY,updated_at INTEGER NOT NULL,payload TEXT NOT NULL)",
+    )
   }
 }

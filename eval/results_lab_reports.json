@@ -1,5 +1,7 @@
 {
-  "generated_at": "2026-11-26T14:11:49.559Z",
+  "generated_at": "2026-11-27T04:30:54.688Z",
+  "elapsed_seconds": 282.04,
+  "concurrency": 16,
   "vision_mode": "native",
   "corpus_size": 30,
   "formats": {
@@ -103,26 +105,25 @@
     },
     "llm_hybrid": {
       "total_docs": 30,
-      "pdf_render_pass": 30,
-      "zero_blank_pages_pass": 29,
-      "toc_pages_valid_pass": 30,
+      "pdf_render_pass": 29,
+      "zero_blank_pages_pass": 28,
+      "toc_pages_valid_pass": 29,
       "vision_audit_passed": 0,
-      "vision_audit_issues": 18,
-      "ooxml_audit_pass": 30,
+      "vision_audit_issues": 20,
+      "ooxml_audit_pass": 29,
       "banner_preserved_pass": 29,
-      "form_container_pass": 30,
+      "form_container_pass": 29,
       "residue_free_pass": 29,
-      "metadata_filled_total": "172/182",
-      "metadata_fill_pct": 94.5,
-      "strict_e2e_pass": 27,
-      "strict_e2e_pct": 90,
-      "avg_tokens": 36491,
+      "metadata_filled_total": "163/182",
+      "metadata_fill_pct": 89.6,
+      "strict_e2e_pass": 28,
+      "strict_e2e_pct": 93.3,
+      "avg_tokens": 36070,
       "failure_breakdown": {
-        "F3_PREFILLED_OR_GUIDE_RESIDUE": 1,
-        "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
+        "F0_PIPELINE_EXCEPTION": 1,
         "F1_TABLE_CELL_UNADDRESSABLE": 1,
         "F6_BLANK_PAGE_LEFT_BEHIND": 1,
-        "F2_SINGLE_SECT_BOUNDARY_LOSS": 1
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 2
       },
       "by_archetype": {
         "multi_section_flowing": {
@@ -131,7 +132,7 @@
         },
         "single_section_flowing": {
           "total": 12,
-          "pass": 11
+          "pass": 12
         },
         "table_form_grid": {
           "total": 6,
@@ -245,27 +246,27 @@
     },
     "llm_hybrid": {
       "total_docs": 30,
-      "pdf_render_pass": 30,
-      "zero_blank_pages_pass": 29,
-      "toc_pages_valid_pass": 30,
+      "pdf_render_pass": 29,
+      "zero_blank_pages_pass": 28,
+      "toc_pages_valid_pass": 29,
       "vision_audit_passed": 0,
-      "vision_audit_issues": 18,
-      "ooxml_audit_pass": 30,
+      "vision_audit_issues": 20,
+      "ooxml_audit_pass": 29,
       "banner_preserved_pass": 28,
-      "form_container_pass": 30,
-      "residue_free_pass": 27,
-      "metadata_filled_total": "172/183",
-      "metadata_fill_pct": 94,
-      "strict_e2e_pass": 23,
-      "strict_e2e_pct": 76.7,
-      "avg_tokens": 36491,
+      "form_container_pass": 29,
+      "residue_free_pass": 28,
+      "metadata_filled_total": "163/183",
+      "metadata_fill_pct": 89.1,
+      "strict_e2e_pass": 25,
+      "strict_e2e_pct": 83.3,
+      "avg_tokens": 36070,
       "failure_breakdown": {
-        "F3_PREFILLED_OR_GUIDE_RESIDUE": 3,
-        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 1,
-        "F2_SINGLE_SECT_BOUNDARY_LOSS": 2,
-        "F4_MULTI_SLOT_FIXED_SECTIONS": 1,
+        "F0_PIPELINE_EXCEPTION": 1,
+        "F5_TEXTBOX_OR_INLINE_MULTI_FIELD": 3,
+        "F2_SINGLE_SECT_BOUNDARY_LOSS": 1,
         "F1_TABLE_CELL_UNADDRESSABLE": 1,
-        "F6_BLANK_PAGE_LEFT_BEHIND": 1
+        "F6_BLANK_PAGE_LEFT_BEHIND": 1,
+        "F3_PREFILLED_OR_GUIDE_RESIDUE": 1
       },
       "by_archetype": {
         "multi_section_flowing": {
@@ -274,11 +275,11 @@
         },
         "single_section_flowing": {
           "total": 12,
-          "pass": 9
+          "pass": 10
         },
         "table_form_grid": {
           "total": 6,
-          "pass": 4
+          "pass": 5
         },
         "hybrid_table_sections": {
           "total": 6,
@@ -435,7 +436,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2886,
+          "elapsed_ms": 14272,
           "tokens_used": 0,
           "map_chars": 3510,
           "fields_detected": [],
@@ -515,7 +516,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": -2242,
+          "elapsed_ms": 12073,
           "tokens_used": 0,
           "map_chars": 3510,
           "fields_detected": [
@@ -578,8 +579,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 44259,
-          "tokens_used": 14500,
+          "elapsed_ms": 73292,
+          "tokens_used": 21428,
           "map_chars": 3510,
           "fields_detected": [
             "student_id@B0[blank0]",
@@ -590,25 +591,29 @@
             "class_name@B11[blank0]",
             "student_name@B12[blank0]",
             "advisor@B13[blank0]",
-            "score@B14[blank0]",
+            "grade@B14[blank0]",
             "comment@B15[blank0]",
             "date@B19[match]"
           ],
           "content_slots": [
-            "body(B48-B84,replace)"
+            "body(B48-B82,replace)"
           ],
           "remove_targets": [
             {
               "start": "B21",
               "end": "B46",
               "drop_section": true,
-              "reason": "整页填写说明、图片与表格格式示例，标注为可不打印"
+              "reason": "整节填写说明、图片与表格格式示例页，原文档标注本页可不打印"
+            },
+            {
+              "start": "B83",
+              "end": "B84",
+              "reason": "旧示例末章标题 4.心得体会 及其括号字数提示、残留空白段，正文统一由 body 槽承载"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
             "body"
           ],
           "pdf_ok": true,
@@ -749,7 +754,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": -765,
+          "elapsed_ms": 22165,
           "tokens_used": 0,
           "map_chars": 8001,
           "fields_detected": [],
@@ -823,7 +828,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 6115,
+          "elapsed_ms": 11352,
           "tokens_used": 0,
           "map_chars": 8001,
           "fields_detected": [
@@ -893,8 +898,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 131525,
-          "tokens_used": 34897,
+          "elapsed_ms": 101177,
+          "tokens_used": 28979,
           "map_chars": 8001,
           "fields_detected": [
             "academic_term@B5[match]",
@@ -907,30 +912,21 @@
           ],
           "content_slots": [
             "body(B36-B120,replace)",
-            "summary(B123-B123,replace)",
-            "references(B126-B138,replace)"
+            "conclusion(B121-B123,replace)",
+            "references(B125-B138,replace)"
           ],
           "remove_targets": [
             {
               "start": "B13",
-              "reason": "封面蓝色装订说明"
+              "reason": "封面蓝红填写说明与装订提示文字"
             },
             {
               "start": "B31",
-              "reason": "目录页蓝色填写提示"
+              "reason": "目录页蓝色提示语（完成后更新目录并删色字）"
             },
             {
               "start": "B34",
-              "reason": "第3页整页特别注意填写说明"
-            },
-            {
-              "start": "B122",
-              "reason": "总结栏目红色填写说明"
-            },
-            {
-              "start": "B139",
-              "end": "B143",
-              "reason": "文末多余空白段"
+              "reason": "目录页整段特别注意模板撰写指导文字"
             }
           ],
           "prototypes": [
@@ -943,7 +939,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 9,
+          "vision_issues_count": 5,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -1068,7 +1064,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": -2211,
+          "elapsed_ms": 18847,
           "tokens_used": 0,
           "map_chars": 1922,
           "fields_detected": [],
@@ -1134,7 +1130,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3605,
+          "elapsed_ms": 11648,
           "tokens_used": 0,
           "map_chars": 1922,
           "fields_detected": [
@@ -1201,17 +1197,17 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 175740,
-          "tokens_used": 43192,
+          "elapsed_ms": 192610,
+          "tokens_used": 42547,
           "map_chars": 1922,
           "fields_detected": [
-            "course_name@B8[match]",
-            "academic_year_term@B5[cell]",
+            "semester@B5[match]",
+            "title@B8[match]",
             "class_name@B16[blank0]",
             "student_id@B16[blank1]",
             "student_name@B19[blank0]",
             "score@B19[blank1]",
-            "date@B31[cell]"
+            "date@B31[match]"
           ],
           "content_slots": [
             "body(B46-B57,replace)",
@@ -1220,35 +1216,25 @@
           ],
           "remove_targets": [
             {
-              "start": "B45",
-              "match": "（一级标题 三号黑体）"
+              "start": "B33",
+              "end": "B44",
+              "drop_section": true,
+              "reason": "目录节占位段已清空，仅余『目 录』标题一行形成重复空白页，整节删除交由自动生成目录承担目录页"
             },
             {
               "start": "B64",
-              "reason": "参考文献顺序引用说明"
+              "reason": "参考文献必须按正文顺序引用的填写说明提示行"
             },
             {
-              "start": "B33",
-              "reason": "原目录页前的空白段"
-            },
-            {
-              "start": "B34",
-              "reason": "原手工目录标题，目录改由引擎自动生成，避免重复目录标题"
-            },
-            {
-              "start": "B35",
-              "end": "B43",
-              "reason": "删除原目录页九连空白占位段，消除近空白页"
-            },
-            {
-              "start": "B44",
-              "drop_section": true,
-              "reason": "摘除原目录节尾分节符块，消除删除目录内容后遗留的空分节及其导致的第3页空白页"
+              "start": "B45",
+              "match": "（一级标题 三号黑体）",
+              "reason": "剥离一级标题同行括号内的字号体例提示"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
+            "heading_3",
             "body"
           ],
           "pdf_ok": true,
@@ -1381,7 +1367,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3317,
+          "elapsed_ms": 18772,
           "tokens_used": 0,
           "map_chars": 2217,
           "fields_detected": [],
@@ -1449,7 +1435,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2999,
+          "elapsed_ms": 11473,
           "tokens_used": 0,
           "map_chars": 2217,
           "fields_detected": [
@@ -1516,12 +1502,12 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 173194,
-          "tokens_used": 33948,
+          "elapsed_ms": 115057,
+          "tokens_used": 30762,
           "map_chars": 2217,
           "fields_detected": [
             "term@B5[match]",
-            "course_title@B8[match]",
+            "course@B8[match]",
             "class_name@B16[blank0]",
             "student_id@B16[blank1]",
             "student_name@B19[blank0]",
@@ -1533,13 +1519,16 @@
           ],
           "remove_targets": [
             {
-              "start": "B21",
-              "end": "B30",
-              "reason": "封面多余空白段导致签署日期溢至第2页，压缩后归位"
+              "start": "B33",
+              "end": "B43"
             },
             {
-              "start": "B75",
-              "reason": "正文顺序引用提示属旧模板说明文字"
+              "start": "B44",
+              "drop_section": true
+            },
+            {
+              "start": "B76",
+              "end": "B77"
             }
           ],
           "prototypes": [
@@ -1690,7 +1679,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3740,
+          "elapsed_ms": 18707,
           "tokens_used": 0,
           "map_chars": 3271,
           "fields_detected": [],
@@ -1766,7 +1755,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3563,
+          "elapsed_ms": 11349,
           "tokens_used": 0,
           "map_chars": 3271,
           "fields_detected": [],
@@ -1833,8 +1822,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 122508,
-          "tokens_used": 30941,
+          "elapsed_ms": 96908,
+          "tokens_used": 26401,
           "map_chars": 3271,
           "fields_detected": [
             "student_name@B3[blank0]",
@@ -1843,18 +1832,18 @@
             "bench_no@B3[blank3]",
             "date@B4[blank0]",
             "session@B4[blank1]",
-            "grade@B4[blank2]",
-            "teacher_signature@B4[blank3]",
+            "score@B4[blank2]",
+            "teacher_sign@B4[blank3]",
             "course@B6[match]",
             "title@B7[match]",
             "subtitle@B8[match]"
           ],
           "content_slots": [
-            "objective(B9-B12,replace)",
-            "equipment(B13-B16,replace)",
-            "procedure(B17-B44,replace)",
-            "task(B45-B76,replace)",
-            "discussion(B77-B82,replace)"
+            "purpose(B10-B12,replace)",
+            "equipment(B14-B16,replace)",
+            "procedure(B18-B44,replace)",
+            "tasks(B46-B76,replace)",
+            "questions(B78-B82,replace)"
           ],
           "remove_targets": [],
           "prototypes": [
@@ -1863,11 +1852,11 @@
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 1,
+          "total_pages": 2,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "issues",
-          "vision_issues_count": 5,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -2026,7 +2015,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2954,
+          "elapsed_ms": 18269,
           "tokens_used": 0,
           "map_chars": 823,
           "fields_detected": [],
@@ -2094,7 +2083,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2810,
+          "elapsed_ms": 11984,
           "tokens_used": 0,
           "map_chars": 823,
           "fields_detected": [],
@@ -2166,8 +2155,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 130402,
-          "tokens_used": 29238,
+          "elapsed_ms": 101895,
+          "tokens_used": 19992,
           "map_chars": 823,
           "fields_detected": [
             "college@B0.R1.C0.P0[blank0]",
@@ -2179,20 +2168,23 @@
             "course@B0.R1.C0.P1[blank0]",
             "experiment_date@B0.R1.C0.P1[blank1]",
             "score@B0.R1.C0.P1[blank2]",
-            "group_members@B0.R1.C0.P2[blank0]",
-            "advisor_sign@B0.R1.C2.P35[colon]"
+            "group_member@B0.R1.C0.P2[blank0]",
+            "teacher_sign@B0.R1.C2.P35[colon]",
+            "date@B0.R1.C2.P37[cell]"
           ],
           "content_slots": [
-            "body(B0.R2.C0.P0-B0.R2.C0.P0,replace)"
+            "body_left(B0.R2.C0-B0.R2.C0,replace)",
+            "body_right(B0.R1.C2.P0-B0.R1.C2.P34,replace)"
           ],
           "remove_targets": [
             {
-              "start": "B0.R1.C2.P0",
-              "end": "B0.R1.C2.P34",
-              "reason": "右栏抬头下方 35 段纯空白段，正文已移至下方大书写框，删除以免签字栏上方堆积空行；不得触及 P35 教师签字与 P37 年 月 日"
+              "start": "B1",
+              "reason": "尾部空白段"
             }
           ],
           "prototypes": [
+            "heading_1",
+            "heading_2",
             "body"
           ],
           "pdf_ok": true,
@@ -2200,7 +2192,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 3,
+          "vision_issues_count": 7,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -2373,7 +2365,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4169,
+          "elapsed_ms": 24077,
           "tokens_used": 0,
           "map_chars": 5872,
           "fields_detected": [],
@@ -2451,7 +2443,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 6563,
+          "elapsed_ms": 11024,
           "tokens_used": 0,
           "map_chars": 5872,
           "fields_detected": [
@@ -2520,11 +2512,11 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 204140,
-          "tokens_used": 49020,
+          "elapsed_ms": 113160,
+          "tokens_used": 34316,
           "map_chars": 5872,
           "fields_detected": [
-            "course_name@B8[blank0]",
+            "course@B8[blank0]",
             "class_name@B19[blank0]",
             "student_id@B20[blank0]",
             "student_name@B21[blank0]",
@@ -2532,38 +2524,34 @@
             "date@B23[blank0]"
           ],
           "content_slots": [
-            "body(B30-B89,replace)",
-            "references(B136-B141,replace)"
+            "body(B30-B90,replace)",
+            "references(B137-B142,replace)"
           ],
           "remove_targets": [
             {
               "start": "B91",
-              "end": "B134",
-              "reason": "整段格式说明与课程设计补充说明，属编写指南页，不进入成品报告"
+              "end": "B135",
+              "reason": "正文后的整段格式说明、图表与代码段格式示例、目录页码说明及课程设计报告说明页"
             },
             {
-              "start": "B142",
-              "end": "B143",
-              "reason": "残留 Arch Linux 官方 wiki 第6条示例及其 github 仓库超链接，属禁止保留的旧示例与转载地址，整段删除以清除超链接宿主段"
-            },
-            {
-              "start": "B144",
-              "end": "B159",
-              "reason": "参考文献格式说明示例（A图书/B期刊/C会议论文集/D专利/E学位论文/F网页）与仓库版权声明，非报告正文"
+              "start": "B143",
+              "end": "B160",
+              "reason": "参考文献格式说明示例、模板作者的版权声明与仓库链接残留及尾部空段"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
             "heading_3",
-            "body"
+            "body",
+            "table"
           ],
           "pdf_ok": true,
-          "total_pages": 7,
+          "total_pages": 6,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "skipped_pending_layout",
-          "vision_issues_count": 0,
+          "vision_status": "issues",
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -2708,7 +2696,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2781,
+          "elapsed_ms": 14981,
           "tokens_used": 0,
           "map_chars": 889,
           "fields_detected": [],
@@ -2772,7 +2760,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2681,
+          "elapsed_ms": 8004,
           "tokens_used": 0,
           "map_chars": 889,
           "fields_detected": [
@@ -2835,11 +2823,11 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 56536,
-          "tokens_used": 16303,
+          "elapsed_ms": 66264,
+          "tokens_used": 14749,
           "map_chars": 889,
           "fields_detected": [
-            "course@B0[cell]",
+            "title@B0[match]",
             "experiment_name@B5[blank0]",
             "experiment_location@B6[blank0]",
             "experiment_date@B7[blank0]",
@@ -2847,9 +2835,9 @@
             "student_id@B9[blank0]"
           ],
           "content_slots": [
-            "experiment_purpose(B18-B20,replace)",
-            "experiment_content(B23-B34,replace)",
-            "experiment_reflection(B38-B39,replace)"
+            "purpose(B18-B20,replace)",
+            "content(B23-B34,replace)",
+            "reflection(B38-B39,replace)"
           ],
           "remove_targets": [],
           "prototypes": [
@@ -2858,11 +2846,11 @@
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 3,
+          "total_pages": 4,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "issues",
-          "vision_issues_count": 2,
+          "vision_status": "skipped_pending_layout",
+          "vision_issues_count": 0,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -3028,7 +3016,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2315,
+          "elapsed_ms": 15119,
           "tokens_used": 0,
           "map_chars": 6272,
           "fields_detected": [],
@@ -3109,7 +3097,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3036,
+          "elapsed_ms": 7947,
           "tokens_used": 0,
           "map_chars": 6272,
           "fields_detected": [
@@ -3189,150 +3177,48 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 330607,
-          "tokens_used": 100264,
+          "elapsed_ms": 255723,
+          "tokens_used": 78583,
           "map_chars": 6272,
-          "fields_detected": [
-            "student_id@B7[blank0]",
-            "student_name@B8[blank0]",
-            "college@B9[blank0]",
-            "major_category@B10[blank0]",
-            "major_field@B11[blank0]",
-            "research_direction@B12[blank0]",
-            "internal_advisor@B13[blank0]",
-            "external_advisor@B14[blank0]",
-            "cover_date@B20[match]",
-            "practice_unit@B46.R0.C1[cell]",
-            "practice_unit_address@B46.R0.C3[cell]",
-            "thesis_title@B46.R1.C1[cell]",
-            "practice_external_advisor@B46.R2.C1[cell]",
-            "practice_external_advisor_title@B46.R2.C3[cell]",
-            "practice_external_advisor_position@B46.R2.C5[cell]",
-            "practice_form@B46.R3.C1[match]",
-            "practice_start_end@B46.R4.C1[match]",
-            "practice_total_months@B46.R5.C1[match]",
-            "practice_external_months@B46.R5.C3[match]",
-            "competition_name@B46.R6.C1[cell]",
-            "competition_advisor@B46.R7.C1[cell]",
-            "competition_advisor_title@B46.R7.C3[cell]",
-            "competition_start_end@B46.R8.C1[match]",
-            "project_check_1@B46.R11.C0[cell]",
-            "project_no_1@B46.R11.C2[cell]",
-            "project_name_1@B46.R11.C3[cell]",
-            "project_check_2@B46.R12.C0[cell]",
-            "project_no_2@B46.R12.C2[cell]",
-            "project_name_2@B46.R12.C3[cell]",
-            "project_check_3@B46.R13.C0[cell]",
-            "project_no_3@B46.R13.C2[cell]",
-            "project_name_3@B46.R13.C3[cell]",
-            "project_check_4@B46.R14.C0[cell]",
-            "project_no_4@B46.R14.C2[cell]",
-            "project_name_4@B46.R14.C3[cell]",
-            "thesis_from_practice@B46.R15.C1[match]",
-            "progress_date_1@B46.R18.C0[cell]",
-            "progress_unit_1@B46.R18.C1[cell]",
-            "progress_date_2@B46.R19.C0[cell]",
-            "progress_unit_2@B46.R19.C1[cell]",
-            "progress_date_3@B46.R20.C0[cell]",
-            "progress_unit_3@B46.R20.C1[cell]",
-            "progress_date_4@B46.R21.C0[cell]",
-            "progress_unit_4@B46.R21.C1[cell]",
-            "student_signature@B46.R31.C0.P4[colon]",
-            "student_sign_date@B46.R31.C0.P5[match]",
-            "external_advisor_signature@B46.R33.C0.P13[colon]",
-            "external_advisor_sign_date@B46.R33.C0.P14[match]",
-            "unit_dept_head_signature@B46.R34.C0.P16[colon]",
-            "unit_employee1_signature@B46.R34.C0.P17[colon]",
-            "unit_employee2_signature@B46.R34.C0.P18[colon]",
-            "unit_dept_sign_date@B46.R34.C0.P20[match]",
-            "internal_advisor_signature@B46.R36.C0.P13[colon]",
-            "internal_advisor_sign_date@B46.R36.C0.P14[match]",
-            "assessment_score@B46.R38.C0.P0[colon]",
-            "unit_leader_signature@B46.R44.C0.P3[colon]",
-            "unit_leader_date@B46.R44.C0.P4[match]"
-          ],
-          "content_slots": [
-            "practice_progress_1(B46.R18.C2.P0-B46.R18.C2.P0,replace)",
-            "practice_progress_2(B46.R19.C2.P0-B46.R19.C2.P0,replace)",
-            "practice_progress_3(B46.R20.C2.P0-B46.R20.C2.P0,replace)",
-            "practice_progress_4(B46.R21.C2.P0-B46.R21.C2.P0,replace)",
-            "practice_goal(B46.R24.C0.P0-B46.R24.C0.P1,replace)",
-            "practice_cognition(B46.R25.C0.P1-B46.R25.C0.P2,replace)",
-            "key_work(B46.R27.C0.P0-B46.R27.C0.P1,replace)",
-            "harvest_reflection(B46.R28.C0.P1-B46.R28.C0.P11,replace)",
-            "achievements(B46.R30.C0.P0-B46.R30.C0.P11,replace)"
-          ],
-          "remove_targets": [
-            {
-              "start": "B3",
-              "end": "B6",
-              "reason": "删除封面大标题下方4个高行距空白段，腾出垂直空间使中南大学研究生院[原B19]与年 月 日[原B20]落款回到第1页，避免落款掉到表格页顶端"
-            },
-            {
-              "start": "B21",
-              "end": "B39",
-              "reason": "删除填表说明页删除后遗留的大段空白占位段，仅保留B40..B45少量空段作封面与表格分隔，避免表格起始页顶部出现近半页空白并防止表格残行回落到封面页底"
-            },
-            {
-              "start": "B46.R25.C0.P0",
-              "match": "（对本行业领域国内外发展前沿的了解和所从事实践任务的认知）",
-              "reason": "剥离固定栏目标题2.实践认知同行的括号填写提示"
-            },
-            {
-              "start": "B46.R28.C0.P0",
-              "match": "（企业、行业实践或学科竞赛的个人收获、参与企业生产劳动的心得体会、对实践单位和学校管理方面的意见与建议等）",
-              "reason": "剥离固定栏目标题4. 实践收获与体会同行的括号填写提示"
-            },
-            {
-              "start": "B46.R29.C0.P0",
-              "match": "（企业、行业实践或学科竞赛的主要过程及工作成果，按顺序将成果证明材料附于实践报告后）",
-              "reason": "剥离固定栏目标题5.取得的主要成果同行的括号填写提示"
-            },
-            {
-              "start": "B46.R29.C0.P1",
-              "end": "B46.R29.C0.P5",
-              "reason": "删除5.取得的主要成果下方（1）至（5）细目撰写说明，成果正文由R30大单元格槽位承载"
-            }
-          ],
-          "prototypes": [
-            "heading_1",
-            "heading_2",
-            "body"
-          ],
-          "pdf_ok": true,
-          "total_pages": 7,
+          "fields_detected": [],
+          "content_slots": [],
+          "remove_targets": [],
+          "prototypes": [],
+          "error": "模型未返回合法 JSON: ",
+          "pdf_ok": false,
+          "total_pages": 0,
           "raw_zero_text_pages": 0,
-          "toc_pages_valid": true,
-          "vision_status": "skipped_pending_layout",
+          "toc_pages_valid": false,
+          "vision_status": "error",
           "vision_issues_count": 0,
-          "ooxml_audit_passed": true,
+          "ooxml_audit_passed": false,
           "audit_violations": [],
           "blank_pages": 0,
-          "banner_preserved": true,
-          "form_container_respected": true,
-          "metadata_filled": 6,
+          "banner_preserved": false,
+          "form_container_respected": false,
+          "metadata_filled": 0,
           "metadata_total": 6,
-          "metadata_fill_rate": 1,
+          "metadata_fill_rate": 0,
           "unfilled_fields": [],
-          "residue_free": true,
+          "residue_free": false,
           "leaked_residues": [],
-          "strict_e2e_pass": true,
-          "failure_codes": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F0_PIPELINE_EXCEPTION"
+          ],
           "legacy_oracle": {
             "blank_pages": 0,
-            "banner_preserved": true,
-            "form_container_respected": true,
-            "metadata_filled": 6,
+            "banner_preserved": false,
+            "form_container_respected": false,
+            "metadata_filled": 0,
             "metadata_total": 6,
-            "metadata_fill_rate": 1,
+            "metadata_fill_rate": 0,
             "unfilled_fields": [],
             "residue_free": false,
-            "leaked_residues": [
-              "1.请对研究生的职业素养和工作表现如出勤率、工作"
-            ],
+            "leaked_residues": [],
             "strict_e2e_pass": false,
             "failure_codes": [
-              "F3_PREFILLED_OR_GUIDE_RESIDUE"
+              "F0_PIPELINE_EXCEPTION"
             ]
           }
         }
@@ -3471,7 +3357,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2306,
+          "elapsed_ms": 13308,
           "tokens_used": 0,
           "map_chars": 4269,
           "fields_detected": [],
@@ -3549,7 +3435,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1839,
+          "elapsed_ms": 8146,
           "tokens_used": 0,
           "map_chars": 4269,
           "fields_detected": [
@@ -3629,8 +3515,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 59606,
-          "tokens_used": 19412,
+          "elapsed_ms": 62289,
+          "tokens_used": 18499,
           "map_chars": 4269,
           "fields_detected": [
             "course@B11[blank0]",
@@ -3639,15 +3525,15 @@
             "student_name@B13[blank0]",
             "student_id@B14[blank0]",
             "location@B15[blank0]",
-            "score@B16[blank0]",
+            "grade@B16[blank0]",
             "date@B17[blank0]"
           ],
           "content_slots": [
             "overview(B20-B22,replace)",
-            "procedure_results(B24-B71,replace)",
+            "procedure(B24-B71,replace)",
             "summary(B73-B74,replace)",
             "suggestions(B76-B76,replace)",
-            "references(B78-B79,replace)",
+            "references(B78-B78,replace)",
             "code_appendix(B81-B105,replace)"
           ],
           "remove_targets": [],
@@ -3661,7 +3547,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 6,
+          "vision_issues_count": 5,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -3789,7 +3675,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 10388,
+          "elapsed_ms": 28266,
           "tokens_used": 0,
           "map_chars": 10502,
           "fields_detected": [],
@@ -3864,7 +3750,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 9646,
+          "elapsed_ms": 12344,
           "tokens_used": 0,
           "map_chars": 10502,
           "fields_detected": [
@@ -3943,8 +3829,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 84860,
-          "tokens_used": 28067,
+          "elapsed_ms": 82145,
+          "tokens_used": 26804,
           "map_chars": 10502,
           "fields_detected": [
             "title@D0.P2[match]",
@@ -4144,7 +4030,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2837,
+          "elapsed_ms": 17766,
           "tokens_used": 0,
           "map_chars": 1252,
           "fields_detected": [],
@@ -4212,7 +4098,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2899,
+          "elapsed_ms": 11844,
           "tokens_used": 0,
           "map_chars": 1252,
           "fields_detected": [
@@ -4280,33 +4166,33 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 72689,
-          "tokens_used": 20208,
+          "elapsed_ms": 91301,
+          "tokens_used": 22918,
           "map_chars": 1252,
           "fields_detected": [
             "college@B1[blank0]",
-            "course@B10[blank0]",
+            "course_name@B10[blank0]",
             "student_name@B23[blank0]",
             "student_id@B23[blank1]",
             "advisor@B23[blank2]",
             "location@B24[blank0]",
-            "experiment_time@B24[blank1]",
-            "lab_name@B26[blank0]",
-            "project_name@B27[blank0]",
-            "hours@B28[blank0]",
-            "report_score@B40[blank0]",
-            "advisor_sign@B41[blank0]"
+            "exp_time@B24[blank1]",
+            "report_score@B40[colon0]",
+            "advisor_signature@B41[colon0]"
           ],
           "content_slots": [
-            "experiment_principle(B29-B29,insert_after)",
-            "experiment_purpose(B30-B30,insert_after)",
-            "experiment_content(B31-B31,insert_after)",
+            "lab_name(B26-B26,insert_after)",
+            "project_name(B27-B27,insert_after)",
+            "class_hours(B28-B28,insert_after)",
+            "principle(B29-B29,insert_after)",
+            "purpose(B30-B30,insert_after)",
+            "content(B31-B31,insert_after)",
             "equipment(B32-B32,insert_after)",
-            "experiment_steps(B33-B33,insert_after)",
+            "steps(B33-B33,insert_after)",
             "data_analysis(B34-B34,insert_after)",
             "conclusion(B35-B35,insert_after)",
             "summary(B36-B36,insert_after)",
-            "improvement_suggestions(B37-B37,insert_after)"
+            "suggestions(B37-B37,insert_after)"
           ],
           "remove_targets": [],
           "prototypes": [
@@ -4319,7 +4205,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 4,
+          "vision_issues_count": 8,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -4474,7 +4360,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 6114,
+          "elapsed_ms": 18959,
           "tokens_used": 0,
           "map_chars": 39052,
           "fields_detected": [],
@@ -4554,7 +4440,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3937,
+          "elapsed_ms": 8196,
           "tokens_used": 0,
           "map_chars": 39052,
           "fields_detected": [
@@ -4624,8 +4510,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 92666,
-          "tokens_used": 53931,
+          "elapsed_ms": 79140,
+          "tokens_used": 51375,
           "map_chars": 39052,
           "fields_detected": [
             "student_name@B2[match]",
@@ -4635,25 +4521,23 @@
             "date@B3[match]",
             "lab_name@B4[colon]",
             "project_name@B5[colon]",
-            "hours@B6[colon]",
-            "report_score@B664[colon]",
-            "advisor_signature@B665[colon]"
+            "hours@B6[colon]"
           ],
           "content_slots": [
-            "experiment_principle(B8-B94,replace)",
-            "experiment_purpose(B96-B96,replace)",
-            "experiment_content(B99-B99,replace)",
-            "experiment_equipment(B101-B101,replace)",
-            "experiment_steps(B103-B657,replace)",
-            "experiment_conclusion(B659-B659,replace)",
-            "experiment_summary(B661-B661,replace)",
-            "experiment_suggestion(B663-B663,replace)"
+            "principle(B8-B94,replace)",
+            "purpose(B96-B96,replace)",
+            "content(B99-B99,replace)",
+            "equipment(B101-B101,replace)",
+            "steps(B103-B657,replace)",
+            "conclusion(B659-B659,replace)",
+            "summary(B661-B661,replace)",
+            "suggestions(B663-B663,replace)"
           ],
           "remove_targets": [
             {
               "start": "B669",
               "end": "B790",
-              "reason": "重复的第二份实验报告样例，保留一份通用骨架"
+              "reason": "第二份重复实验报告旧内容及分页符"
             }
           ],
           "prototypes": [
@@ -4666,7 +4550,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 8,
+          "vision_issues_count": 11,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -4835,7 +4719,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4492,
+          "elapsed_ms": 17781,
           "tokens_used": 0,
           "map_chars": 775,
           "fields_detected": [],
@@ -4907,7 +4791,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 5070,
+          "elapsed_ms": 11566,
           "tokens_used": 0,
           "map_chars": 775,
           "fields_detected": [],
@@ -4982,43 +4866,40 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 43464,
-          "tokens_used": 12028,
+          "elapsed_ms": 74888,
+          "tokens_used": 16885,
           "map_chars": 775,
           "fields_detected": [
             "course@B1[blank0]",
-            "exp_name@B1[blank1]",
-            "exp_no@B1[blank2]",
-            "exp_type@B1[blank3]",
-            "exp_location@B1[blank4]",
+            "experiment_name@B1[blank1]",
+            "experiment_no@B1[blank2]",
+            "experiment_type@B1[blank3]",
+            "experiment_location@B1[blank4]",
             "grade@B1[blank5]",
             "student_name@B2[blank0]",
             "student_id@B2[blank1]",
             "college@B2[blank2]",
             "department@B2[blank3]",
             "major@B2[blank4]",
-            "date_year@B2[blank5]",
-            "date_month@B2[blank6]",
-            "date_day@B2[blank7]",
-            "start_meridiem@B2[blank8]",
-            "end_month@B2[blank9]",
-            "end_day@B2[blank10]",
-            "end_meridiem@B2[blank11]",
+            "experiment_year@B2[blank5]",
+            "experiment_month@B2[blank6]",
+            "experiment_day@B2[blank7]",
+            "experiment_start_period@B2[blank8]",
+            "experiment_end_month@B2[blank9]",
+            "experiment_end_day@B2[blank10]",
+            "experiment_end_period@B2[blank11]",
             "temperature@B2[blank12]",
             "humidity@B2[blank13]",
             "advisor@B2[blank14]"
           ],
           "content_slots": [
             "body(B3-B40,replace)",
-            "appendix(B43-B68,replace)"
+            "continuation_body(B43-B68,replace)"
           ],
-          "remove_targets": [
-            {
-              "start": "B42",
-              "reason": "附页标题下残留的整行孤立下划线空段，无填写语义"
-            }
-          ],
+          "remove_targets": [],
           "prototypes": [
+            "heading_1",
+            "heading_2",
             "body"
           ],
           "pdf_ok": true,
@@ -5201,7 +5082,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4484,
+          "elapsed_ms": 17640,
           "tokens_used": 0,
           "map_chars": 2159,
           "fields_detected": [],
@@ -5281,7 +5162,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 5194,
+          "elapsed_ms": 11929,
           "tokens_used": 0,
           "map_chars": 2159,
           "fields_detected": [
@@ -5357,61 +5238,59 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 107867,
-          "tokens_used": 39883,
+          "elapsed_ms": 62330,
+          "tokens_used": 18880,
           "map_chars": 2159,
           "fields_detected": [
-            "course_name@B5[blank0]",
-            "experiment_name@B7[blank0]",
+            "course@B5[blank0]",
+            "project_name@B7[blank0]",
             "college@B9[blank0]",
             "major@B11[blank0]",
             "advisor@B13[blank0]",
-            "reporter@B15[blank0]",
+            "student_name@B15[blank0]",
             "student_id@B15[blank1]",
-            "group_name@B15[blank2]",
+            "group@B15[blank2]",
             "experiment_date@B17[blank0]",
-            "submit_date@B19[blank0]",
-            "grade@B23.R15.C0.P3[blank0]",
-            "advisor_signature@B23.R15.C0.P6[blank0]",
-            "review_date@B23.R15.C0.P8[cell]",
-            "remark@B23.R16.C0.P0[colon0]"
+            "submit_date@B19[blank0]"
           ],
           "content_slots": [
-            "experiment_purpose(B23.R1.C0.P0-B23.R1.C0.P0,replace)",
-            "experiment_equipment(B23.R3.C0.P0-B23.R3.C0.P0,replace)",
-            "experiment_principle(B23.R5.C0.P0-B23.R5.C0.P0,replace)",
-            "experiment_content(B23.R7.C0.P0-B23.R7.C0.P0,replace)",
-            "process_record(B23.R9.C0.P0-B23.R9.C0.P0,replace)",
-            "result_analysis(B23.R12.C0.P0-B23.R12.C0.P0,replace)",
-            "harvest(B23.R14.C0.P0-B23.R14.C0.P0,replace)"
+            "purpose(B23.R1.C0-B23.R1.C0,replace)",
+            "equipment(B23.R3.C0-B23.R3.C0,replace)",
+            "principle(B23.R5.C0-B23.R5.C0,replace)",
+            "content(B23.R7.C0-B23.R7.C0,replace)",
+            "process(B23.R9.C0-B23.R9.C0,replace)",
+            "analysis(B23.R12.C0-B23.R12.C0,replace)",
+            "harvest(B23.R14.C0-B23.R14.C0,replace)"
           ],
           "remove_targets": [
             {
               "start": "B23.R4.C0.P1",
-              "match": "要求：简要阐述实验的基本原理。"
+              "reason": "分栏固定填写提示，由正文槽位替代"
             },
             {
               "start": "B23.R6.C0.P1",
-              "match": "要求：简要列出实验要求的内容和主要步骤。"
+              "reason": "分栏固定填写提示，由正文槽位替代"
             },
             {
               "start": "B23.R8.C0.P1",
-              "match": "要求：要实验要求如实记录实验过程和现象，数据表格、图像应有相应的文字说明。"
+              "reason": "分栏固定填写提示，由正文槽位替代"
             },
             {
               "start": "B23.R11.C0.P1",
-              "match": "要求：对实验结果进行分析，回答实验讲义或实验现场遇到的思考题。"
+              "reason": "分栏固定填写提示，由正文槽位替代"
             },
             {
               "start": "B23.R13.C0.P1",
-              "match": "要求：简要阐述实验的收获，或对实验提出自己的意见和建议。"
+              "reason": "分栏固定填写提示，由正文槽位替代"
             },
             {
-              "start": "B23.R10"
+              "start": "B23.R10",
+              "reason": "闲置续页大框行及不够可继续加页占位提示，未被任何槽位绑定"
             },
             {
               "start": "B24",
-              "end": "B26"
+              "end": "B26",
+              "reason": "文末通用填写注意事项说明，非报告正文内容"
             }
           ],
           "prototypes": [
@@ -5603,7 +5482,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3888,
+          "elapsed_ms": 17544,
           "tokens_used": 0,
           "map_chars": 1454,
           "fields_detected": [],
@@ -5677,7 +5556,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2908,
+          "elapsed_ms": 11690,
           "tokens_used": 0,
           "map_chars": 1454,
           "fields_detected": [
@@ -5748,8 +5627,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 70079,
-          "tokens_used": 20640,
+          "elapsed_ms": 126606,
+          "tokens_used": 34208,
           "map_chars": 1454,
           "fields_detected": [
             "course_name@B5[blank0]",
@@ -5757,25 +5636,28 @@
             "college@B9[blank0]",
             "major@B11[blank0]",
             "advisor@B13[blank0]",
-            "student_name@B15[blank0]",
+            "reporter@B15[blank0]",
             "student_id@B15[blank1]",
             "class_name@B15[blank2]",
             "experiment_date@B17[blank0]",
-            "submission_date@B19[blank0]",
-            "grade@B28.R1.C0.P11[colon]",
-            "advisor_sign@B28.R1.C0.P18[colon]"
+            "submit_date@B19[blank0]"
           ],
           "content_slots": [
-            "objectives(B22.R0.C0.P0-B22.R0.C0.P0,insert_after)",
-            "methods(B22.R1.C0.P0-B22.R1.C0.P0,insert_after)",
-            "process(B22.R2.C1.P0-B22.R2.C1.P0,insert_after)",
-            "data_analysis(B22.R3.C1.P0-B22.R3.C1.P0,insert_after)",
-            "conclusion(B28.R0.C0.P0-B28.R0.C0.P0,insert_after)"
+            "purpose_requirements(B22.R0.C0-B22.R0.C0,replace)",
+            "methods_steps(B22.R1.C0-B22.R1.C0,replace)",
+            "process_content(B22.R2.C1-B22.R2.C1,replace)",
+            "data_analysis(B22.R3.C1-B22.R3.C1,replace)",
+            "conclusion(B28.R0.C0.P1-B28.R0.C0.P14,replace)"
           ],
           "remove_targets": [
             {
               "start": "B25",
-              "reason": "整表为空白续页大框，去除以避免未绑定的空白页"
+              "reason": "整表删除闲置续页空白大框(13195高)，避免残留空框顶出空白页"
+            },
+            {
+              "start": "B29",
+              "end": "B30",
+              "reason": "文末说明性注释"
             }
           ],
           "prototypes": [
@@ -5788,16 +5670,18 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 8,
+          "vision_issues_count": 7,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 9,
+          "metadata_filled": 8,
           "metadata_total": 9,
-          "metadata_fill_rate": 1,
-          "unfilled_fields": [],
+          "metadata_fill_rate": 0.89,
+          "unfilled_fields": [
+            "student_name@top_p"
+          ],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
@@ -5806,10 +5690,12 @@
             "blank_pages": 0,
             "banner_preserved": true,
             "form_container_respected": true,
-            "metadata_filled": 9,
+            "metadata_filled": 8,
             "metadata_total": 9,
-            "metadata_fill_rate": 1,
-            "unfilled_fields": [],
+            "metadata_fill_rate": 0.89,
+            "unfilled_fields": [
+              "student_name@top_p"
+            ],
             "residue_free": true,
             "leaked_residues": [],
             "strict_e2e_pass": true,
@@ -5983,7 +5869,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4272,
+          "elapsed_ms": 6909,
           "tokens_used": 0,
           "map_chars": 10753,
           "fields_detected": [],
@@ -6065,7 +5951,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3749,
+          "elapsed_ms": 6362,
           "tokens_used": 0,
           "map_chars": 10753,
           "fields_detected": [
@@ -6136,18 +6022,18 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 211689,
-          "tokens_used": 74409,
+          "elapsed_ms": 140201,
+          "tokens_used": 40214,
           "map_chars": 10753,
           "fields_detected": [
-            "course_name@B2[blank0]",
+            "course@B2[blank0]",
             "experiment_name@B4[blank0]",
             "college@B6[blank0]",
             "major@B8[blank0]",
             "advisor@B10[blank0]",
-            "student_name@B13[blank0]",
-            "student_id@B13[blank1]",
-            "class_name@B13[blank2]",
+            "reporter_name@B13[blank0]",
+            "reporter_id@B13[blank1]",
+            "reporter_class@B13[blank2]",
             "member2_name@B14[blank0]",
             "member2_id@B14[blank1]",
             "member2_class@B14[blank2]",
@@ -6161,23 +6047,20 @@
             "member5_id@B17[blank1]",
             "member5_class@B17[blank2]",
             "experiment_date@B20[blank0]",
-            "submit_date@B22[blank0]",
-            "equipment_name@B45[blank0]",
-            "gauge_name@B46[blank0]",
-            "gauge_precision@B46[blank1]",
-            "extensometer_name@B47[blank0]",
-            "extensometer_precision@B47[blank1]",
-            "grade@B106.R0.C0.P14[colon]"
+            "submit_date@B22[blank0]"
           ],
           "content_slots": [
             "purpose(B26-B43,replace)",
+            "equipment(B45-B47,replace)",
+            "data_table(B57-B57,replace)",
+            "curve_section(B62-B63,replace)",
             "questions(B65-B105,replace)"
           ],
           "remove_targets": [
             {
-              "start": "B107",
-              "end": "B110",
-              "reason": "评审框后备注残留的空白段与注1、注2两条排印说明，删除后文档以评审框备注行收尾"
+              "start": "B61",
+              "match": "注：铸铁材料的的弹性模量为割线弹性模量。在工程计算中，通常取总应变0.1% 时曲线的割线斜率来确定。（具体做法详见教材§2-6）",
+              "reason": "剥离旧实验主题的专业附注，保留该段落承载的横向节分节符与版式"
             }
           ],
           "prototypes": [
@@ -6186,7 +6069,7 @@
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 6,
+          "total_pages": 5,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "skipped_pending_layout",
@@ -6200,15 +6083,10 @@
           "metadata_total": 9,
           "metadata_fill_rate": 1,
           "unfilled_fields": [],
-          "residue_free": false,
-          "leaked_residues": [
-            "注：铸铁材料的的弹性模量为割线弹性模量。在工程计"
-          ],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F3_PREFILLED_OR_GUIDE_RESIDUE",
-            "F4_MULTI_SLOT_FIXED_SECTIONS"
-          ],
+          "residue_free": true,
+          "leaked_residues": [],
+          "strict_e2e_pass": true,
+          "failure_codes": [],
           "legacy_oracle": {
             "blank_pages": 0,
             "banner_preserved": true,
@@ -6217,15 +6095,10 @@
             "metadata_total": 9,
             "metadata_fill_rate": 1,
             "unfilled_fields": [],
-            "residue_free": false,
-            "leaked_residues": [
-              "注：铸铁材料的的弹性模量为割线弹性模量。在工程计"
-            ],
-            "strict_e2e_pass": false,
-            "failure_codes": [
-              "F3_PREFILLED_OR_GUIDE_RESIDUE",
-              "F4_MULTI_SLOT_FIXED_SECTIONS"
-            ]
+            "residue_free": true,
+            "leaked_residues": [],
+            "strict_e2e_pass": true,
+            "failure_codes": []
           }
         }
       }
@@ -6379,7 +6252,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5946,
+          "elapsed_ms": 8099,
           "tokens_used": 0,
           "map_chars": 28186,
           "fields_detected": [],
@@ -6455,7 +6328,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4729,
+          "elapsed_ms": 6711,
           "tokens_used": 0,
           "map_chars": 28186,
           "fields_detected": [],
@@ -6527,61 +6400,55 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 96354,
-          "tokens_used": 53481,
+          "elapsed_ms": 99762,
+          "tokens_used": 55100,
           "map_chars": 28186,
           "fields_detected": [
             "course@B2.R0.C2[cell]",
-            "experiment_name@B2.R1.C2[cell]",
+            "title@B2.R1.C2[cell]",
             "college@B2.R2.C2[cell]",
             "major@B2.R3.C2[cell]",
-            "leader_name@B4.R1.C1[cell]",
-            "leader_student_id@B4.R1.C2[cell]",
-            "leader_class@B4.R1.C3[cell]",
-            "leader_group@B4.R1.C4[cell]",
             "experiment_time@B6.R0.C2[cell]",
             "submit_time@B6.R1.C2[cell]",
-            "report_date_year@B12[blank0]",
-            "report_date_month@B12[blank1]",
-            "report_date_day@B12[blank2]",
+            "date_year@B12[blank0]",
+            "date_month@B12[blank1]",
+            "date_day@B12[blank2]",
             "lab_temperature@B12[blank3]",
             "lab_humidity@B12[blank4]",
-            "grade@B101[blank0]",
-            "advisor_signature@B106[blank0]",
-            "sign_date_year@B107[blank0]",
-            "sign_date_month@B107[blank1]",
-            "sign_date_day@B107[blank2]"
+            "sign_year@B107[blank0]",
+            "sign_month@B107[blank1]",
+            "sign_day@B107[blank2]"
           ],
           "content_slots": [
-            "objective(B15-B22,replace)",
-            "equipment(B24-B29,replace)",
-            "procedure(B31-B49,replace)",
-            "data_processing(B51-B58,replace)",
+            "purpose(B15-B22,replace)",
+            "apparatus(B24-B29,replace)",
+            "process(B31-B49,replace)",
+            "record(B51-B58,replace)",
             "discussion(B60-B90,replace)"
           ],
           "remove_targets": [
             {
               "start": "B107",
-              "drop_page_break": true,
-              "reason": "剥离末页显式分页符并保留签署日期"
+              "drop_page_break": true
             },
             {
               "start": "B108",
               "end": "B647",
-              "reason": "后续重复实验报告页"
+              "reason": "删除后续重复实验实例，仅保留通用母版框架"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "body"
+            "body",
+            "table"
           ],
           "pdf_ok": true,
           "total_pages": 2,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 7,
+          "vision_issues_count": 9,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -6724,7 +6591,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3103,
+          "elapsed_ms": 3556,
           "tokens_used": 0,
           "map_chars": 1397,
           "fields_detected": [],
@@ -6794,7 +6661,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2724,
+          "elapsed_ms": 5589,
           "tokens_used": 0,
           "map_chars": 1397,
           "fields_detected": [],
@@ -6868,86 +6735,73 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 223809,
-          "tokens_used": 58927,
+          "elapsed_ms": 155415,
+          "tokens_used": 45170,
           "map_chars": 1397,
           "fields_detected": [
             "project_no@B1.R0.C1[cell]",
             "project_name@B1.R0.C3[cell]",
-            "leader_name@B1.R1.C1[cell]",
-            "leader_student_id@B1.R1.C3[cell]",
+            "project_leader@B1.R1.C1[cell]",
+            "leader_id@B1.R1.C3[cell]",
             "leader_phone@B1.R1.C5[cell]",
             "team_members@B1.R2.C1[cell]",
             "advisor@B1.R3.C1[cell]",
             "project_period@B1.R4.C1[cell]",
-            "expected_completion_date@B1.R4.C3[cell]"
+            "expected_completion@B1.R4.C3[cell]"
           ],
           "content_slots": [
-            "progress_and_results(B1.R5.C0.P0-B1.R5.C0.P0,insert_after)",
-            "lab_resource_usage(B1.R6.C0.P0-B1.R6.C0.P0,insert_after)",
-            "budget_usage(B1.R7.C0.P0-B1.R7.C0.P0,insert_after)",
-            "difficulties(B1.R8.C0.P0-B1.R8.C0.P0,insert_after)",
-            "suggestions(B1.R9.C0.P0-B1.R9.C0.P0,insert_after)",
-            "change_info(B1.R10.C0.P0-B1.R10.C0.P0,insert_after)",
-            "future_plan(B1.R11.C0.P0-B1.R11.C0.P0,insert_after)",
-            "teamwork(B1.R12.C0.P0-B1.R12.C0.P0,insert_after)"
+            "progress(B1.R5.C0.P1-B1.R5.C0.P11,replace)",
+            "resources(B1.R6.C0.P1-B1.R6.C0.P9,replace)",
+            "budget(B1.R7.C0.P1-B1.R7.C0.P10,replace)",
+            "difficulties(B1.R8.C0.P1-B1.R8.C0.P9,replace)",
+            "suggestions(B1.R9.C0.P1-B1.R9.C0.P8,replace)",
+            "changes(B1.R10.C0.P1-B1.R10.C0.P5,replace)",
+            "plan(B1.R11.C0.P1-B1.R11.C0.P6,replace)",
+            "teamwork(B1.R12.C0.P1-B1.R12.C0.P9,replace)"
           ],
           "remove_targets": [
             {
-              "start": "B2",
-              "reason": "表下注文整段删除，去掉残留空白段，避免填满内容后顶出空白尾页"
-            },
-            {
               "start": "B1.R5.C0.P0",
-              "match": "（项目整体安排及目前进度说明、项目组成员自主完成的工作与取得的阶段性成果）",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "（项目整体安排及目前进度说明、项目组成员自主完成的工作与取得的阶段性成果）"
             },
             {
               "start": "B1.R6.C0.P0",
-              "match": "(使用了哪些实验室、使用次数、使用总时数及设备使用情况等)",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "(使用了哪些实验室、使用次数、使用总时数及设备使用情况等)"
             },
             {
               "start": "B1.R7.C0.P0",
-              "match": "(用于材料、元件和书籍的购买及路费等的支出情况，费用报销及垫付情况等)",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "(用于材料、元件和书籍的购买及路费等的支出情况，费用报销及垫付情况等)"
             },
             {
               "start": "B1.R8.C0.P0",
-              "match": "（目前存在的问题与困难）",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "（目前存在的问题与困难）"
             },
             {
               "start": "B1.R9.C0.P0",
-              "match": "(开放时间、元器件提供、实验设备、大型仪器设备及技术支持等)",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "(开放时间、元器件提供、实验设备、大型仪器设备及技术支持等)"
             },
             {
               "start": "B1.R10.C0.P0",
-              "match": "（研究名称或内容、实施方案、项目成员、项目完成时间、指导教师等方面的调整与变动）没有变更请填“无”",
-              "reason": "固定栏目标题同行括号填写提示及填表指示，剥离保留标题"
+              "match": "（研究名称或内容、实施方案、项目成员、项目完成时间、指导教师等方面的调整与变动）没有变更请填“无”"
             },
             {
               "start": "B1.R11.C0.P0",
-              "match": "（后期任务及实施方案）",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "（后期任务及实施方案）"
             },
             {
               "start": "B1.R12.C0.P0",
-              "match": "（项目组成员合作、讨论、交流情况以及项目实施过程中成员各方面的收获）",
-              "reason": "固定栏目标题同行括号填写提示，剥离保留标题"
+              "match": "（项目组成员合作、讨论、交流情况以及项目实施过程中成员各方面的收获）"
             }
           ],
           "prototypes": [
-            "heading_1",
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 3,
+          "total_pages": 1,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "skipped_pending_layout",
-          "vision_issues_count": 0,
+          "vision_status": "issues",
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -7112,7 +6966,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2130,
+          "elapsed_ms": 3638,
           "tokens_used": 0,
           "map_chars": 3529,
           "fields_detected": [],
@@ -7187,7 +7041,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1792,
+          "elapsed_ms": 2496,
           "tokens_used": 0,
           "map_chars": 3529,
           "fields_detected": [
@@ -7261,25 +7115,31 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 85868,
-          "tokens_used": 27628,
+          "elapsed_ms": 87665,
+          "tokens_used": 27527,
           "map_chars": 3529,
           "fields_detected": [
-            "course_code@B0.TX0.P0[blank0]",
+            "course_no@B0.TX0.P0[blank0]",
+            "score@B1.R1.C0[cell]",
+            "teacher_signature@B1.R1.C1[cell]",
+            "grading_date@B1.R1.C2[cell]",
             "course_name@B10[blank0]",
             "experiment_name@B11[blank0]",
             "class_name@B12[blank0]",
             "advisor@B13[blank0]",
-            "reporter@B14[blank0]",
+            "student_name@B14[blank0]",
             "student_id@B14[blank1]",
-            "co_author@B15[blank0]",
+            "collaborator@B15[blank0]",
             "group_no@B15[blank1]",
             "experiment_location@B16[blank0]",
             "experiment_year@B17[blank0]",
             "experiment_month@B17[blank1]",
             "experiment_day@B17[blank2]",
             "experiment_weekday@B17[blank3]",
-            "submit_date@B18[blank0]"
+            "submit_date@B18[blank0]",
+            "advisor_comments@B35.R0.C0.P0[colon]",
+            "other_comments@B35.R0.C0.P1[colon]",
+            "grade_evaluation@B35.R1.C0.P0[colon]"
           ],
           "content_slots": [
             "body(B34.R0.C0.P0-B34.R0.C0.P35,replace)"
@@ -7289,13 +7149,13 @@
               "start": "B21",
               "end": "B23",
               "drop_section": true,
-              "reason": "课程专属评分标准说明整节，依附旧主题应整体清理"
+              "reason": "整节评分标准说明页，连同分节符移除"
             },
             {
               "start": "B24",
               "end": "B33",
               "drop_section": true,
-              "reason": "正文提纲填写指南整节，属前导指南区"
+              "reason": "整节正文提纲指南，连同分节符移除"
             },
             {
               "start": "B34.R1",
@@ -7312,7 +7172,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 5,
+          "vision_issues_count": 7,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -7441,7 +7301,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 1923,
+          "elapsed_ms": 2922,
           "tokens_used": 0,
           "map_chars": 674,
           "fields_detected": [],
@@ -7505,7 +7365,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1680,
+          "elapsed_ms": 1993,
           "tokens_used": 0,
           "map_chars": 674,
           "fields_detected": [],
@@ -7572,8 +7432,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 39110,
-          "tokens_used": 13030,
+          "elapsed_ms": 50604,
+          "tokens_used": 14238,
           "map_chars": 674,
           "fields_detected": [
             "department@B2[blank0]",
@@ -7597,12 +7457,11 @@
             {
               "start": "B9",
               "end": "B10",
-              "reason": "封面之后多余的空白分页段落，避免生成空白页"
+              "reason": "封面后多余空白页，仅含分页符，保留B8分页即可另起一页写正文"
             }
           ],
           "prototypes": [
             "heading_1",
-            "heading_2",
             "body"
           ],
           "pdf_ok": true,
@@ -7785,7 +7644,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2082,
+          "elapsed_ms": 2336,
           "tokens_used": 0,
           "map_chars": 3220,
           "fields_detected": [],
@@ -7864,7 +7723,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1798,
+          "elapsed_ms": 2650,
           "tokens_used": 0,
           "map_chars": 3220,
           "fields_detected": [],
@@ -7947,14 +7806,14 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 77168,
-          "tokens_used": 24970,
+          "elapsed_ms": 143537,
+          "tokens_used": 49573,
           "map_chars": 3220,
           "fields_detected": [
-            "course@B9.R0.C1[cell]",
-            "term_year_start@B9.R1.C1[cell]",
-            "term_year_end@B9.R1.C3[cell]",
-            "term_semester@B9.R1.C5[cell]",
+            "course_name@B9.R0.C1[cell]",
+            "semester_start_year@B9.R1.C1[cell]",
+            "semester_end_year@B9.R1.C3[cell]",
+            "semester_no@B9.R1.C5[cell]",
             "major@B9.R2.C1[cell]",
             "class_name@B9.R3.C1[cell]",
             "student_name@B9.R4.C1[cell]",
@@ -7962,17 +7821,16 @@
             "advisor@B9.R6.C1[cell]",
             "report_score@B9.R7.C1[cell]",
             "exp_no@B21.R0.C1[cell]",
-            "date_year@B21.R0.C5[cell]",
-            "date_month@B21.R0.C7[cell]",
-            "date_day@B21.R0.C9[cell]",
+            "exp_date_year@B21.R0.C7[cell]",
+            "exp_date_month@B21.R0.C9[cell]",
             "college@B21.R2.C0[match]",
-            "grade@B21.R2.C1.P0[blank0]",
-            "class_no@B21.R2.C1.P0[blank1]",
+            "grade@B21.R2.C1[blank0]",
+            "class_no@B21.R2.C1[blank1]",
             "exp_name@B21.R2.C4[cell]",
-            "student_name_exp@B21.R3.C1[cell]",
-            "score@B21.R3.C4[cell]",
+            "name@B21.R3.C1[cell]",
+            "exp_score@B21.R3.C4[cell]",
             "group_members@B21.R4.C1[cell]",
-            "advisor_exp@B21.R4.C4[cell]"
+            "instructor@B21.R4.C4[cell]"
           ],
           "content_slots": [
             "body(B22-B57,replace)",
@@ -7983,12 +7841,11 @@
               "start": "B11",
               "end": "B20",
               "drop_section": true,
-              "reason": "整节填写说明页，连分节符一并移除"
+              "reason": "整节填写说明与格式规范页，含其分节符，不随母版输出"
             },
             {
-              "start": "B105",
-              "drop_page_break": true,
-              "reason": "末页多余分页符"
+              "start": "B8",
+              "reason": "封面标题与信息表之间的空白段，压缩竖向空间，确保报告成绩行留在第1页；原B1..B3封面校徽上方间距保留，避免标题压校徽图形"
             }
           ],
           "prototypes": [
@@ -7997,14 +7854,14 @@
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 4,
-          "raw_zero_text_pages": 0,
+          "total_pages": 5,
+          "raw_zero_text_pages": 2,
           "toc_pages_valid": true,
           "vision_status": "skipped_pending_layout",
           "vision_issues_count": 0,
           "ooxml_audit_passed": true,
           "audit_violations": [],
-          "blank_pages": 0,
+          "blank_pages": 1,
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 8,
@@ -8013,10 +7870,12 @@
           "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": true,
-          "failure_codes": [],
+          "strict_e2e_pass": false,
+          "failure_codes": [
+            "F6_BLANK_PAGE_LEFT_BEHIND"
+          ],
           "legacy_oracle": {
-            "blank_pages": 0,
+            "blank_pages": 2,
             "banner_preserved": true,
             "form_container_respected": true,
             "metadata_filled": 8,
@@ -8025,8 +7884,10 @@
             "unfilled_fields": [],
             "residue_free": true,
             "leaked_residues": [],
-            "strict_e2e_pass": true,
-            "failure_codes": []
+            "strict_e2e_pass": false,
+            "failure_codes": [
+              "F6_BLANK_PAGE_LEFT_BEHIND"
+            ]
           }
         }
       }
@@ -8168,7 +8029,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3009,
+          "elapsed_ms": 3685,
           "tokens_used": 0,
           "map_chars": 1281,
           "fields_detected": [],
@@ -8236,7 +8097,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2891,
+          "elapsed_ms": 4125,
           "tokens_used": 0,
           "map_chars": 1281,
           "fields_detected": [],
@@ -8308,39 +8169,44 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 121066,
-          "tokens_used": 28290,
+          "elapsed_ms": 88265,
+          "tokens_used": 24996,
           "map_chars": 1281,
           "fields_detected": [
-            "lab_room@B0.R1.C0[match]",
-            "date@B0.R1.C0[match]",
+            "lab_location@B0.R1.C0.P0[match]",
+            "date@B0.R1.C0.P0[match]",
             "college@B0.R2.C1[cell]",
-            "class_name@B0.R2.C3[cell]",
+            "major_class@B0.R2.C3[cell]",
             "student_name@B0.R2.C5[cell]",
             "student_id@B0.R2.C7[cell]",
             "course@B0.R3.C1[cell]",
-            "project_name@B0.R4.C1[cell]",
+            "score@B0.R3.C3[cell]",
+            "project@B0.R4.C1[cell]",
             "advisor@B0.R4.C3[cell]"
           ],
           "content_slots": [
-            "purpose(B0.R5.C0.P1-B0.R5.C0.P3,replace)",
-            "principle(B0.R5.C0.P6-B0.R5.C0.P6,replace)",
-            "instruments(B0.R5.C0.P9-B0.R5.C0.P11,replace)",
-            "procedure(B0.R5.C0.P14-B0.R5.C0.P16,replace)",
-            "records(B0.R5.C0.P20-B0.R5.C0.P21,replace)",
-            "analysis(B0.R5.C0.P25-B0.R5.C0.P25,replace)"
+            "body(B0.R5.C0.P0-B0.R5.C0.P34,replace)"
           ],
-          "remove_targets": [],
-          "prototypes": [],
+          "remove_targets": [
+            {
+              "start": "B1",
+              "reason": "表后多余空白段，删除以避免空白尾页"
+            }
+          ],
+          "prototypes": [
+            "heading_1",
+            "heading_2",
+            "body"
+          ],
           "pdf_ok": true,
-          "total_pages": 2,
-          "raw_zero_text_pages": 1,
+          "total_pages": 1,
+          "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "skipped_pending_layout",
-          "vision_issues_count": 0,
+          "vision_status": "issues",
+          "vision_issues_count": 6,
           "ooxml_audit_passed": true,
           "audit_violations": [],
-          "blank_pages": 1,
+          "blank_pages": 0,
           "banner_preserved": true,
           "form_container_respected": true,
           "metadata_filled": 7,
@@ -8349,12 +8215,10 @@
           "unfilled_fields": [],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
-          "failure_codes": [
-            "F6_BLANK_PAGE_LEFT_BEHIND"
-          ],
+          "strict_e2e_pass": true,
+          "failure_codes": [],
           "legacy_oracle": {
-            "blank_pages": 1,
+            "blank_pages": 0,
             "banner_preserved": true,
             "form_container_respected": true,
             "metadata_filled": 7,
@@ -8363,10 +8227,8 @@
             "unfilled_fields": [],
             "residue_free": true,
             "leaked_residues": [],
-            "strict_e2e_pass": false,
-            "failure_codes": [
-              "F6_BLANK_PAGE_LEFT_BEHIND"
-            ]
+            "strict_e2e_pass": true,
+            "failure_codes": []
           }
         }
       }
@@ -8518,7 +8380,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 1866,
+          "elapsed_ms": 2447,
           "tokens_used": 0,
           "map_chars": 945,
           "fields_detected": [],
@@ -8588,7 +8450,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1556,
+          "elapsed_ms": 1987,
           "tokens_used": 0,
           "map_chars": 945,
           "fields_detected": [
@@ -8653,32 +8515,43 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 71052,
-          "tokens_used": 16839,
+          "elapsed_ms": 103367,
+          "tokens_used": 32339,
           "map_chars": 945,
           "fields_detected": [
-            "semester@B5[match0]",
-            "course@B6[colon0]",
-            "period@B7[colon0]",
-            "location@B8[colon0]",
-            "grade_major@B9[match0]",
-            "student_id@B10[colon0]",
-            "student_name@B11[colon0]",
-            "advisor@B12[colon0]"
+            "semester@B5[colon]",
+            "course@B6[blank0]",
+            "date_range@B7[blank0]",
+            "lab_location@B8[colon]",
+            "grade_major@B9[colon]",
+            "student_id@B10[blank0]",
+            "student_name@B11[blank0]",
+            "advisor@B12[blank0]",
+            "title@B17[blank0]"
           ],
           "content_slots": [
-            "body(B17-B22,replace)"
+            "instructor(B18-B18,insert_after)",
+            "group_members(B19-B19,insert_after)",
+            "purpose(B20-B20,insert_after)",
+            "procedure(B21-B21,insert_after)",
+            "results(B22-B22,insert_after)"
           ],
           "remove_targets": [
             {
               "start": "B16",
-              "match": "（居中，三号宋体加粗）",
-              "reason": "剥离文种抬头后的排版提示文字"
+              "match": "（居中，三号宋体加粗）"
             },
             {
-              "start": "B24",
-              "end": "B29",
-              "reason": "文末多余空白段，避免产生空白续页"
+              "start": "B17",
+              "match": "（标题四号宋体加粗，后面填写内容，小四，宋体，不加粗）（下同）"
+            },
+            {
+              "start": "B13",
+              "match": "(手写)"
+            },
+            {
+              "start": "B23",
+              "match": "（ 手写）"
             }
           ],
           "prototypes": [
@@ -8691,18 +8564,17 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 7,
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 6,
+          "metadata_filled": 7,
           "metadata_total": 8,
-          "metadata_fill_rate": 0.75,
+          "metadata_fill_rate": 0.88,
           "unfilled_fields": [
-            "college@top_p",
-            "title@top_p"
+            "college@top_p"
           ],
           "residue_free": true,
           "leaked_residues": [],
@@ -8712,12 +8584,11 @@
             "blank_pages": 0,
             "banner_preserved": true,
             "form_container_respected": true,
-            "metadata_filled": 6,
+            "metadata_filled": 7,
             "metadata_total": 8,
-            "metadata_fill_rate": 0.75,
+            "metadata_fill_rate": 0.88,
             "unfilled_fields": [
-              "college@top_p",
-              "title@top_p"
+              "college@top_p"
             ],
             "residue_free": true,
             "leaked_residues": [],
@@ -8857,7 +8728,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 3486,
+          "elapsed_ms": 3923,
           "tokens_used": 0,
           "map_chars": 5680,
           "fields_detected": [],
@@ -8934,7 +8805,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2929,
+          "elapsed_ms": 5013,
           "tokens_used": 0,
           "map_chars": 5680,
           "fields_detected": [
@@ -8999,11 +8870,11 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 172005,
-          "tokens_used": 54342,
+          "elapsed_ms": 160364,
+          "tokens_used": 59408,
           "map_chars": 5680,
           "fields_detected": [
-            "academic_term@B6[colon]",
+            "term@B6[match]",
             "internship_unit@B7[blank0]",
             "internship_period@B8[match]",
             "grade_major@B9[blank0]",
@@ -9014,39 +8885,35 @@
             "college@B43.R0.C1[cell]",
             "grade@B43.R0.C3[cell]",
             "major@B43.R0.C5[cell]",
-            "name@B43.R1.C1[cell]",
+            "table_student_name@B43.R1.C1[cell]",
             "gender@B43.R1.C3[cell]",
-            "date_range@B43.R1.C5[cell]",
-            "student_no@B43.R2.C1[cell]",
-            "intern_unit@B43.R2.C3[cell]",
+            "table_internship_period@B43.R1.C5[match]",
+            "table_student_id@B43.R2.C1[cell]",
+            "table_internship_unit@B43.R2.C3[cell]",
             "unit_phone@B43.R2.C5[cell]",
-            "advisor_sign@B43.R25.C1.P4[blank0]"
+            "unit_seal_date@B43.R24.C1.P5[match]",
+            "advisor_signature@B43.R25.C1.P4[blank0]",
+            "advisor_date@B43.R25.C1.P6[match]",
+            "remarks@B43.R30.C1[cell]"
           ],
           "content_slots": [
-            "internship_content(B43.R3.C1-B43.R3.C1,replace)",
-            "unit_appraisal(B43.R24.C1.P0-B43.R24.C1.P3,replace)",
-            "advisor_appraisal(B43.R25.C1.P0-B43.R25.C1.P3,replace)",
-            "remarks(B43.R30.C1-B43.R30.C1,replace)"
+            "internship_content(B43.R3.C1-B43.R3.C1,replace)"
           ],
           "remove_targets": [
             {
               "start": "B16",
               "end": "B40",
-              "reason": "整节实习报告格式规范与打印要求填写说明，模板不打印"
+              "reason": "整节填写说明与格式规范，保留第1节尾分节符"
             },
             {
               "start": "B41",
               "match": "必须A4纸打印；上、下边距一律为2.3；左边距为2.5, 右边距为2.0。",
-              "reason": "按整句剥离B41打印要求（含行首“必须A4纸打印”与行首游离分号），仅保留该段承载的分节符"
-            },
-            {
-              "start": "B41",
-              "match": "必须A4纸打印",
-              "reason": "兜底剥离：若长句因标点或空格差异未命中，则先删除“必须A4纸打印”残句，避免其出现在封面第2页底部，段落与分节符保留"
+              "reason": "删除打印要求文字并保留分节符"
             }
           ],
           "prototypes": [
             "heading_1",
+            "heading_2",
             "body"
           ],
           "pdf_ok": true,
@@ -9225,7 +9092,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 1816,
+          "elapsed_ms": 2633,
           "tokens_used": 0,
           "map_chars": 915,
           "fields_detected": [],
@@ -9301,7 +9168,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 1594,
+          "elapsed_ms": 2319,
           "tokens_used": 0,
           "map_chars": 915,
           "fields_detected": [
@@ -9374,8 +9241,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 88421,
-          "tokens_used": 20777,
+          "elapsed_ms": 98832,
+          "tokens_used": 33712,
           "map_chars": 915,
           "fields_detected": [
             "semester@B5[match]",
@@ -9385,76 +9252,89 @@
             "student_id@B9[blank0]",
             "student_name@B10[blank0]",
             "advisor@B11[blank0]",
-            "project_name@B17[colon]",
-            "practice_advisor@B18[colon]"
+            "score@B12[colon0]"
           ],
           "content_slots": [
-            "purpose(B19-B19,insert_after)",
-            "process(B20-B20,insert_after)",
-            "results(B21-B21,insert_after)"
+            "project_name(B17-B17,replace)",
+            "practice_advisor(B18-B18,replace)",
+            "practice_purpose(B19-B19,replace)",
+            "practice_process(B20-B20,replace)",
+            "practice_result(B21-B21,replace)"
           ],
           "remove_targets": [
             {
               "start": "B16",
               "match": "（居中，三号宋体加粗）",
-              "reason": "剥离固定文种抬头后的排版提示"
+              "reason": "剥离固定大标题后附排印提示"
             },
             {
               "start": "B17",
               "match": "（标题四号宋体加粗，后面填写内容，小四，宋体，不加粗）（下同）",
-              "reason": "剥离标题行括号内的格式说明"
+              "reason": "剥离红色排版说明"
             },
             {
               "start": "B17",
-              "match": "（学生根据实践内容可自拟一个名称，但同一组实习的同学，必须保持一致）",
-              "reason": "剥离学生填写指引附注"
+              "match": "(学生根据实践内容可自拟一个名称，但同一组实习的同学，必须保持一致)",
+              "reason": "剥离蓝色选题说明"
             },
             {
-              "start": "B23",
-              "end": "B28",
-              "reason": "删除文末连续空段，避免产生空白续页"
+              "start": "B12",
+              "match": "（手写）",
+              "reason": "剥离实践成绩行同行的红色括号填写提示"
+            },
+            {
+              "start": "B22",
+              "match": "（ 手写）",
+              "reason": "保留评语栏标题，剥离手写批注提示"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "body"
+            "body",
+            "body_alt"
           ],
           "pdf_ok": true,
           "total_pages": 3,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 4,
+          "vision_issues_count": 5,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
           "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 6,
+          "metadata_filled": 5,
           "metadata_total": 7,
-          "metadata_fill_rate": 0.86,
+          "metadata_fill_rate": 0.71,
           "unfilled_fields": [
-            "college@top_p"
+            "college@top_p",
+            "title@top_p(同行多字段)"
           ],
           "residue_free": true,
           "leaked_residues": [],
           "strict_e2e_pass": true,
-          "failure_codes": [],
+          "failure_codes": [
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+          ],
           "legacy_oracle": {
             "blank_pages": 0,
             "banner_preserved": true,
             "form_container_respected": true,
-            "metadata_filled": 6,
+            "metadata_filled": 5,
             "metadata_total": 7,
-            "metadata_fill_rate": 0.86,
+            "metadata_fill_rate": 0.71,
             "unfilled_fields": [
-              "college@top_p"
+              "college@top_p",
+              "title@top_p(同行多字段)"
             ],
             "residue_free": true,
             "leaked_residues": [],
             "strict_e2e_pass": true,
-            "failure_codes": []
+            "failure_codes": [
+              "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
+            ]
           }
         }
       }
@@ -9578,7 +9458,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2910,
+          "elapsed_ms": 4645,
           "tokens_used": 0,
           "map_chars": 829,
           "fields_detected": [],
@@ -9648,7 +9528,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2829,
+          "elapsed_ms": 3638,
           "tokens_used": 0,
           "map_chars": 829,
           "fields_detected": [],
@@ -9722,56 +9602,44 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 302725,
-          "tokens_used": 56197,
+          "elapsed_ms": 120412,
+          "tokens_used": 33419,
           "map_chars": 829,
           "fields_detected": [
             "class_name@B2[blank0]",
             "student_id@B2[blank1]",
             "student_name@B2[blank2]",
-            "score@B2[blank3]",
+            "grade@B2[blank3]",
             "group_members@B3[blank0]",
             "experiment_date@B3[blank1]",
             "course_name@B4.R0.C0[blank0]",
             "experiment_title@B4.R1.C0[blank0]"
           ],
           "content_slots": [
-            "purpose_requirements(B4.R2.C1-B4.R2.C1,replace)",
-            "environment_config(B4.R3.C1-B4.R3.C1,replace)",
-            "content_steps(B4.R4.C1-B4.R4.C1,replace)",
-            "result_analysis(B4.R6.C1-B4.R6.C1,replace)"
+            "purpose(B4.R2.C1-B4.R2.C1,replace)",
+            "environment(B4.R3.C1-B4.R3.C1,replace)",
+            "content_steps(B4.R5.C1-B4.R5.C1,replace)",
+            "results(B4.R6.C1-B4.R6.C1,replace)"
           ],
           "remove_targets": [
             {
-              "start": "B4.R4.C0.P0",
-              "end": "B4.R4.C0.P12",
-              "reason": "栏目名单元格上方的填充空段，撑高整行导致跨页空框"
+              "start": "B4.R4"
             },
             {
-              "start": "B4.R4.C0.P14",
-              "end": "B4.R4.C0.P35",
-              "reason": "栏目名单元格下方的填充空段，撑高整行导致跨页空框"
-            },
-            {
-              "start": "B4.R5",
-              "reason": "跨页被手工拆出的重复标题续页大空行（h=13820），整行删除"
-            },
-            {
-              "start": "B6",
-              "reason": "文末纯空白段，删除以避免空白尾页"
+              "start": "B6"
             }
           ],
           "prototypes": [
-            "title",
             "heading_1",
+            "heading_2",
             "body"
           ],
           "pdf_ok": true,
-          "total_pages": 3,
+          "total_pages": 4,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 4,
+          "vision_issues_count": 9,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -9962,7 +9830,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 4655,
+          "elapsed_ms": 6595,
           "tokens_used": 0,
           "map_chars": 5023,
           "fields_detected": [],
@@ -10046,7 +9914,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 3252,
+          "elapsed_ms": 3781,
           "tokens_used": 0,
           "map_chars": 5023,
           "fields_detected": [
@@ -10125,50 +9993,35 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 162311,
-          "tokens_used": 51016,
+          "elapsed_ms": 101967,
+          "tokens_used": 35732,
           "map_chars": 5023,
           "fields_detected": [
             "course@B26[blank0]",
             "advisor@B26[blank1]",
             "major@B28[blank0]",
-            "year_from@B28[blank1]",
-            "year_to@B28[blank2]",
+            "start_year@B28[blank1]",
+            "end_year@B28[blank2]",
             "semester@B28[blank3]",
             "student_name@B30[blank0]",
             "student_id@B30[blank1]",
             "grade@B32[blank0]",
-            "class_name@B32[blank1]"
+            "class_name@B32[blank1]",
+            "grade_result@B250[blank0]",
+            "teacher_signature@B258[blank0]",
+            "signature_date@B259[match]"
           ],
           "content_slots": [
-            "exp_title(B60-B60,replace)",
-            "exp_purpose(B61-B61,replace)",
-            "exp_requirement(B62-B62,replace)",
-            "exp_equipment(B63-B63,replace)",
-            "exp_steps(B65-B76,replace)",
-            "exp_analysis(B78-B78,replace)",
-            "exp_date(B92-B92,replace)"
+            "experiment_body(B60-B247,replace)"
           ],
           "remove_targets": [
             {
-              "start": "B35",
-              "end": "B58",
-              "reason": "删除封面元数据后的多余空白段，避免正文被压到第 2 页下方造成半页空白，仅保留 B33..B34 作封面留白"
-            },
-            {
-              "start": "B79",
-              "end": "B91",
-              "reason": "删除实验结果分析后的 13 个纯空白段，避免把成绩评定等级图例与教师签名区挤断到第 3 页"
-            },
-            {
-              "start": "B93",
-              "end": "B249",
-              "reason": "删除后续重复实验示例（含旧题目、UML 截图、等价类表与空白占位），只保留单次实验通用栏目框架"
+              "start": "B33",
+              "end": "B58"
             },
             {
               "start": "B260",
-              "end": "B262",
-              "reason": "删除文末连续 3 个纯空白段，避免顶出空白尾页"
+              "end": "B262"
             }
           ],
           "prototypes": [
@@ -10181,7 +10034,7 @@
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 7,
+          "vision_issues_count": 3,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -10330,7 +10183,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 5088,
+          "elapsed_ms": 8892,
           "tokens_used": 0,
           "map_chars": 28924,
           "fields_detected": [],
@@ -10406,7 +10259,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 4516,
+          "elapsed_ms": 3897,
           "tokens_used": 0,
           "map_chars": 28924,
           "fields_detected": [
@@ -10468,55 +10321,86 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 107149,
-          "tokens_used": 54542,
+          "elapsed_ms": 166335,
+          "tokens_used": 109280,
           "map_chars": 28924,
           "fields_detected": [
             "title@B43[match]",
             "major@B44[match]",
             "student_name@B44[match]",
-            "advisor@B45[colon]"
+            "advisor@B45[colon]",
+            "abstract_cn@B46[colon]",
+            "keywords_cn@B47[colon]",
+            "abstract_en@B48[colon]",
+            "keywords_en@B49[colon]"
           ],
           "content_slots": [
-            "abstract_cn(B46-B46,replace)",
-            "keywords_cn(B47-B47,replace)",
-            "abstract_en(B48-B48,replace)",
-            "keywords_en(B49-B49,replace)",
-            "body(B53-B477,replace)"
+            "body(B53-B385,replace)",
+            "references(B429-B440,replace)",
+            "acknowledgement(B471-B476,replace)"
           ],
           "remove_targets": [
             {
               "start": "B0",
               "end": "B42",
               "drop_section": true,
-              "reason": "整节为书写格式规范与填写说明，非论文正文内容"
+              "reason": "第一节为毕业设计书写格式、打印与参考文献规范说明页，非论文内容，整节连同其分节符删除"
             },
             {
               "start": "B43",
               "end": "B52",
               "only_textboxes": true,
-              "reason": "剥离标题页挂载的排版批注浮动框"
+              "reason": "剥离封面与摘要页挂载的字体字号格式批注浮动框，保留标题、署名、摘要与关键词文字"
             },
             {
-              "start": "B53",
-              "end": "B477",
+              "start": "B388",
+              "end": "B427",
+              "reason": "附录下的填写提示语与原文档 39 个空白占位段一并清理，仅保留附录（可选）固定标题，避免空白页"
+            },
+            {
+              "start": "B441",
+              "end": "B469",
+              "reason": "参考文献之后的大段空白占位段及其常见格式提示浮动框，属冗余排版，一并清理"
+            },
+            {
+              "start": "B387",
               "only_textboxes": true,
-              "reason": "剥离正文挂载的排版批注浮动框"
+              "reason": "剥离附录标题旁『标题：黑体，小四号，加粗』格式批注框，保留附录（可选）标题文字"
+            },
+            {
+              "start": "B428",
+              "only_textboxes": true,
+              "reason": "剥离参考文献标题旁的格式批注浮动框，保留『参考文献（至少12篇）』标题文字"
+            },
+            {
+              "start": "B470",
+              "only_textboxes": true,
+              "reason": "剥离致谢标题旁的格式批注浮动框，保留『致谢』标题文字"
+            },
+            {
+              "start": "B50",
+              "end": "B53",
+              "match": "黑体，三号，居中",
+              "reason": "精准剥离目录标题（SDT 目录控件内）右侧残留的『黑体，三号，居中』格式批注浮动框（第2页渲染仍可见），仅保留目录控件与分页符；B52 为分节符、B53 为正文首段，无有效内容受影响"
+            },
+            {
+              "start": "B50",
+              "end": "B53",
+              "only_textboxes": true,
+              "reason": "兜底剥离目录 SDT 控件内挂载的格式批注文本框，保留『目录』文字与 TOC 域"
             }
           ],
           "prototypes": [
             "heading_1",
             "heading_2",
-            "heading_3",
-            "body",
-            "table"
+            "body"
           ],
           "pdf_ok": true,
-          "total_pages": 3,
+          "total_pages": 4,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
           "vision_status": "issues",
-          "vision_issues_count": 8,
+          "vision_issues_count": 3,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
@@ -10685,7 +10569,7 @@
       "tracks": {
         "rule_baseline": {
           "strategy": "rule_baseline",
-          "elapsed_ms": 2966,
+          "elapsed_ms": -229,
           "tokens_used": 0,
           "map_chars": 1151,
           "fields_detected": [],
@@ -10761,7 +10645,7 @@
         },
         "rule_enhanced": {
           "strategy": "rule_enhanced",
-          "elapsed_ms": 2096,
+          "elapsed_ms": 1965,
           "tokens_used": 0,
           "map_chars": 1151,
           "fields_detected": [
@@ -10837,8 +10721,8 @@
         },
         "llm_hybrid": {
           "strategy": "llm_hybrid",
-          "elapsed_ms": 49018,
-          "tokens_used": 13812,
+          "elapsed_ms": 112362,
+          "tokens_used": 34062,
           "map_chars": 1151,
           "fields_detected": [
             "course_name@B7[blank0]",
@@ -10846,57 +10730,65 @@
             "student_id@B11[blank0]",
             "student_name@B12[blank0]",
             "advisor@B13[blank0]",
-            "date@B14[blank0]",
-            "college@B18[cell]"
+            "date@B14[blank0]"
           ],
           "content_slots": [
             "preparation(B22-B22,replace)",
-            "experiment_content(B24-B26,replace)",
-            "objectives(B28-B29,replace)",
+            "content(B24-B26,replace)",
+            "goals(B28-B29,replace)",
             "method_process(B31-B31,replace)",
             "conclusion(B33-B33,replace)",
-            "reflection(B35-B38,replace)"
+            "reflection(B35-B35,replace)"
           ],
-          "remove_targets": [],
+          "remove_targets": [
+            {
+              "start": "B36",
+              "end": "B38"
+            }
+          ],
           "prototypes": [
-            "heading_1",
-            "body",
-            "title"
+            "body"
           ],
           "pdf_ok": true,
-          "total_pages": 3,
+          "total_pages": 2,
           "raw_zero_text_pages": 0,
           "toc_pages_valid": true,
-          "vision_status": "skipped_pending_layout",
-          "vision_issues_count": 0,
+          "vision_status": "issues",
+          "vision_issues_count": 4,
           "ooxml_audit_passed": true,
           "audit_violations": [],
           "blank_pages": 0,
-          "banner_preserved": false,
+          "banner_preserved": true,
           "form_container_respected": true,
-          "metadata_filled": 7,
+          "metadata_filled": 5,
           "metadata_total": 7,
-          "metadata_fill_rate": 1,
-          "unfilled_fields": [],
+          "metadata_fill_rate": 0.71,
+          "unfilled_fields": [
+            "college@top_p",
+            "major@top_p(同行多字段)"
+          ],
           "residue_free": true,
           "leaked_residues": [],
-          "strict_e2e_pass": false,
+          "strict_e2e_pass": true,
           "failure_codes": [
-            "F2_SINGLE_SECT_BOUNDARY_LOSS"
+            "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
           ],
           "legacy_oracle": {
             "blank_pages": 0,
-            "banner_preserved": false,
+            "banner_preserved": true,
             "form_container_respected": true,
-            "metadata_filled": 7,
+            "metadata_filled": 5,
             "metadata_total": 7,
-            "metadata_fill_rate": 1,
-            "unfilled_fields": [],
+            "metadata_fill_rate": 0.71,
+            "unfilled_fields": [
+              "college@top_p",
+              "major@top_p(同行多字段)"
+            ],
             "residue_free": true,
             "leaked_residues": [],
-            "strict_e2e_pass": false,
+            "strict_e2e_pass": true,
             "failure_codes": [
-              "F2_SINGLE_SECT_BOUNDARY_LOSS"
+              "F5_TEXTBOX_OR_INLINE_MULTI_FIELD"
             ]
           }
         }
