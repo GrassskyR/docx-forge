@@ -19,6 +19,9 @@ const props = defineProps<{
   lastTokenDelta: number
   mappings: MappingRow[]
   timeline: TimelineItem[]
+  chatMessageCount: number
+  templateSwitchGuard: boolean
+  draftClearedNotice: boolean
   activeFormat?: FormatOption
   suggestedDocxName: string
 }>()
@@ -31,10 +34,15 @@ const emit = defineEmits<{
   "update:normalizePunct": [value: boolean]
   updateSlot: [key: string, value: string]
   fillSample: []
+  clearDraft: []
   uploadDraft: [file: File]
   applyFormat: []
   stopTask: []
   sendChat: [prompt: string]
+  clearChat: []
+  createSession: []
+  dismissTemplateGuard: []
+  dismissDraftCleared: []
   downloadDoc: [url?: string]
 }>()
 
@@ -53,7 +61,12 @@ const lastAssistantTextLen = computed(() => {
 })
 
 watch(
-  () => [props.mode, props.timeline.length, lastAssistantTextLen.value, lastAssistantStepCount.value],
+  () => [
+    props.mode,
+    props.timeline.length,
+    lastAssistantTextLen.value,
+    lastAssistantStepCount.value,
+  ],
   async () => {
     if (props.mode !== "chat") return
     await nextTick()
@@ -117,9 +130,9 @@ function onChatKeydown(e: KeyboardEvent) {
 <template>
   <section
     id="contentCol"
-    class="w-full lg:w-[44%] lg:min-w-[340px] lg:max-w-[530px] shrink-0 bg-white lg:border-r border-[#E2E8F0] flex flex-col flex-1 lg:flex-none min-h-0"
+    class="w-full lg:w-[42%] lg:min-w-[310px] lg:max-w-[510px] lg:shrink bg-white lg:border-r border-[#E2E8F0] flex flex-col flex-1 lg:flex-none min-h-0"
   >
-    <div class="px-4 pt-3 pb-2.5 border-b border-[#F1F5F9] flex items-center justify-between gap-2">
+    <div class="px-4 pt-3 pb-2.5 border-b border-[#F1F5F9] flex items-center justify-between gap-2 shrink-0">
       <div class="inline-flex p-1 rounded-[10px] bg-[#F1F5F9] text-[12px]">
         <button
           id="tabCopy"
@@ -137,7 +150,7 @@ function onChatKeydown(e: KeyboardEvent) {
         <button
           id="tabChat"
           type="button"
-          class="px-3 py-1.5 rounded-[7px] font-medium transition cursor-pointer"
+          class="px-3 py-1.5 rounded-[7px] font-medium transition cursor-pointer flex items-center gap-1.5"
           :class="
             mode === 'chat'
               ? 'bg-white text-[#0F172A] shadow-2xs'
@@ -145,18 +158,52 @@ function onChatKeydown(e: KeyboardEvent) {
           "
           @click="emit('update:mode', 'chat')"
         >
-          让 AI 写 / 改
+          <span>让 AI 写 / 改</span>
+          <span
+            id="chatCountPill"
+            class="px-1.5 py-0.25 rounded-full text-[10.5px] tabular"
+            :class="
+              mode === 'chat'
+                ? 'bg-[#EFF6FF] text-[#2563EB]'
+                : 'bg-[#E2E8F0]/80 text-[#475569]'
+            "
+          >
+            {{ chatMessageCount }}
+          </span>
         </button>
       </div>
-      <span class="text-[11.5px] text-[#64748B] truncate">
-        {{ mode === "copy" ? "共用同一份底稿，无缝接力" : "支持直接润色或微调左侧底稿" }}
+
+      <!-- 聊天快捷操作：清空对话 / + 新对话 -->
+      <div v-if="mode === 'chat'" id="chatTopActions" class="flex items-center gap-1.5 shrink-0">
+        <button
+          id="clearChatBtn"
+          type="button"
+          :disabled="chatMessageCount === 0 || busy"
+          title="仅清空当前 AI 对话记忆，保留左侧底稿与模板"
+          class="h-7 px-2.5 rounded-md border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed text-[11.5px] text-[#475569] hover:text-[#0F172A] transition cursor-pointer"
+          @click="emit('clearChat')"
+        >
+          清空对话
+        </button>
+        <button
+          id="quickNewChatBtn"
+          type="button"
+          title="开启一条全新的空白对话与文档"
+          class="h-7 px-2.5 rounded-md bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[11.5px] font-medium text-[#1D4ED8] transition cursor-pointer"
+          @click="emit('createSession')"
+        >
+          + 新对话
+        </button>
+      </div>
+      <span v-else class="text-[11.5px] text-[#64748B] truncate">
+        共用同一份底稿，无缝接力
       </span>
     </div>
 
     <!-- 对话模式下顶部底稿联动状态条 -->
     <div
       v-if="mode === 'chat'"
-      class="px-4 py-2 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between gap-2 text-[11.5px]"
+      class="px-4 py-2 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between gap-2 text-[11.5px] shrink-0"
     >
       <span class="text-[#475569] truncate">{{ contextBannerText }}</span>
       <button
@@ -166,6 +213,76 @@ function onChatKeydown(e: KeyboardEvent) {
       >
         查看底稿 →
       </button>
+    </div>
+
+    <!-- 已有对话时切换模板的防上下文污染提示条 -->
+    <div
+      v-if="mode === 'chat' && templateSwitchGuard && chatMessageCount > 0"
+      id="tplGuardBanner"
+      class="px-4 py-2.5 bg-[#FFFBEB] border-b border-[#FDE68A] flex flex-wrap items-center justify-between gap-2 text-[11.5px] shrink-0"
+    >
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0"></span>
+        <span class="text-[#92400E]">
+          已切换为「{{ activeFormat?.name ?? "新格式" }}」· 若准备写新文章，建议开新对话避免旧上下文干扰
+        </span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          id="guardNewSessionBtn"
+          type="button"
+          class="px-2.5 py-1 rounded-md bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium cursor-pointer"
+          @click="emit('createSession')"
+        >
+          用新模板开新对话
+        </button>
+        <button
+          id="guardClearChatBtn"
+          type="button"
+          class="px-2 py-1 rounded-md bg-white border border-[#FCD34D] text-[#92400E] hover:bg-[#FEF3C7] cursor-pointer"
+          @click="emit('clearChat')"
+        >
+          仅清空旧对话
+        </button>
+        <button
+          id="guardDismissBtn"
+          type="button"
+          title="忽略提示"
+          class="px-1.5 py-1 text-[#92400E]/70 hover:text-[#92400E] cursor-pointer"
+          @click="emit('dismissTemplateGuard')"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- 清空正文时的同步清空上下文提示条 -->
+    <div
+      v-if="draftClearedNotice && chatMessageCount > 0"
+      id="draftClearedBanner"
+      class="px-4 py-2 bg-[#EFF6FF] border-b border-[#BFDBFE] flex flex-wrap items-center justify-between gap-2 text-[11.5px] shrink-0"
+    >
+      <span class="text-[#1E40AF]">
+        已清空正文，当前会话仍有历史 AI 对话，是否同步清空上下文？
+      </span>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          id="syncClearChatBtn"
+          type="button"
+          class="px-2.5 py-1 rounded-md bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium cursor-pointer"
+          @click="emit('clearChat')"
+        >
+          同步清空对话
+        </button>
+        <button
+          id="dismissDraftClearedBtn"
+          type="button"
+          class="px-2 py-1 text-[#475569] hover:text-[#0F172A] cursor-pointer"
+          @click="emit('dismissDraftCleared')"
+        >
+          保留
+        </button>
+      </div>
     </div>
 
     <div
@@ -218,7 +335,7 @@ function onChatKeydown(e: KeyboardEvent) {
                 id="clearDraftBtn"
                 type="button"
                 class="text-[#64748B] hover:text-[#0F172A] cursor-pointer"
-                @click="emit('update:draftText', '')"
+                @click="emit('clearDraft')"
               >
                 清空正文
               </button>
@@ -292,7 +409,7 @@ function onChatKeydown(e: KeyboardEvent) {
       />
     </div>
 
-    <div class="px-4 py-3 border-t border-[#E2E8F0] bg-white">
+    <div class="px-4 py-3 border-t border-[#E2E8F0] bg-white shrink-0">
       <div v-if="mode === 'copy'" class="space-y-2.5">
         <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-[#475569]">
           <label

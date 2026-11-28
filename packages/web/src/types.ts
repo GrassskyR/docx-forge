@@ -10,7 +10,8 @@ import type {
 } from "@docs-agent/shared"
 
 export type CategoryId = "all" | "gongwen" | "thesis" | "contract"
-export type DropdownId = "session" | "format" | "layout" | null
+export type DropdownId = "format" | "layout" | null
+export type DraftImportMode = "new_session" | "overwrite_clear" | "overwrite_keep"
 
 export interface FormatField {
   name: string

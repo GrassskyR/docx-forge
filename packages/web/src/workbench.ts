@@ -12,6 +12,7 @@ import {
   type BackgroundImportState,
   type CategoryId,
   type DocumentResult,
+  type DraftImportMode,
   type DropdownId,
   type FormatOption,
   type HealthInfo,
@@ -114,7 +115,14 @@ function buildMappings(plan: ComposePlan | undefined, paragraphs: string[]): Map
 }
 
 export function useWorkbench() {
+  const initialSidebarOpen =
+    typeof localStorage !== "undefined"
+      ? localStorage.getItem("docforge.sidebarOpen") !== "0"
+      : true
+
   const state = reactive({
+    sidebarOpen: initialSidebarOpen,
+    sidebarDrawerOpen: false,
     debug: false,
     debugDrawerOpen: false,
     narrowPane: "edit" as "edit" | "preview",
@@ -123,6 +131,9 @@ export function useWorkbench() {
     popoverCat: "all" as CategoryId,
     importOpen: false,
     importInitialFile: null as File | null,
+    pendingDraftFile: null as File | null,
+    templateSwitchGuard: false,
+    draftClearedNotice: false,
     settingsOpen: false,
     settingsSaving: false,
     settingsData: null as SettingsResponse | null,
@@ -199,6 +210,21 @@ export function useWorkbench() {
     (activeFormat.value?.sampleUrls ?? []).map((u) => u + "?v=" + state.docVersion),
   )
 
+  const chatMessageCount = computed(
+    () => state.timeline.filter((i) => i.kind === "user" || i.kind === "assistant").length,
+  )
+
+  function toggleSidebar() {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      state.sidebarDrawerOpen = !state.sidebarDrawerOpen
+      return
+    }
+    state.sidebarOpen = !state.sidebarOpen
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("docforge.sidebarOpen", state.sidebarOpen ? "1" : "0")
+    }
+  }
+
   function startBusy(kind: "copy" | "chat" | "surgery", initialLabel: string) {
     if (activeAbort) activeAbort.abort()
     activeAbort = new AbortController()
@@ -259,6 +285,8 @@ export function useWorkbench() {
       .map((s) => s.trim())
       .filter(Boolean)
     state.mappings = buildMappings(state.currentDoc?.body_plan, paras)
+    state.templateSwitchGuard = false
+    state.draftClearedNotice = false
     state.docVersion++
     state.page = 1
     void ensureFormatSamples(state.templateId)
@@ -364,7 +392,15 @@ export function useWorkbench() {
   function updateDraftText(text: string) {
     state.draftText = text
     if (!text.trim()) state.mappings = []
+    else state.draftClearedNotice = false
     scheduleWorkspaceSave()
+  }
+
+  function clearDraft() {
+    const hadChat = chatMessageCount.value > 0
+    updateDraftText("")
+    state.draftClearedNotice = hadChat
+    toast("已清空正文")
   }
 
   function updateSlotValue(key: string, val: string) {
@@ -381,6 +417,7 @@ export function useWorkbench() {
   async function createBlankSession() {
     if (state.busy) stopActiveTask(true)
     state.openDropdown = null
+    state.sidebarDrawerOpen = false
     try {
       const res = await api.createSession({ template_id: state.templateId })
       applySessionsPayload(res, true)
@@ -391,6 +428,7 @@ export function useWorkbench() {
   }
 
   async function switchSession(id: string) {
+    state.sidebarDrawerOpen = false
     if (id === state.activeSessionId) {
       state.openDropdown = null
       return
@@ -400,6 +438,20 @@ export function useWorkbench() {
     try {
       const res = await api.switchActiveSession(id)
       applySessionsPayload(res, true)
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  async function clearCurrentChat() {
+    if (!state.activeSessionId || state.busy) return
+    try {
+      const res = await api.clearSessionChat(state.activeSessionId)
+      state.sessions = res.sessions
+      state.timeline = parseTimeline(res.active.messages ?? [], res.active.events ?? [])
+      state.templateSwitchGuard = false
+      state.draftClearedNotice = false
+      toast("已清空当前对话记忆，左侧底稿与模板已完整保留")
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e))
     }
@@ -454,6 +506,7 @@ export function useWorkbench() {
       state.templateId = res.active.template_id
       state.previewStale = res.active.preview_stale
       state.timeline = parseTimeline(res.active.messages ?? [], res.active.events ?? [])
+      state.templateSwitchGuard = chatMessageCount.value > 0
       state.page = 1
       void ensureFormatSamples(option.id)
       toast("当前文档已切换为「" + option.name + "」")
@@ -510,19 +563,71 @@ export function useWorkbench() {
     }
   }
 
-  async function uploadDraft(file: File) {
+  async function importDraftWithMode(file: File, mode: DraftImportMode) {
+    if (saveDebounceTimer) {
+      clearTimeout(saveDebounceTimer)
+      saveDebounceTimer = undefined
+    }
+    state.pendingDraftFile = null
     const ctl = startBusy("copy", "正在读取草稿文件…")
     try {
       const res = await api.ingestDraftFile(file)
-      if (!ctl.signal.aborted) {
-        updateDraftText(res.paragraphs.join("\n"))
-        toast("已导入草稿（共 " + res.count + " 段 · " + res.characters + " 字）")
+      if (ctl.signal.aborted) return
+      const text = res.paragraphs.join("\n")
+      const stats = "（共 " + res.count + " 段 · " + res.characters + " 字）"
+      if (mode === "new_session") {
+        const created = await api.createSession({ template_id: state.templateId })
+        const patched = await api.patchSession(created.active.id, { draft_text: text })
+        applySessionsPayload(patched, true)
+        state.mode = "copy"
+        toast("已新建独立对话并导入草稿" + stats)
+      } else if (mode === "overwrite_clear") {
+        await api.clearSessionChat(state.activeSessionId)
+        const patched = await api.patchSession(state.activeSessionId, {
+          draft_text: text,
+          slot_values: {},
+          preview_stale: Boolean(state.currentDoc),
+        })
+        applySessionsPayload(patched, true)
+        toast("已覆盖草稿并清空旧对话" + stats)
+      } else {
+        const patched = await api.patchSession(state.activeSessionId, {
+          draft_text: text,
+          preview_stale: Boolean(state.currentDoc),
+        })
+        state.draftText = text
+        state.mappings = []
+        state.draftClearedNotice = false
+        applySessionsPayload(patched, false)
+        toast("已导入草稿" + stats)
       }
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e))
     } finally {
       finishBusy()
     }
+  }
+
+  function requestImportDraft(file: File) {
+    const hasExisting =
+      chatMessageCount.value > 0 ||
+      state.draftText.trim().length > 0 ||
+      Boolean(state.currentDoc)
+    if (!hasExisting) {
+      void importDraftWithMode(file, "overwrite_keep")
+      return
+    }
+    state.pendingDraftFile = file
+  }
+
+  function confirmPendingDraftImport(mode: DraftImportMode) {
+    const file = state.pendingDraftFile
+    state.pendingDraftFile = null
+    if (file) void importDraftWithMode(file, mode)
+  }
+
+  async function uploadDraft(file: File) {
+    requestImportDraft(file)
   }
 
   async function applyFormat() {
@@ -726,6 +831,8 @@ export function useWorkbench() {
   async function sendChat(prompt: string) {
     const clean = prompt.trim()
     if (!clean || state.busy) return
+    state.templateSwitchGuard = false
+    state.draftClearedNotice = false
     const ctl = startBusy("chat", "正在结合当前底稿理解需求…")
     state.timeline.push({ kind: "user", text: clean })
     const reply: Extract<TimelineItem, { kind: "assistant" }> = {
@@ -940,14 +1047,18 @@ export function useWorkbench() {
     suggestedDocxName,
     previewUrls,
     samplePreviewUrls,
+    chatMessageCount,
     init,
     toast,
+    toggleSidebar,
     stopActiveTask,
     updateDraftText,
+    clearDraft,
     updateSlotValue,
     fillStarterDraft,
     createBlankSession,
     switchSession,
+    clearCurrentChat,
     forkCurrentSession,
     renameSessionById,
     deleteSessionById,
@@ -957,6 +1068,9 @@ export function useWorkbench() {
     duplicateFormat,
     removeFormat,
     uploadDraft,
+    requestImportDraft,
+    importDraftWithMode,
+    confirmPendingDraftImport,
     applyFormat,
     runSurgery,
     startBackgroundImport,

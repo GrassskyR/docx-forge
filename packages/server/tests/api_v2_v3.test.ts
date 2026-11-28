@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { once } from "node:events"
 import type { AddressInfo } from "node:net"
+import { DatabaseSync } from "node:sqlite"
 import { strFromU8, unzipSync } from "fflate"
 import { createApp } from "../src/app.js"
 
@@ -143,6 +144,46 @@ test("单端口 V4 统一 /api 契约、SQLite 多会话隔离、SSE 阶段流�
     const forked = await request("/api/sessions/" + s1Id + "/fork", { name: "实验分叉稿" })
     expect(forked.active.parent_id).toBe(s1Id)
     expect(forked.active.draft_text).toContain("校园学术创新周")
+
+    // Patch slot_values + seed chat messages on s1, then verify clear-chat preserves draft/slots/template/doc
+    await request(
+      "/api/sessions/" + s1Id,
+      { slot_values: { author: "李明" } },
+      "PATCH",
+    )
+    const db = new DatabaseSync(join(dir, "docforge.db"))
+    try {
+      const row = db
+        .prepare("SELECT payload FROM sessions WHERE id=?")
+        .get(s1Id) as { payload: string }
+      const parsed = JSON.parse(row.payload)
+      parsed.messages = [
+        { role: "user", content: "帮我检查一下通知格式" },
+        { role: "assistant", content: [{ type: "text", text: "已核对格式无误。" }] },
+      ]
+      db.prepare("UPDATE sessions SET payload=? WHERE id=?").run(JSON.stringify(parsed), s1Id)
+    } finally {
+      db.close()
+    }
+
+    const beforeClear = await request("/api/sessions/active", { session_id: s1Id }, "PUT")
+    expect(beforeClear.active.messages.length).toBe(2)
+    expect(beforeClear.active.events.length).toBeGreaterThan(0)
+    expect(
+      beforeClear.sessions.find((s: { id: string }) => s.id === s1Id).message_count,
+    ).toBe(2)
+
+    const afterClear = await request("/api/sessions/" + s1Id + "/clear-chat", {}, "POST")
+    expect(afterClear.active.id).toBe(s1Id)
+    expect(afterClear.active.messages).toEqual([])
+    expect(afterClear.active.events).toEqual([])
+    expect(afterClear.active.draft_text).toContain("2026年秋季校园学术创新周通知")
+    expect(afterClear.active.slot_values).toEqual({ author: "李明" })
+    expect(afterClear.active.template_id).toBe(child.id)
+    expect(afterClear.active.current_doc.doc_id).toBeTruthy()
+    expect(
+      afterClear.sessions.find((s: { id: string }) => s.id === s1Id).message_count,
+    ).toBe(0)
 
     const backToS2 = await request("/api/sessions/active", { session_id: s2.active.id }, "PUT")
     expect(backToS2.active.id).toBe(s2.active.id)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue"
 import TopBar from "./components/TopBar.vue"
+import SessionSidebar from "./components/SessionSidebar.vue"
 import DebugSidebar from "./components/DebugSidebar.vue"
 import ContentColumn from "./components/ContentColumn.vue"
 import PreviewStage from "./components/PreviewStage.vue"
@@ -9,7 +10,14 @@ import SettingsModal from "./components/SettingsModal.vue"
 import { useWorkbench } from "./workbench"
 
 const wb = useWorkbench()
-const { state, activeFormat, suggestedDocxName, previewUrls, samplePreviewUrls } = wb
+const {
+  state,
+  activeFormat,
+  suggestedDocxName,
+  previewUrls,
+  samplePreviewUrls,
+  chatMessageCount,
+} = wb
 
 const isDesktop = computed(() => Boolean(window.docforgeDesktop))
 const docPages = computed(
@@ -43,7 +51,11 @@ function closeAllMenus() {
 function toggleDebug() {
   state.debug = !state.debug
   if (!state.debug) state.debugDrawerOpen = false
-  wb.toast(state.debug ? "已开启调试模式：展开底层诊断与会话分叉" : "已切回普通模式：保留全部常用排版功能")
+  wb.toast(
+    state.debug
+      ? "已开启调试模式：展开底层诊断与会话分叉"
+      : "已切回普通模式：保留全部常用排版功能",
+  )
 }
 
 function openImport(initialFile: File | null = null) {
@@ -102,9 +114,9 @@ function onDropFile(e: DragEvent) {
   dragDepth = 0
   draggingFile.value = false
   const file = e.dataTransfer.files[0]
-  if (state.importOpen) return
+  if (state.importOpen || state.pendingDraftFile) return
   if (/\.(txt|md)$/i.test(file.name)) {
-    void wb.uploadDraft(file)
+    wb.requestImportDraft(file)
     return
   }
   if (/\.docx?$/i.test(file.name)) {
@@ -128,11 +140,34 @@ function useDroppedAsDraft() {
     wb.toast("草稿导入仅支持 .docx / .txt / .md；旧版 .doc 请作为模板导入")
     return
   }
-  void wb.uploadDraft(file)
+  wb.requestImportDraft(file)
+}
+
+function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape") {
+    if (state.pendingDraftFile) {
+      state.pendingDraftFile = null
+      return
+    }
+    if (droppedWordFile.value) {
+      droppedWordFile.value = null
+      return
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "n") {
+    if (window.docforgeDesktop || e.isComposing) return
+    if (state.importOpen || state.settingsOpen || state.pendingDraftFile) return
+    const target = e.target as HTMLElement | null
+    const tag = target?.tagName
+    if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return
+    e.preventDefault()
+    void wb.createBlankSession()
+  }
 }
 
 onMounted(() => {
   window.addEventListener("click", closeAllMenus)
+  window.addEventListener("keydown", onGlobalKeydown)
   wb.init().catch((e) => wb.toast(e instanceof Error ? e.message : String(e)))
   if (window.docforgeDesktop?.onMenuAction) {
     unsubMenu = window.docforgeDesktop.onMenuAction((action) => {
@@ -145,6 +180,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("click", closeAllMenus)
+  window.removeEventListener("keydown", onGlobalKeydown)
   if (unsubMenu) unsubMenu()
 })
 </script>
@@ -158,11 +194,10 @@ onUnmounted(() => {
     @drop="onDropFile"
   >
     <TopBar
+      :sidebar-open="state.sidebarOpen"
       :debug="state.debug"
       :open-dropdown="state.openDropdown"
       :popover-cat="state.popoverCat"
-      :sessions="state.sessions"
-      :active-session-id="state.activeSessionId"
       :session-name="state.sessionName"
       :has-doc="Boolean(state.currentDoc)"
       :doc-pages="docPages"
@@ -174,16 +209,13 @@ onUnmounted(() => {
       :langfuse-enabled="state.health?.langfuse_enabled"
       :bg-import="state.bgImport"
       :needs-setup="needsSetup"
+      @toggle-sidebar="wb.toggleSidebar"
       @toggle-debug="toggleDebug"
       @toggle-debug-drawer="state.debugDrawerOpen = !state.debugDrawerOpen"
       @open-settings="wb.openSettings()"
       @set-dropdown="state.openDropdown = $event"
       @change-popover-cat="state.popoverCat = $event"
-      @create-session="wb.createBlankSession"
-      @switch-session="wb.switchSession"
       @fork-session="wb.forkCurrentSession"
-      @rename-session="wb.renameSessionById"
-      @delete-session="wb.deleteSessionById"
       @select-format="wb.selectFormat"
       @rename-format="wb.renameFormat"
       @change-format-cat="wb.updateFormatCategory"
@@ -293,6 +325,18 @@ onUnmounted(() => {
     </div>
 
     <div class="flex-1 min-h-0 flex flex-row overflow-hidden relative">
+      <SessionSidebar
+        :open="state.sidebarOpen"
+        :drawer-open="state.sidebarDrawerOpen"
+        :sessions="state.sessions"
+        :active-session-id="state.activeSessionId"
+        @create-session="wb.createBlankSession"
+        @switch-session="wb.switchSession"
+        @rename-session="wb.renameSessionById"
+        @delete-session="wb.deleteSessionById"
+        @close-drawer="state.sidebarDrawerOpen = false"
+      />
+
       <DebugSidebar
         v-if="state.debug"
         :formats="state.formats"
@@ -321,6 +365,9 @@ onUnmounted(() => {
         :last-token-delta="state.lastTokenDelta"
         :mappings="state.mappings"
         :timeline="state.timeline"
+        :chat-message-count="chatMessageCount"
+        :template-switch-guard="state.templateSwitchGuard"
+        :draft-cleared-notice="state.draftClearedNotice"
         :active-format="activeFormat"
         :suggested-docx-name="suggestedDocxName"
         @update:mode="state.mode = $event"
@@ -330,10 +377,15 @@ onUnmounted(() => {
         @update:normalize-punct="state.normalizePunct = $event"
         @update-slot="wb.updateSlotValue"
         @fill-sample="wb.fillStarterDraft"
-        @upload-draft="wb.uploadDraft"
+        @clear-draft="wb.clearDraft"
+        @upload-draft="wb.requestImportDraft"
         @apply-format="wb.applyFormat"
         @stop-task="wb.stopActiveTask()"
         @send-chat="wb.sendChat"
+        @clear-chat="wb.clearCurrentChat"
+        @create-session="wb.createBlankSession"
+        @dismiss-template-guard="state.templateSwitchGuard = false"
+        @dismiss-draft-cleared="state.draftClearedNotice = false"
         @download-doc="wb.downloadDocx"
       />
 
@@ -385,9 +437,89 @@ onUnmounted(() => {
       @refresh="wb.loadSettings()"
     />
 
+    <!-- 导入新草稿时的防上下文污染确认弹窗 -->
+    <div
+      v-if="state.pendingDraftFile"
+      id="importGuardModal"
+      class="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-50"
+      @click.self="state.pendingDraftFile = null"
+    >
+      <div class="bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl w-full max-w-[440px] p-5 space-y-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+            <h3 class="text-[14.5px] font-semibold text-[#0F172A]">
+              检测到当前会话已有历史上下文
+            </h3>
+          </div>
+          <p class="text-[12px] text-[#64748B] mt-1.5 leading-relaxed">
+            即将导入新草稿
+            <span class="font-semibold text-[#0F172A]">
+              《{{ state.pendingDraftFile.name }}》
+            </span>
+            。为避免 AI 继续沿用上一篇文章的聊天记忆，请选择导入方式：
+          </p>
+        </div>
+
+        <div class="space-y-2 text-[12px]">
+          <button
+            id="importAsNewSessionBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border-2 border-[#2563EB] bg-[#EFF6FF]/65 hover:bg-[#EFF6FF] transition cursor-pointer"
+            @click="wb.confirmPendingDraftImport('new_session')"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-[#0F172A]">新建独立对话导入</span>
+              <span class="px-1.5 py-0.5 rounded bg-[#2563EB] text-white text-[10.5px] font-medium">
+                推荐
+              </span>
+            </div>
+            <div class="text-[#64748B] mt-1">
+              自动在左侧列表新建一条干净会话装入新文章，原文章和旧对话完整保留不丢失。
+            </div>
+          </button>
+
+          <button
+            id="importOverwriteClearBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border border-[#E2E8F0] hover:border-[#2563EB] bg-white hover:bg-[#F8FAFC] transition cursor-pointer"
+            @click="wb.confirmPendingDraftImport('overwrite_clear')"
+          >
+            <div class="font-semibold text-[#0F172A]">覆盖当前草稿，并清空旧对话</div>
+            <div class="text-[#64748B] mt-1">
+              留在当前会话内替换正文并重置填槽，同时清空 AI 记忆避免上下文串台。
+            </div>
+          </button>
+
+          <button
+            id="importOverwriteKeepBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border border-[#E2E8F0] hover:border-[#2563EB] bg-white hover:bg-[#F8FAFC] transition cursor-pointer"
+            @click="wb.confirmPendingDraftImport('overwrite_keep')"
+          >
+            <div class="font-semibold text-[#0F172A]">仅覆盖正文，保留当前对话</div>
+            <div class="text-[#64748B] mt-1">
+              适合导入同一篇文章的修订版继续聊。
+            </div>
+          </button>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            id="cancelImportGuardBtn"
+            type="button"
+            class="h-8 px-3.5 rounded-lg border border-[#CBD5E1] text-[12px] text-[#475569] hover:bg-[#F8FAFC] cursor-pointer"
+            @click="state.pendingDraftFile = null"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 全局文件拖拽浮层 -->
     <div
-      v-if="draggingFile && !state.importOpen"
+      v-if="draggingFile && !state.importOpen && !state.pendingDraftFile"
       class="fixed inset-0 bg-[#0F172A]/35 backdrop-blur-[2px] flex items-center justify-center p-6 z-50 pointer-events-none"
     >
       <div class="bg-white border-2 border-dashed border-[#2563EB] rounded-2xl px-10 py-8 text-center shadow-2xl">

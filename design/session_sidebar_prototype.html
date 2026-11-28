@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocForge 方案 A 交互原型 · 多对话侧边栏与上下文隔离</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.45); border-radius: 999px; }
+    .dot-grid {
+      background-image: radial-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .paper-sheet {
+      background: #ffffff;
+      color: #18181b;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.08);
+      font-family: "Songti SC", "STSong", "SimSun", Georgia, serif;
+    }
+    .sidebar-panel {
+      transition: width 0.2s ease, opacity 0.18s ease;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0 p-0">
+  <div id="app" class="h-screen w-screen overflow-hidden flex flex-col select-none">
+
+    <!-- 顶部栏 -->
+    <header class="h-[52px] shrink-0 bg-[var(--card)] border-b border-[var(--border)] px-3.5 flex items-center justify-between gap-3 z-30">
+      <div class="flex items-center gap-2 min-w-0">
+        <!-- 折叠/展开会话侧边栏 -->
+        <button
+          id="toggleSidebarBtn"
+          type="button"
+          title="展开 / 收起对话列表侧边栏"
+          class="w-8 h-8 rounded-lg hover:bg-[var(--accent)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition cursor-pointer shrink-0"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <line x1="9" y1="4" x2="9" y2="20" />
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="w-7 h-7 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+          <span class="font-semibold text-sm tracking-tight">DocForge</span>
+        </div>
+
+        <div class="h-4 w-px bg-[var(--border)] mx-0.5"></div>
+
+        <!-- 当前会话标题 -->
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span id="topSessionTitle" class="text-xs font-semibold truncate max-w-[180px] sm:max-w-[240px]"></span>
+          <span id="topSessionBadge" class="text-xs px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] shrink-0"></span>
+        </div>
+
+        <div class="h-4 w-px bg-[var(--border)] mx-0.5 hidden md:block"></div>
+
+        <!-- 格式模板选择器 -->
+        <div class="relative">
+          <button
+            id="templateBtn"
+            type="button"
+            class="h-8 px-2.5 rounded-lg bg-[var(--background)] hover:bg-[var(--accent)] border border-[var(--border)] flex items-center gap-1.5 text-xs transition cursor-pointer"
+          >
+            <span class="text-[var(--muted-foreground)]">格式</span>
+            <span id="activeTplLabel" class="font-medium max-w-[140px] truncate"></span>
+            <span class="text-[var(--muted-foreground)]">▾</span>
+          </button>
+          <div
+            id="templateMenu"
+            class="hidden absolute left-0 top-10 w-[260px] bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-50 space-y-0.5"
+          ></div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--secondary)] text-[var(--muted-foreground)] text-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--success)]"></span>
+          <span>交互原型 · 点击任意控件体验方案 A</span>
+        </span>
+        <button
+          id="demoGuideBtn"
+          type="button"
+          class="h-8 px-2.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--accent)] text-xs font-medium cursor-pointer"
+        >
+          试试模拟场景 ▾
+        </button>
+      </div>
+    </header>
+
+    <!-- 模拟体验快捷栏（可收起，方便快速测试 3 大痛点场景） -->
+    <div
+      id="demoGuideBar"
+      class="shrink-0 bg-[var(--sidebar)] border-b border-[var(--border)] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-semibold text-[var(--foreground)]">快速体验方案 A 的 3 个关键场景：</span>
+        <button data-demo="switch-session" type="button" class="px-2.5 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer">
+          ① 左侧点选不同文章/对话切换上下文
+        </button>
+        <button data-demo="import-draft" type="button" class="px-2.5 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer">
+          ② 模拟「导入新文章草稿」触发防污染弹窗
+        </button>
+        <button data-demo="switch-tpl" type="button" class="px-2.5 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] cursor-pointer">
+          ③ 模拟「换模板」触发上下文隔离提示
+        </button>
+      </div>
+      <button id="closeDemoGuide" type="button" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">收起提示 ✕</button>
+    </div>
+
+    <!-- 主体三栏：左侧可折叠会话栏 + 中间编辑/AI对话栏 + 右侧 A4 预览区 -->
+    <div class="flex-1 min-h-0 flex flex-row overflow-hidden relative">
+
+      <!-- 1. 左侧可折叠会话列表侧边栏 -->
+      <aside
+        id="sessionSidebar"
+        class="sidebar-panel w-[248px] shrink-0 bg-[var(--sidebar)] border-r border-[var(--border)] flex flex-col min-h-0 overflow-hidden"
+      >
+        <div class="p-3 space-y-2 border-b border-[var(--border)] shrink-0">
+          <button
+            id="sidebarNewBtn"
+            type="button"
+            class="w-full h-9 px-3 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>新建对话 / 文档</span>
+            <span class="ml-auto text-xs opacity-75 font-mono">Ctrl+N</span>
+          </button>
+
+          <div class="relative">
+            <input
+              id="sessionSearch"
+              type="text"
+              placeholder="搜索对话或模板…"
+              class="w-full h-8 pl-7 pr-2.5 rounded-lg bg-[var(--card)] border border-[var(--border)] focus:border-[var(--primary)] text-xs text-[var(--foreground)] placeholder-[var(--placeholder)] outline-none"
+            />
+            <svg class="w-3.5 h-3.5 text-[var(--muted-foreground)] absolute left-2.5 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+        </div>
+
+        <div id="sessionList" class="flex-1 min-h-0 overflow-y-auto scroll-thin p-2 space-y-1"></div>
+
+        <div class="px-3 py-2.5 border-t border-[var(--border)] text-xs text-[var(--muted-foreground)] flex items-center justify-between shrink-0">
+          <span id="sessionCountText"></span>
+          <span>独立上下文隔离</span>
+        </div>
+      </aside>
+
+      <!-- 2. 中间列：原文字套格式 / 让 AI 写 / 改 -->
+      <section class="w-[45%] min-w-[350px] max-w-[540px] shrink-0 bg-[var(--card)] border-r border-[var(--border)] flex flex-col min-h-0">
+        <!-- 模式切换顶栏 -->
+        <div class="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between gap-2 shrink-0">
+          <div class="inline-flex p-0.5 rounded-lg bg-[var(--sidebar)] border border-[var(--border)] text-xs">
+            <button
+              id="tabCopy"
+              type="button"
+              class="px-3 py-1.5 rounded-md font-medium transition cursor-pointer"
+            >
+              原文字套格式
+            </button>
+            <button
+              id="tabChat"
+              type="button"
+              class="px-3 py-1.5 rounded-md font-medium transition cursor-pointer flex items-center gap-1.5"
+            >
+              <span>让 AI 写 / 改</span>
+              <span id="chatCountPill" class="px-1.5 py-0.5 rounded-full text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)]"></span>
+            </button>
+          </div>
+
+          <!-- 聊天快捷操作：清空上下文 / 新建对话 -->
+          <div id="chatTopActions" class="flex items-center gap-1.5">
+            <button
+              id="clearChatBtn"
+              type="button"
+              title="仅清空当前 AI 对话记忆，保留左侧底稿与模板"
+              class="h-7 px-2.5 rounded-md border border-[var(--border)] hover:bg-[var(--accent)] text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition cursor-pointer"
+            >
+              清空对话
+            </button>
+            <button
+              id="quickNewChatBtn"
+              type="button"
+              title="开启一条全新的空白对话与文档"
+              class="h-7 px-2.5 rounded-md bg-[var(--secondary)] hover:bg-[var(--accent)] border border-[var(--border)] text-xs font-medium text-[var(--foreground)] transition cursor-pointer"
+            >
+              + 新对话
+            </button>
+          </div>
+        </div>
+
+        <!-- 对话模式下的底稿联动状态条 -->
+        <div
+          id="chatContextBar"
+          class="px-4 py-2 bg-[var(--sidebar)] border-b border-[var(--border)] flex items-center justify-between gap-2 text-xs shrink-0"
+        >
+          <span id="contextStatusText" class="text-[var(--muted-foreground)] truncate"></span>
+          <button
+            id="jumpToDraftBtn"
+            type="button"
+            class="text-[var(--link)] hover:underline font-medium shrink-0 cursor-pointer"
+          >
+            查看底稿 →
+          </button>
+        </div>
+
+        <!-- 切换模板后的防上下文污染提示条 -->
+        <div
+          id="tplGuardBanner"
+          class="hidden px-4 py-2.5 bg-[var(--secondary)] border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-xs shrink-0"
+        >
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-[var(--warning)] shrink-0"></span>
+            <span id="tplGuardText" class="text-[var(--foreground)]"></span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="guardNewSessionBtn" type="button" class="px-2.5 py-1 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-medium cursor-pointer">
+              用新模板开新对话
+            </button>
+            <button id="guardClearChatBtn" type="button" class="px-2 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--accent)] cursor-pointer">
+              仅清空旧对话
+            </button>
+            <button id="guardDismissBtn" type="button" class="px-1.5 py-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- 清空正文后的同步清理提示条 -->
+        <div
+          id="draftClearedBanner"
+          class="hidden px-4 py-2 bg-[var(--secondary)] border-b border-[var(--border)] flex items-center justify-between gap-2 text-xs shrink-0"
+        >
+          <span class="text-[var(--foreground)]">已清空正文，当前会话仍有历史 AI 对话，是否同步清空上下文？</span>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="syncClearChatBtn" type="button" class="px-2.5 py-1 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-medium cursor-pointer">
+              同步清空对话
+            </button>
+            <button id="dismissDraftClearedBtn" type="button" class="px-2 py-1 text-[var(--muted-foreground)] cursor-pointer">
+              保留
+            </button>
+          </div>
+        </div>
+
+        <!-- 内容主体滚动区 -->
+        <div id="middleScroll" class="flex-1 min-h-0 overflow-y-auto scroll-thin p-4 flex flex-col gap-3 select-text">
+          <!-- Copy 视图 -->
+          <div id="copyView" class="hidden flex-1 flex flex-col gap-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-[var(--foreground)]">文章正文</span>
+              <div class="flex items-center gap-3">
+                <button id="clearDraftBtn" type="button" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">
+                  清空正文
+                </button>
+                <button id="importDraftBtn" type="button" class="text-[var(--link)] hover:underline font-medium cursor-pointer">
+                  导入草稿 .docx / .txt
+                </button>
+              </div>
+            </div>
+            <textarea
+              id="draftTextarea"
+              class="flex-1 min-h-[260px] w-full rounded-xl border border-[var(--border)] focus:border-[var(--primary)] bg-[var(--background)] p-3.5 text-xs leading-relaxed text-[var(--foreground)] outline-none resize-none"
+              placeholder="粘贴或输入文章正文…"
+            ></textarea>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs text-[var(--muted-foreground)]">更换新文章时点击「导入草稿」或左侧「新建对话」可自动隔离上下文</span>
+              <button id="applyFormatBtn" type="button" class="h-8 px-4 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium cursor-pointer">
+                套用格式
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat 视图 -->
+          <div id="chatView" class="flex-1 flex flex-col gap-3"></div>
+        </div>
+
+        <!-- 底部聊天输入框 -->
+        <div id="chatComposer" class="px-4 py-3 border-t border-[var(--border)] bg-[var(--card)] shrink-0">
+          <div class="rounded-xl border border-[var(--border)] focus-within:border-[var(--primary)] bg-[var(--background)] px-3 py-2 flex items-end gap-2">
+            <textarea
+              id="chatInput"
+              rows="2"
+              class="w-full text-xs leading-relaxed text-[var(--foreground)] placeholder-[var(--placeholder)] outline-none resize-none bg-transparent"
+              placeholder="输入指令（例如：把第二部分扩写得更具体，或检查表格有没有跨页）…"
+            ></textarea>
+            <button
+              id="sendBtn"
+              type="button"
+              class="h-8 px-4 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium shrink-0 cursor-pointer"
+            >
+              发送
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 右侧成品预览区 -->
+      <main class="flex-1 min-w-0 flex flex-col min-h-0 dot-grid bg-[var(--background)]">
+        <div class="h-[46px] shrink-0 bg-[var(--card)] border-b border-[var(--border)] px-4 flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-[var(--success)] shrink-0"></span>
+            <span id="previewMetaText" class="font-medium truncate"></span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button id="localOpenBtn" type="button" class="h-7 px-2.5 rounded-md border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--accent)] text-xs cursor-pointer">
+              本地打开
+            </button>
+            <button id="saveAsBtn" type="button" class="h-7 px-3 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium cursor-pointer">
+              另存为 .docx
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto scroll-thin p-6 flex justify-center">
+          <div id="paperPreview" class="paper-sheet w-full max-w-[520px] min-h-[680px] rounded-sm p-10 h-fit"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 导入新草稿时的防污染确认弹窗 -->
+    <div id="importGuardModal" class="hidden fixed inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-4 z-50">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-[440px] p-5 space-y-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[var(--primary)]"></span>
+            <h3 class="text-sm font-semibold">检测到当前对话已有历史上下文</h3>
+          </div>
+          <p class="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
+            即将导入新草稿 <span class="font-semibold text-[var(--foreground)]">《2026年校园网络安全演练方案.docx》</span>。
+            为避免 AI 继续沿用上一篇文章的聊天记忆，请选择导入方式：
+          </p>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <button
+            id="importAsNewSessionBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border-2 border-[var(--primary)] bg-[var(--secondary)] hover:opacity-95 transition cursor-pointer"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-[var(--foreground)]">新建独立对话导入</span>
+              <span class="px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] text-xs">推荐</span>
+            </div>
+            <div class="text-[var(--muted-foreground)] mt-1">
+              自动在左侧列表新建一条干净会话装入新文章，原文章和旧对话完整保留不丢失。
+            </div>
+          </button>
+
+          <button
+            id="importOverwriteClearBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary)] bg-[var(--background)] transition cursor-pointer"
+          >
+            <div class="font-semibold text-[var(--foreground)]">覆盖当前草稿，并清空旧对话</div>
+            <div class="text-[var(--muted-foreground)] mt-1">
+              留在当前会话内替换正文，同时重置 AI 记忆避免上下文串台。
+            </div>
+          </button>
+
+          <button
+            id="importOverwriteKeepBtn"
+            type="button"
+            class="w-full text-left p-3 rounded-xl border border-[var(--border)] hover:border-[var(--primary)] bg-[var(--background)] transition cursor-pointer"
+          >
+            <div class="font-semibold text-[var(--foreground)]">仅覆盖正文，保留当前对话</div>
+            <div class="text-[var(--muted-foreground)] mt-1">
+              适合导入同一篇文章的修订版继续聊。
+            </div>
+          </button>
+        </div>
+
+        <div class="flex justify-end">
+          <button id="cancelImportGuardBtn" type="button" class="h-8 px-3 rounded-lg border border-[var(--border)] text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 轻提示 Toast -->
+    <div
+      id="toast"
+      class="fixed bottom-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-xs font-medium shadow-lg pointer-events-none opacity-0 transition-opacity z-50"
+    ></div>
+  </div>
+
+  <script>
+    const TEMPLATES = [
+      { id: "tpl-gongwen", name: "红头公文通知", category: "公文" },
+      { id: "tpl-lab", name: "高校实验报告模板", category: "论文/报告" },
+      { id: "tpl-contract", name: "标准技术开发合同", category: "合同/表" },
+      { id: "tpl-general", name: "通用标准文档格式", category: "公文" },
+    ];
+
+    const state = {
+      sidebarOpen: true,
+      mode: "chat",
+      search: "",
+      activeId: "s1",
+      renamingId: null,
+      confirmDelId: null,
+      tplGuardFor: null,
+      draftClearedNotice: false,
+      sessions: [
+        {
+          id: "s1",
+          group: "今天",
+          name: "2026实验室安全专项检查通知",
+          templateId: "tpl-gongwen",
+          updatedLabel: "刚刚",
+          pages: 2,
+          draft: "关于开展2026年度实验室安全专项检查的通知\n各二级学院、重点实验室：\n为切实加强校园实验室安全管理，防范化解重大风险隐患，现决定开展专项检查。\n一、检查范围\n重点排查危化品双人双锁台账、特种设备运行记录及用电安全。\n二、时间要求\n请各单位于12月5日前完成自查并提交汇总表。\n综合办公室\n2026年11月28日",
+          messages: [
+            { role: "user", text: "帮我按红头公文模板写一份实验室安全专项检查通知，要求两页以内。" },
+            { role: "assistant", text: "已按「红头公文通知」完成起草与排版（共 2 页），已自动对齐发文字号、红头横线与落款日期，正文同步回左侧编辑器。" },
+            { role: "user", text: "把第一部分的危化品检查写得更具体一些，不要超过两页。" },
+            { role: "assistant", text: "已补充易制毒/易制爆台账与气瓶室排查条目，并通过行距微调控制在 2 页整，未出现末页孤行。" },
+          ],
+        },
+        {
+          id: "s2",
+          group: "今天",
+          name: "操作系统银行家算法实验报告",
+          templateId: "tpl-lab",
+          updatedLabel: "18分钟前",
+          pages: 5,
+          draft: "一、实验目的\n掌握银行家死锁避免算法中的安全性序列检测逻辑。\n二、算法设计\n维护 Available、Allocation 与 Need 矩阵，在分配试探后验证是否存在安全序列。\n三、实验结果分析\n多组测试用例均能准确拦截不安全分配请求并输出完整安全序列。",
+          messages: [
+            { role: "user", text: "按高校实验报告模板把我的银行家算法笔记整理成正式报告，补一个三线表。" },
+            { role: "assistant", text: "已生成 5 页标准实验报告，保留封面校徽与表头信息，并在第三章插入测试结果三线表。" },
+          ],
+        },
+        {
+          id: "s3",
+          group: "更早",
+          name: "大数据平台技术开发委托合同",
+          templateId: "tpl-contract",
+          updatedLabel: "昨天",
+          pages: 4,
+          draft: "大数据平台技术开发委托合同\n第一条 交付成果与验收标准\n1.1 乙方应于合同生效后30个工作日内完成流式采集模块交付。\n1.2 知识产权归委托方所有。",
+          messages: [
+            { role: "user", text: "帮我检查一下甲方乙方违约责任条款是否完整。" },
+            { role: "assistant", text: "建议补充延期交付违约金比例上限与不可抗力免责条款，我可以一键写入草稿并重新套版。" },
+          ],
+        },
+        {
+          id: "s4",
+          group: "更早",
+          name: "未命名新对话",
+          templateId: "tpl-general",
+          updatedLabel: "3天前",
+          pages: 0,
+          draft: "",
+          messages: [],
+        },
+      ],
+    };
+
+    const $ = (id) => document.getElementById(id);
+    let toastTimer = null;
+
+    function showToast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.remove("opacity-0");
+      el.classList.add("opacity-100");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove("opacity-100");
+        el.classList.add("opacity-0");
+      }, 2400);
+    }
+
+    function activeSession() {
+      return state.sessions.find((s) => s.id === state.activeId) || state.sessions[0];
+    }
+
+    function templateById(id) {
+      return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderSidebar() {
+      const sb = $("sessionSidebar");
+      if (state.sidebarOpen) {
+        sb.style.width = "248px";
+        sb.style.opacity = "1";
+        sb.style.borderRightWidth = "1px";
+      } else {
+        sb.style.width = "0px";
+        sb.style.opacity = "0";
+        sb.style.borderRightWidth = "0px";
+      }
+
+      const q = state.search.trim().toLowerCase();
+      const filtered = state.sessions.filter((s) => {
+        if (!q) return true;
+        const tplName = templateById(s.templateId).name.toLowerCase();
+        return s.name.toLowerCase().includes(q) || tplName.includes(q);
+      });
+
+      const listEl = $("sessionList");
+      const groups = ["今天", "更早"];
+      let html = "";
+      for (const g of groups) {
+        const items = filtered.filter((s) => s.group === g);
+        if (!items.length) continue;
+        html += `<div class="px-2 pt-2 pb-1 text-xs font-semibold text-[var(--muted-foreground)]">${g}</div>`;
+        for (const s of items) {
+          const isActive = s.id === state.activeId;
+          const tpl = templateById(s.templateId);
+          const status = s.pages ? `${s.pages}页成品` : s.draft.trim() ? "含草稿" : "空白";
+          const cardCls = isActive
+            ? "bg-[var(--card)] border-[var(--primary)] shadow-2xs"
+            : "border-transparent hover:bg-[var(--card)]/70";
+          html += `
+            <div data-session-id="${s.id}" class="group rounded-xl border px-2.5 py-2 transition cursor-pointer ${cardCls}">
+              ${
+                state.renamingId === s.id
+                  ? `<div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                      <input id="renameInput" value="${escapeHtml(s.name)}" class="flex-1 h-7 px-2 rounded border border-[var(--primary)] bg-[var(--background)] text-xs outline-none" />
+                      <button data-rename-save="${s.id}" class="px-2 py-1 rounded bg-[var(--primary)] text-[var(--primary-foreground)] text-xs cursor-pointer">存</button>
+                    </div>`
+                  : `<div class="flex items-start justify-between gap-1.5">
+                      <div class="min-w-0 flex-1">
+                        <div class="text-xs font-medium truncate ${isActive ? "text-[var(--foreground)]" : "text-[var(--foreground)]/90"}">${escapeHtml(s.name)}</div>
+                        <div class="flex items-center gap-1.5 mt-1 text-xs text-[var(--muted-foreground)] truncate">
+                          <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] truncate max-w-[116px]">${escapeHtml(tpl.name)}</span>
+                          <span class="shrink-0">${s.messages.length}条</span>
+                        </div>
+                        <div class="mt-1 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                          <span>${status}</span>
+                          <span>${s.updatedLabel}</span>
+                        </div>
+                      </div>
+                      <div class="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition shrink-0" onclick="event.stopPropagation()">
+                        ${
+                          state.confirmDelId === s.id
+                            ? `<button data-del-confirm="${s.id}" class="px-1.5 py-0.5 rounded bg-[var(--error)] text-white text-xs cursor-pointer">删</button>`
+                            : `<button data-rename-start="${s.id}" title="重命名" class="px-1 py-0.5 rounded hover:bg-[var(--accent)] text-[var(--muted-foreground)] text-xs cursor-pointer">✎</button>
+                               <button data-del-ask="${s.id}" title="删除对话" class="px-1 py-0.5 rounded hover:bg-[var(--accent)] text-[var(--error)] text-xs cursor-pointer">✕</button>`
+                        }
+                      </div>
+                    </div>`
+              }
+            </div>
+          `;
+        }
+      }
+      if (!html) {
+        html = `<div class="px-3 py-8 text-center text-xs text-[var(--muted-foreground)]">没有匹配的对话</div>`;
+      }
+      listEl.innerHTML = html;
+      $("sessionCountText").textContent = `共 ${state.sessions.length} 个独立会话`;
+
+      listEl.querySelectorAll("[data-session-id]").forEach((node) => {
+        node.addEventListener("click", () => {
+          const id = node.getAttribute("data-session-id");
+          if (id && id !== state.activeId) {
+            state.activeId = id;
+            state.tplGuardFor = null;
+            state.draftClearedNotice = false;
+            state.confirmDelId = null;
+            render();
+            showToast("已切换会话：「" + activeSession().name + "」（上下文完全独立）");
+          }
+        });
+      });
+
+      listEl.querySelectorAll("[data-rename-start]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.renamingId = btn.getAttribute("data-rename-start");
+          renderSidebar();
+          const inp = $("renameInput");
+          if (inp) {
+            inp.focus();
+            inp.select();
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") saveRename(state.renamingId, inp.value);
+              if (e.key === "Escape") { state.renamingId = null; renderSidebar(); }
+            });
+          }
+        });
+      });
+      listEl.querySelectorAll("[data-rename-save]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-rename-save");
+          const inp = $("renameInput");
+          if (id && inp) saveRename(id, inp.value);
+        });
+      });
+      listEl.querySelectorAll("[data-del-ask]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.confirmDelId = btn.getAttribute("data-del-ask");
+          renderSidebar();
+        });
+      });
+      listEl.querySelectorAll("[data-del-confirm]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-del-confirm");
+          state.sessions = state.sessions.filter((x) => x.id !== id);
+          if (!state.sessions.length) createNewSession("tpl-general");
+          else if (state.activeId === id) state.activeId = state.sessions[0].id;
+          state.confirmDelId = null;
+          render();
+          showToast("已删除会话");
+        });
+      });
+    }
+
+    function saveRename(id, value) {
+      const clean = value.trim();
+      const target = state.sessions.find((s) => s.id === id);
+      if (target && clean) target.name = clean;
+      state.renamingId = null;
+      render();
+    }
+
+    function renderTopBar() {
+      const s = activeSession();
+      const tpl = templateById(s.templateId);
+      $("topSessionTitle").textContent = s.name;
+      $("topSessionBadge").textContent = s.pages ? `${s.pages}页` : s.draft.trim() ? "草稿" : "空白";
+      $("activeTplLabel").textContent = tpl.name;
+
+      const menu = $("templateMenu");
+      menu.innerHTML = TEMPLATES.map((t) => {
+        const cur = t.id === s.templateId;
+        return `
+          <button
+            data-pick-tpl="${t.id}"
+            type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
+              cur ? "bg-[var(--secondary)] font-semibold text-[var(--foreground)]" : "hover:bg-[var(--accent)] text-[var(--foreground)]"
+            }"
+          >
+            <span>${escapeHtml(t.name)}</span>
+            <span class="text-[var(--muted-foreground)]">${cur ? "当前" : t.category}</span>
+          </button>
+        `;
+      }).join("");
+
+      menu.querySelectorAll("[data-pick-tpl]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const nextId = btn.getAttribute("data-pick-tpl");
+          menu.classList.add("hidden");
+          switchTemplate(nextId);
+        });
+      });
+    }
+
+    function renderMiddle() {
+      const s = activeSession();
+      const tpl = templateById(s.templateId);
+      const isChat = state.mode === "chat";
+
+      $("tabCopy").className =
+        "px-3 py-1.5 rounded-md font-medium transition cursor-pointer " +
+        (!isChat ? "bg-[var(--card)] text-[var(--foreground)] shadow-2xs" : "text-[var(--muted-foreground)]");
+      $("tabChat").className =
+        "px-3 py-1.5 rounded-md font-medium transition cursor-pointer flex items-center gap-1.5 " +
+        (isChat ? "bg-[var(--card)] text-[var(--foreground)] shadow-2xs" : "text-[var(--muted-foreground)]");
+      $("chatCountPill").textContent = String(s.messages.length);
+
+      $("chatTopActions").classList.toggle("hidden", !isChat);
+      $("clearChatBtn").disabled = s.messages.length === 0;
+      $("clearChatBtn").classList.toggle("opacity-40", s.messages.length === 0);
+      $("chatContextBar").classList.toggle("hidden", !isChat);
+      $("chatComposer").classList.toggle("hidden", !isChat);
+      $("copyView").classList.toggle("hidden", isChat);
+      $("chatView").classList.toggle("hidden", !isChat);
+
+      const chars = s.draft.trim().length;
+      $("contextStatusText").textContent = chars
+        ? `当前会话底稿：${chars} 字 · 模板「${tpl.name}」`
+        : `当前会话底稿为空 · 模板「${tpl.name}」`;
+
+      // 防污染横幅（切换模板）
+      const showTplGuard = isChat && state.tplGuardFor && state.tplGuardFor === s.id && s.messages.length > 0;
+      $("tplGuardBanner").classList.toggle("hidden", !showTplGuard);
+      if (showTplGuard) {
+        $("tplGuardText").textContent = `已切换为「${tpl.name}」· 若准备写新文章，建议开新对话避免旧上下文干扰`;
+      }
+
+      // 清空正文后的联动横幅
+      $("draftClearedBanner").classList.toggle("hidden", !state.draftClearedNotice || s.messages.length === 0);
+
+      // Copy 视图内容
+      $("draftTextarea").value = s.draft;
+
+      // Chat 视图内容
+      const chatView = $("chatView");
+      if (!s.messages.length) {
+        chatView.innerHTML = `
+          <div class="flex-1 flex flex-col justify-center items-center text-center py-10 px-4 gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[var(--secondary)] text-[var(--primary)] flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div class="text-sm font-semibold">全新干净上下文 · 「${escapeHtml(tpl.name)}」</div>
+            <div class="text-xs text-[var(--muted-foreground)] max-w-[320px] leading-relaxed">
+              当前对话不含其他文章的旧记录。直接描述你想写的内容，或让 AI 基于左侧草稿起草排版。
+            </div>
+            <div class="flex flex-wrap justify-center gap-2 pt-1">
+              <button data-quick="帮我按当前模板起草一份完整初稿，标题规范、结构清晰。" type="button" class="px-3 py-1.5 rounded-full bg-[var(--background)] hover:border-[var(--primary)] border border-[var(--border)] text-xs cursor-pointer">
+                按当前模板起草初稿
+              </button>
+              ${
+                chars > 0
+                  ? `<button data-quick="基于我左侧的草稿润色正文，并按当前模板重新生成 Word。" type="button" class="px-3 py-1.5 rounded-full bg-[var(--background)] hover:border-[var(--primary)] border border-[var(--border)] text-xs cursor-pointer">
+                      润色左侧底稿并排版
+                    </button>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+        chatView.querySelectorAll("[data-quick]").forEach((btn) => {
+          btn.addEventListener("click", () => sendChat(btn.getAttribute("data-quick")));
+        });
+      } else {
+        chatView.innerHTML = s.messages
+          .map((m) => {
+            if (m.role === "event") {
+              return `
+                <div class="flex items-center gap-2 py-1 text-xs text-[var(--muted-foreground)]">
+                  <div class="h-px flex-1 bg-[var(--border)]"></div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-[var(--sidebar)] border border-[var(--border)]">${escapeHtml(m.text)}</span>
+                  <div class="h-px flex-1 bg-[var(--border)]"></div>
+                </div>
+              `;
+            }
+            if (m.role === "user") {
+              return `
+                <div class="flex items-start justify-end gap-2">
+                  <div class="max-w-[82%] rounded-2xl rounded-tr-xs bg-[var(--primary)] text-[var(--primary-foreground)] px-3.5 py-2 text-xs leading-relaxed whitespace-pre-wrap">${escapeHtml(m.text)}</div>
+                  <div class="w-6 h-6 rounded-full bg-[var(--secondary)] text-[var(--foreground)] text-xs font-semibold flex items-center justify-center shrink-0">我</div>
+                </div>
+              `;
+            }
+            return `
+              <div class="flex items-start gap-2">
+                <div class="w-6 h-6 rounded-lg bg-[var(--foreground)] text-[var(--background)] text-xs font-semibold flex items-center justify-center shrink-0">AI</div>
+                <div class="max-w-[86%] rounded-2xl rounded-tl-xs bg-[var(--background)] border border-[var(--border)] px-3.5 py-2.5 text-xs leading-relaxed text-[var(--foreground)]">
+                  <div class="text-xs font-semibold text-[var(--muted-foreground)] mb-1">DocForge 排版助手</div>
+                  <div>${escapeHtml(m.text)}</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+      $("middleScroll").scrollTop = $("middleScroll").scrollHeight;
+    }
+
+    function renderPreview() {
+      const s = activeSession();
+      const tpl = templateById(s.templateId);
+      $("previewMetaText").textContent = s.pages
+        ? `「${s.name}」· 共 ${s.pages} 页 · ${tpl.name}`
+        : `「${tpl.name}」样张预览 · 等待输入正文或对话生成`;
+
+      const lines = (s.draft || "").split("\n").filter((l) => l.trim());
+      const title = lines[0] || s.name;
+      const body = lines.slice(1);
+
+      let headerHtml = "";
+      if (s.templateId === "tpl-gongwen") {
+        headerHtml = `
+          <div class="text-center pb-4 mb-5 border-b-2 border-red-600">
+            <div class="text-xl font-bold tracking-[0.25em] text-red-600">综合办公室文件</div>
+            <div class="text-xs text-zinc-500 mt-2">办发〔2026〕18 号</div>
+          </div>
+        `;
+      } else if (s.templateId === "tpl-lab") {
+        headerHtml = `
+          <div class="border-b border-zinc-300 pb-3 mb-5 flex items-center justify-between text-xs text-zinc-500">
+            <span>计算机科学与技术学院 · 实验报告</span>
+            <span>成绩：_______</span>
+          </div>
+        `;
+      } else if (s.templateId === "tpl-contract") {
+        headerHtml = `
+          <div class="flex justify-between text-xs text-zinc-500 pb-3 mb-5 border-b border-zinc-200">
+            <span>合同编号：HT-2026-089</span>
+            <span>保密级别：内部</span>
+          </div>
+        `;
+      }
+
+      $("paperPreview").innerHTML = `
+        ${headerHtml}
+        <h1 class="text-lg font-bold text-center text-zinc-900 mb-6 leading-snug">${escapeHtml(title)}</h1>
+        ${
+          body.length
+            ? body
+                .map((p) => {
+                  const isHeading = /^[一二三四五六第1-9]/.test(p) && p.length < 28;
+                  return isHeading
+                    ? `<h2 class="text-sm font-bold text-zinc-900 mt-4 mb-2">${escapeHtml(p)}</h2>`
+                    : `<p class="text-xs leading-[1.9] text-zinc-800 indent-6 mb-2">${escapeHtml(p)}</p>`;
+                })
+                .join("")
+            : `<div class="py-16 text-center text-xs text-zinc-400">当前会话尚无正文内容。<br/>在左侧粘贴草稿或与 AI 对话起草后，此处将实时呈现排版成品。</div>`
+        }
+      `;
+    }
+
+    function render() {
+      renderSidebar();
+      renderTopBar();
+      renderMiddle();
+      renderPreview();
+    }
+
+    function createNewSession(templateId, initOpts = {}) {
+      const id = "s-" + Date.now();
+      const s = {
+        id,
+        group: "今天",
+        name: initOpts.name || "未命名新对话",
+        templateId: templateId || activeSession().templateId,
+        updatedLabel: "刚刚",
+        pages: initOpts.pages || 0,
+        draft: initOpts.draft || "",
+        messages: [],
+      };
+      state.sessions.unshift(s);
+      state.activeId = id;
+      state.tplGuardFor = null;
+      state.draftClearedNotice = false;
+      render();
+      showToast("已开启全新独立对话：「" + s.name + "」");
+    }
+
+    function clearCurrentChat() {
+      const s = activeSession();
+      if (!s.messages.length) return;
+      s.messages = [];
+      state.tplGuardFor = null;
+      state.draftClearedNotice = false;
+      render();
+      showToast("已清空当前对话记忆，左侧底稿与模板已完整保留");
+    }
+
+    function switchTemplate(nextId) {
+      const s = activeSession();
+      if (!nextId || nextId === s.templateId) return;
+      s.templateId = nextId;
+      const tpl = templateById(nextId);
+      if (s.messages.length > 0) {
+        s.messages.push({ role: "event", text: `已将当前格式切换为「${tpl.name}」` });
+        state.tplGuardFor = s.id;
+      }
+      render();
+      showToast("已切换格式为「" + tpl.name + "」");
+    }
+
+    function sendChat(text) {
+      const clean = (text || "").trim();
+      if (!clean) return;
+      const s = activeSession();
+      s.messages.push({ role: "user", text: clean });
+      if (s.name === "未命名新对话") {
+        s.name = clean.slice(0, 14) + (clean.length > 14 ? "…" : "");
+      }
+      if (!s.draft.trim()) {
+        s.draft = s.name + "\n一、背景与目标\n根据您的要求，在全新隔离的会话中起草本篇文档初稿。\n二、主要内容\n严格遵循当前模板版式规范，不混入任何历史文章上下文。";
+        s.pages = 2;
+      }
+      s.messages.push({
+        role: "assistant",
+        text: `已仅基于当前会话「${s.name}」（模板：${templateById(s.templateId).name}）完成处理并更新预览，未受其他会话历史影响。`,
+      });
+      s.updatedLabel = "刚刚";
+      state.tplGuardFor = null;
+      render();
+    }
+
+    function openImportGuard() {
+      const s = activeSession();
+      if (s.messages.length === 0 && !s.draft.trim()) {
+        s.name = "2026年校园网络安全演练方案";
+        s.draft = "2026年校园网络安全演练方案\n一、演练目标\n全面检验校园核心业务系统的应急响应与数据恢复能力。\n二、演练安排\n12月10日开展全链路攻防演练与复盘总结。";
+        s.pages = 3;
+        render();
+        showToast("当前会话为空，已直接导入草稿");
+        return;
+      }
+      $("importGuardModal").classList.remove("hidden");
+    }
+
+    // 事件绑定
+    $("toggleSidebarBtn").addEventListener("click", () => {
+      state.sidebarOpen = !state.sidebarOpen;
+      renderSidebar();
+    });
+    $("sidebarNewBtn").addEventListener("click", () => createNewSession());
+    $("quickNewChatBtn").addEventListener("click", () => createNewSession());
+    $("clearChatBtn").addEventListener("click", clearCurrentChat);
+    $("sessionSearch").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      renderSidebar();
+    });
+
+    $("templateBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      $("templateMenu").classList.toggle("hidden");
+    });
+    document.addEventListener("click", () => $("templateMenu").classList.add("hidden"));
+
+    $("tabCopy").addEventListener("click", () => { state.mode = "copy"; renderMiddle(); });
+    $("tabChat").addEventListener("click", () => { state.mode = "chat"; renderMiddle(); });
+    $("jumpToDraftBtn").addEventListener("click", () => { state.mode = "copy"; renderMiddle(); });
+
+    $("draftTextarea").addEventListener("input", (e) => {
+      activeSession().draft = e.target.value;
+      renderPreview();
+    });
+    $("clearDraftBtn").addEventListener("click", () => {
+      const s = activeSession();
+      s.draft = "";
+      s.pages = 0;
+      state.draftClearedNotice = s.messages.length > 0;
+      render();
+      showToast("已清空正文");
+    });
+    $("syncClearChatBtn").addEventListener("click", clearCurrentChat);
+    $("dismissDraftClearedBtn").addEventListener("click", () => {
+      state.draftClearedNotice = false;
+      renderMiddle();
+    });
+    $("applyFormatBtn").addEventListener("click", () => {
+      const s = activeSession();
+      if (!s.draft.trim()) return showToast("请先输入正文");
+      s.pages = Math.max(1, Math.ceil(s.draft.length / 90));
+      render();
+      showToast("已按「" + templateById(s.templateId).name + "」生成 Word");
+    });
+
+    $("importDraftBtn").addEventListener("click", openImportGuard);
+    $("importAsNewSessionBtn").addEventListener("click", () => {
+      $("importGuardModal").classList.add("hidden");
+      createNewSession(activeSession().templateId, {
+        name: "2026年校园网络安全演练方案",
+        draft: "2026年校园网络安全演练方案\n一、演练目标\n全面检验校园核心业务系统的应急响应与数据恢复能力。\n二、演练安排\n12月10日开展全链路攻防演练与复盘总结。",
+        pages: 3,
+      });
+    });
+    $("importOverwriteClearBtn").addEventListener("click", () => {
+      $("importGuardModal").classList.add("hidden");
+      const s = activeSession();
+      s.name = "2026年校园网络安全演练方案";
+      s.draft = "2026年校园网络安全演练方案\n一、演练目标\n全面检验校园核心业务系统的应急响应与数据恢复能力。";
+      s.messages = [];
+      s.pages = 2;
+      render();
+      showToast("已覆盖草稿并清空旧对话记忆");
+    });
+    $("importOverwriteKeepBtn").addEventListener("click", () => {
+      $("importGuardModal").classList.add("hidden");
+      const s = activeSession();
+      s.draft = "2026年校园网络安全演练方案（修订版）\n一、演练目标\n延续原对话继续微调修订版正文。";
+      render();
+      showToast("已仅覆盖正文，保留原有对话");
+    });
+    $("cancelImportGuardBtn").addEventListener("click", () => $("importGuardModal").classList.add("hidden"));
+
+    $("guardNewSessionBtn").addEventListener("click", () => {
+      const tplId = activeSession().templateId;
+      createNewSession(tplId);
+    });
+    $("guardClearChatBtn").addEventListener("click", clearCurrentChat);
+    $("guardDismissBtn").addEventListener("click", () => {
+      state.tplGuardFor = null;
+      renderMiddle();
+    });
+
+    $("sendBtn").addEventListener("click", () => {
+      const inp = $("chatInput");
+      sendChat(inp.value);
+      inp.value = "";
+    });
+    $("chatInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        $("sendBtn").click();
+      }
+    });
+
+    $("localOpenBtn").addEventListener("click", () => showToast("桌面端：将用本机 Word / WPS 打开当前成品"));
+    $("saveAsBtn").addEventListener("click", () => showToast("桌面端：将弹出系统「另存为」对话框"));
+
+    $("demoGuideBtn").addEventListener("click", () => $("demoGuideBar").classList.toggle("hidden"));
+    $("closeDemoGuide").addEventListener("click", () => $("demoGuideBar").classList.add("hidden"));
+    document.querySelectorAll("[data-demo]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const kind = btn.getAttribute("data-demo");
+        if (kind === "switch-session") {
+          state.sidebarOpen = true;
+          const next = state.sessions.find((s) => s.id !== state.activeId);
+          if (next) state.activeId = next.id;
+          state.mode = "chat";
+          render();
+          showToast("已切换到「" + activeSession().name + "」，草稿/对话/预览全部隔离");
+        } else if (kind === "import-draft") {
+          state.mode = "copy";
+          render();
+          openImportGuard();
+        } else if (kind === "switch-tpl") {
+          state.mode = "chat";
+          const cur = activeSession();
+          const alt = TEMPLATES.find((t) => t.id !== cur.templateId);
+          if (alt) switchTemplate(alt.id);
+        }
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        createNewSession();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

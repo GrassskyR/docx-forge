@@ -286,6 +286,14 @@ export class SessionStore {
     return this.active()
   }
 
+  clearChat(id: string): SessionNode {
+    const node = this.get(id)
+    node.messages = []
+    node.events = []
+    this.write(node)
+    return node
+  }
+
   fallbackDeletedTemplate(deletedTemplateId: string) {
     const rows = this.store.db
       .prepare("SELECT payload FROM sessions")

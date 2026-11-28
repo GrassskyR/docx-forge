@@ -86,6 +86,19 @@ export function sessionAndChatHandler(
       return
     }
 
+    const clearChatMatch = /^\/api\/sessions\/([^/]+)\/clear-chat$/.exec(path)
+    if (clearChatMatch && method === "POST") {
+      const targetId = clearChatMatch[1]
+      if (busySessions.has(targetId)) {
+        send(409, { detail: "当前会话正在生成中，请先停止后再清空对话" })
+        return
+      }
+      const cleared = sessions.clearChat(targetId)
+      const active = targetId === sessions.activeId ? cleared : sessions.active()
+      send(200, statePayload(active))
+      return
+    }
+
     const itemMatch = /^\/api\/sessions\/([^/]+)$/.exec(path)
     if (itemMatch) {
       const targetId = itemMatch[1]

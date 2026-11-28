@@ -90,7 +90,7 @@ flowchart LR
 ### 后端主要接口与 AI 工具
 
 - **HTTP / SSE 接口**：
-  - 会话管理：`GET /api/sessions`、`POST /api/sessions`、`PUT /api/sessions/active`、`POST /api/sessions/:id/fork`、`PATCH /api/sessions/:id`、`DELETE /api/sessions/:id`
+  - 会话管理：`GET /api/sessions`、`POST /api/sessions`、`PUT /api/sessions/active`、`POST /api/sessions/:id/fork`、`POST /api/sessions/:id/clear-chat`、`PATCH /api/sessions/:id`、`DELETE /api/sessions/:id`
   - 模板管理：`GET /api/templates`、`POST /api/templates/import`（SSE 后台导入）、`GET /api/templates/:id`、`GET /api/templates/:id/inspect`、`GET /api/templates/:id/samples`、`PATCH /api/templates/:id`、`POST /api/templates/:id/fork`、`DELETE /api/templates/:id`
   - 文档生成与微调：`POST /api/drafts/ingest`、`POST /api/documents/compose-stream`（SSE 套版流）、`POST /api/documents/compose`、`POST /api/documents/:id/adjust-layout`、`POST /api/documents/:id/visual-audit`
   - AI 对话与健康检查：`POST /api/chat`（SSE 对话流）、`GET /health`

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import type { SessionSummary } from "@docs-agent/shared"
 import {
   CATEGORY_LABELS,
   type BackgroundImportState,
@@ -11,11 +10,10 @@ import {
 } from "../types"
 
 const props = defineProps<{
+  sidebarOpen: boolean
   debug: boolean
   openDropdown: DropdownId
   popoverCat: CategoryId
-  sessions: SessionSummary[]
-  activeSessionId: string
   sessionName: string
   hasDoc: boolean
   docPages: number
@@ -30,16 +28,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  toggleSidebar: []
   toggleDebug: []
   toggleDebugDrawer: []
   openSettings: []
   setDropdown: [menu: DropdownId]
   changePopoverCat: [cat: CategoryId]
-  createSession: []
-  switchSession: [id: string]
   forkSession: []
-  renameSession: [id: string, name: string]
-  deleteSession: [id: string]
   selectFormat: [fmt: FormatOption]
   renameFormat: [id: string, name: string]
   changeFormatCat: [id: string, cat: Exclude<CategoryId, "all">]
@@ -57,10 +52,6 @@ const categories: { id: CategoryId; label: string }[] = [
   { id: "thesis", label: "论文/报告" },
   { id: "contract", label: "合同/表" },
 ]
-
-const editingSessionId = ref<string | null>(null)
-const editingSessionVal = ref("")
-const confirmDelSessionId = ref<string | null>(null)
 
 const editingFormatId = ref<string | null>(null)
 const editingFormatVal = ref("")
@@ -87,24 +78,9 @@ const tokenSummary = computed(() => {
 })
 
 function toggleMenu(target: Exclude<DropdownId, null>) {
-  editingSessionId.value = null
-  confirmDelSessionId.value = null
   editingFormatId.value = null
   confirmDelFormatId.value = null
   emit("setDropdown", props.openDropdown === target ? null : target)
-}
-
-function startRenameSession(s: SessionSummary) {
-  editingSessionId.value = s.id
-  editingSessionVal.value = s.name
-  confirmDelSessionId.value = null
-}
-
-function commitRenameSession(id: string) {
-  if (editingSessionVal.value.trim()) {
-    emit("renameSession", id, editingSessionVal.value.trim())
-  }
-  editingSessionId.value = null
 }
 
 function startRenameFormat(f: FormatOption) {
@@ -128,8 +104,33 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
 </script>
 
 <template>
-  <header class="h-[54px] shrink-0 bg-white border-b border-[#E2E8F0] px-4 flex items-center justify-between gap-2.5 z-30">
+  <header class="h-[54px] shrink-0 bg-white border-b border-[#E2E8F0] px-3.5 flex items-center justify-between gap-2.5 z-30">
     <div class="flex items-center gap-2 min-w-0">
+      <!-- 折叠/展开会话侧边栏按钮 -->
+      <button
+        id="toggleSidebarBtn"
+        type="button"
+        title="展开 / 收起对话列表侧边栏"
+        class="w-8 h-8 rounded-lg border flex items-center justify-center transition cursor-pointer shrink-0"
+        :class="
+          sidebarOpen
+            ? 'bg-[#F8FAFC] hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]'
+            : 'bg-white hover:bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A]'
+        "
+        @click="emit('toggleSidebar')"
+      >
+        <svg
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="9" y1="4" x2="9" y2="20" />
+        </svg>
+      </button>
+
       <div class="flex items-center gap-2 shrink-0">
         <div class="w-7 h-7 rounded-lg bg-[#2563EB] text-white flex items-center justify-center">
           <svg
@@ -154,146 +155,21 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
 
       <div class="h-4 w-px bg-[#E2E8F0]"></div>
 
-      <!-- 当前文档会话下拉器 -->
-      <div class="relative" @click.stop>
-        <button
-          id="sessionPickerBtn"
-          type="button"
-          class="h-8 pl-2.5 pr-2 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] flex items-center gap-1.5 text-[12px] transition cursor-pointer"
-          @click="toggleMenu('session')"
+      <!-- 当前激活会话标题与状态徽章 -->
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span
+          id="topSessionTitle"
+          class="text-[12.5px] font-semibold text-[#0F172A] truncate max-w-[130px] sm:max-w-[220px]"
         >
-          <span class="text-[#64748B] shrink-0">文档</span>
-          <span class="font-semibold text-[#0F172A] max-w-[130px] sm:max-w-[170px] truncate">
-            {{ sessionName }}
-          </span>
-          <span class="text-[10.5px] px-1.5 py-0.5 rounded bg-white border border-[#E2E8F0] text-[#475569] shrink-0">
-            {{ sessionStatusTag }}
-          </span>
-          <span class="text-[#64748B] text-[11px]">▾</span>
-        </button>
-
-        <div
-          v-if="openDropdown === 'session'"
-          id="sessionPopover"
-          class="absolute left-0 top-10 w-[350px] max-w-[92vw] bg-white border border-[#E2E8F0] rounded-xl shadow-xl overflow-hidden z-50"
+          {{ sessionName }}
+        </span>
+        <span
+          id="topSessionBadge"
+          class="text-[10.5px] px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[#475569] shrink-0 tabular"
         >
-          <div class="px-3.5 py-2.5 border-b border-[#F1F5F9] flex items-center justify-between">
-            <span class="text-[12px] font-semibold text-[#0F172A]">
-              文档会话（独立隔离草稿 / 对话 / 预览）
-            </span>
-            <button
-              type="button"
-              class="text-[12px] font-medium text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer"
-              @click="emit('createSession')"
-            >
-              + 新建空白
-            </button>
-          </div>
-          <div class="p-2 max-h-[300px] overflow-y-auto scroll-thin space-y-1">
-            <div
-              v-for="sess in sessions"
-              :key="sess.id"
-              class="px-3 py-2 rounded-lg border transition"
-              :class="
-                sess.id === activeSessionId
-                  ? 'bg-[#EFF6FF]/70 border-[#BFDBFE]'
-                  : 'border-transparent hover:bg-[#F8FAFC]'
-              "
-            >
-              <div v-if="editingSessionId === sess.id" class="flex items-center gap-1.5">
-                <input
-                  v-model="editingSessionVal"
-                  type="text"
-                  class="flex-1 h-7 px-2 rounded border border-[#2563EB] text-[12px] outline-none bg-white"
-                  @keydown.enter="commitRenameSession(sess.id)"
-                  @keydown.esc="editingSessionId = null"
-                />
-                <button
-                  type="button"
-                  class="px-2 py-1 rounded bg-[#2563EB] text-white text-[11px] cursor-pointer"
-                  @click="commitRenameSession(sess.id)"
-                >
-                  保存
-                </button>
-                <button
-                  type="button"
-                  class="px-1.5 py-1 text-[11px] text-[#64748B] cursor-pointer"
-                  @click="editingSessionId = null"
-                >
-                  取消
-                </button>
-              </div>
-
-              <div v-else class="flex items-center justify-between gap-2">
-                <div
-                  class="min-w-0 flex-1 cursor-pointer"
-                  @click="emit('switchSession', sess.id)"
-                >
-                  <div class="flex items-center gap-1.5 text-[12.5px] font-medium text-[#0F172A]">
-                    <span class="truncate">{{ sess.name }}</span>
-                    <span
-                      v-if="sess.id === activeSessionId"
-                      class="text-[10.5px] text-[#2563EB] shrink-0"
-                    >
-                      · 当前
-                    </span>
-                  </div>
-                  <div class="text-[11px] text-[#64748B] truncate mt-0.5">
-                    {{ sess.template_name }} ·
-                    {{ sess.doc_pages ? sess.doc_pages + "页成品" : sess.has_draft ? "含草稿" : "空白" }}
-                    · {{ sess.message_count }}条对话
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-1 shrink-0 text-[11px]">
-                  <template v-if="confirmDelSessionId === sess.id">
-                    <button
-                      type="button"
-                      class="px-2 py-0.5 rounded bg-[#DC2626] text-white font-medium cursor-pointer"
-                      @click="emit('deleteSession', sess.id)"
-                    >
-                      确认删
-                    </button>
-                    <button
-                      type="button"
-                      class="px-1.5 py-0.5 text-[#64748B] cursor-pointer"
-                      @click="confirmDelSessionId = null"
-                    >
-                      取消
-                    </button>
-                  </template>
-                  <template v-else>
-                    <button
-                      type="button"
-                      class="px-1.5 py-0.5 rounded hover:bg-white text-[#475569] cursor-pointer"
-                      @click="startRenameSession(sess)"
-                    >
-                      改名
-                    </button>
-                    <button
-                      type="button"
-                      class="px-1.5 py-0.5 rounded hover:bg-white text-[#DC2626] cursor-pointer"
-                      @click="confirmDelSessionId = sess.id"
-                    >
-                      删除
-                    </button>
-                  </template>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          {{ sessionStatusTag }}
+        </span>
       </div>
-
-      <!-- 显眼独立「+ 新建文档」按钮 -->
-      <button
-        id="newSessionBtn"
-        type="button"
-        class="h-8 px-2.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12px] font-medium flex items-center gap-1 shrink-0 shadow-2xs transition cursor-pointer"
-        @click="emit('createSession')"
-      >
-        <span>+ 新建文档</span>
-      </button>
 
       <div class="hidden md:block h-4 w-px bg-[#E2E8F0]"></div>
 
@@ -467,7 +343,7 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
       </div>
     </div>
 
-    <!-- 右侧：后台异步导入胶囊 + 调试工具 + 调试开关 -->
+    <!-- 右侧：后台异步导入胶囊 + 调试工具 + 设置 + 调试开关 -->
     <div class="flex items-center gap-2 shrink-0 text-[12px]">
       <!-- 后台异步导入胶囊 -->
       <div
@@ -541,7 +417,6 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
           <span id="tokenText">{{ tokenSummary }}</span>
         </div>
 
-        <!-- 纯静态状态指示（去除伪按钮边框） -->
         <span class="hidden xl:inline-flex items-center gap-1 text-[11px] text-[#64748B] px-1">
           <span
             class="w-1.5 h-1.5 rounded-full"
@@ -581,12 +456,8 @@ function nextCat(cur: Exclude<CategoryId, "all">): Exclude<CategoryId, "all"> {
           stroke-width="2"
         >
           <circle cx="12" cy="12" r="3" />
-          <path
-            d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12m9.9 9.9l2.12 2.12M2 12h3m14 0h3"
-          />
-          <path
-            d="M4.93 19.07l2.12-2.12m9.9-9.9l2.12-2.12"
-          />
+          <path d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12m9.9 9.9l2.12 2.12M2 12h3m14 0h3" />
+          <path d="M4.93 19.07l2.12-2.12m9.9-9.9l2.12-2.12" />
         </svg>
         <span class="hidden sm:inline">设置</span>
         <span

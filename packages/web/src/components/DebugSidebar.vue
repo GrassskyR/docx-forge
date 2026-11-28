@@ -33,7 +33,7 @@ const cardStats = computed(() => {
 
   <aside
     id="debugSidebar"
-    class="w-[264px] shrink-0 bg-[#F4F6F9] border-r border-[#E2E8F0] flex-col min-h-0 z-40"
+    class="w-[236px] shrink-0 bg-[#F4F6F9] border-r border-[#E2E8F0] flex-col min-h-0 z-40"
     :class="
       drawerOpen
         ? 'fixed inset-y-0 left-0 flex shadow-2xl xl:static xl:shadow-none'

@@ -230,6 +230,16 @@ export function deleteSession(id: string) {
   })
 }
 
+export function clearSessionChat(id: string) {
+  return request<SessionsPayload>(
+    "/api/sessions/" + encodeURIComponent(id) + "/clear-chat",
+    {
+      method: "POST",
+      body: "{}",
+    },
+  )
+}
+
 export function streamChat(
   payload: { session_id: string; prompt: string; vision_enabled: boolean },
   signal: AbortSignal,

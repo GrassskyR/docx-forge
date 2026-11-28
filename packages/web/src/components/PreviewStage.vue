@@ -97,7 +97,7 @@ function toggleLayoutMenu() {
 </script>
 
 <template>
-  <main class="flex-1 min-w-0 flex flex-col min-h-0 bg-[#EEF2F6] relative">
+  <main class="flex-1 min-w-0 lg:min-w-[320px] flex flex-col min-h-0 bg-[#EEF2F6] relative">
     <!-- 顶部预览控制栏（自适应防挤压，缩放与版面微调常驻） -->
     <div class="min-h-[52px] shrink-0 bg-white/95 backdrop-blur border-b border-[#E2E8F0] px-4 py-1.5 flex flex-wrap items-center justify-between gap-2">
       <div id="previewStatusArea" class="flex items-center gap-2 text-[12px] min-w-0 flex-1">
