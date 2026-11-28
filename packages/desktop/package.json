@@ -1,6 +1,6 @@
 {
   "name": "@docs-agent/desktop",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "DocForge 跨平台 Word 模板套版与 AI 排版桌面工作台",
   "author": "DocForge",
   "homepage": "https://github.com/GrassskyR/docx-forge",
