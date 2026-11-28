@@ -874,7 +874,10 @@ export function useWorkbench() {
     try {
       const res = await api.updateSettings(patch)
       state.settingsData = res
-      if (res.health) state.health = res.health
+      if (res.health) {
+        state.health = res.health
+        state.visionEnabled = res.health.vision_mode !== "text_only"
+      }
       state.settingsOpen = false
       toast("设置已保存并立即生效")
     } catch (e) {

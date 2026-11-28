@@ -169,8 +169,9 @@ export function createTools(work: Workspace, binding: ToolSessionBinding): Agent
       const content: (TextContent | ImageContent)[] = [
         { type: "text", text: JSON.stringify(details) },
       ]
-      const canSeeImages = binding.vision && visionMode() !== "text_only"
-      if (canSeeImages && details) {
+      const liveVisionMode = visionMode(work.docs.config.current())
+      const canAttachImages = binding.vision && liveVisionMode === "native"
+      if (canAttachImages && details) {
         const docId =
           typeof details.doc_id === "string"
             ? details.doc_id
@@ -179,7 +180,7 @@ export function createTools(work: Workspace, binding: ToolSessionBinding): Agent
               : undefined
         const layout = details.layout as LayoutTelemetry | undefined
         const shouldAttach =
-          (name === "compose_document" && Boolean(layout?.warnings.length)) ||
+          name === "compose_document" ||
           (name === "refine_and_audit" &&
             (params as Record<string, unknown>)?.run_vision !== false)
         if (docId && shouldAttach) {

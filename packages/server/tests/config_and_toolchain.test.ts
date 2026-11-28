@@ -19,7 +19,9 @@ import {
 } from "@docs-agent/engine"
 import { createApp, root } from "../src/app.js"
 import { ConfigStore, type SecretCipher } from "../src/config_store.js"
-import { dataFile } from "../src/documents.js"
+import { Documents, dataFile } from "../src/documents.js"
+import { createTools } from "../src/tools.js"
+import { Workspace } from "../src/workspace.js"
 
 const tempDirs: string[] = []
 
@@ -174,6 +176,55 @@ describe("Cross-platform toolchain & ConfigStore", () => {
     const convSrc = readFileSync(resolve(root, "packages/engine/src/doc_converter.ts"), "utf8")
     expect(tcSrc).not.toMatch(/reg\.exe|powershell|cmd\.exe/i)
     expect(convSrc).not.toMatch(/powershell|cmd\.exe|wscript|cscript|child_process/i)
+  })
+
+  it("attaches rendered page PNGs in tools when llm_supports_vision is enabled via ConfigStore", async () => {
+    const prevEnv = process.env.LLM_SUPPORTS_VISION
+    delete process.env.LLM_SUPPORTS_VISION
+    const workDir = await mkdtemp(join(tmpdir(), "docforge-vision-tool-"))
+    tempDirs.push(workDir)
+    const docs = new Documents(workDir, false, { syncToolchain: false })
+    try {
+      docs.config.update({
+        llm_base_url: "https://example.invalid/v1",
+        llm_api_key: "sk-vision-test",
+        llm_model: "vision-model",
+        llm_supports_vision: true,
+      })
+      const work = new Workspace(docs)
+      let activeTpl = "builtin-standard-doc"
+      const tools = createTools(work, {
+        vision: true,
+        getTemplateId: () => activeTpl,
+        setTemplateId: (id) => {
+          activeTpl = id
+        },
+      })
+      const composeTool = tools.find((t) => t.name === "compose_document")!
+      const res = await composeTool.execute("call-1", {
+        mode: "authored",
+        slot_values: { title: "视觉工具附带渲染图回归测试" },
+        body_plan: [{ prototype: "body", text: "验证原生视觉模式下工具结果附带页面 PNG 图像。" }],
+      })
+      const imgBlocks = res.content.filter((c) => c.type === "image")
+      expect(imgBlocks.length).toBeGreaterThanOrEqual(1)
+
+      docs.config.update({
+        llm_supports_vision: false,
+        vision_base_url: "https://example.invalid/v1",
+        vision_api_key: "sk-sidecar",
+        vision_model: "sidecar-vl",
+      })
+      const resSidecar = await composeTool.execute("call-2", {
+        mode: "authored",
+        slot_values: { title: "侧车视觉模式不向纯文本主模型发图" },
+        body_plan: [{ prototype: "body", text: "验证侧车模式下主模型不接收原始图片块。" }],
+      })
+      expect(resSidecar.content.filter((c) => c.type === "image")).toHaveLength(0)
+    } finally {
+      docs.store.db.close()
+      if (prevEnv !== undefined) process.env.LLM_SUPPORTS_VISION = prevEnv
+    }
   })
 
   it.runIf(process.platform === "win32" && (hasWinProgId("Word.Application") || hasWinProgId("KWPS.Application")))(

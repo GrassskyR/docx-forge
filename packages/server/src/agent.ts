@@ -32,7 +32,8 @@ export function makeAgent(
           "增补独立标题/正文原型段并同步更新 blueprint.prototypes，或调整 page_setup、fields、content_slots、" +
           "remove_targets 与 rules_md（自定义模板默认就地更新，仅当用户要求另存/派生时传 save_as_new=true）；",
         "   - 模板更新成功后，若当前会话已有草稿或已生成成品，立即按新模板调用 compose_document 重新生成以刷新右侧预览。",
-        "5. 若版面遥测提示末页仅有少量孤行或落款溢出，调用 refine_and_audit 做压页收口。",
+        "5. 若版面遥测提示末页仅有少量孤行或落款溢出，或用户要求检查页面渲染图是否存在拥挤/重叠/错位，" +
+          "调用 refine_and_audit(doc_id=..., run_vision=true) 执行微调并查看关键页渲染图与视觉核查结果。",
         "6. 面向终端用户沟通规范：请使用简洁自然的中文汇报生成的页数、填入的关键信息与版式要点；" +
           "严禁在回复中出现内部工具函数名、OOXML 标签、twips 数值、B0..Bn 坐标代号或内部状态枚举。",
       ].join("\n"),
